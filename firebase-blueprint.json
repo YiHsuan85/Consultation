@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "Consultation": {
+      "title": "Consultation",
+      "description": "A nutrition consultation record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the dietitian" },
+        "consultDate": { "type": "string", "format": "date" },
+        "clientName": { "type": "string" },
+        "data": { "type": "object", "description": "The full AppState JSON" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "consultDate", "clientName", "data"]
+    }
+  },
+  "firestore": {
+    "/consultations/{consultationId}": {
+      "schema": "Consultation",
+      "description": "Collection of consultation records"
+    }
+  }
+}
