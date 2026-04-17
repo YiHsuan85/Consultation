@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: consultations
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required) - The UID of the dietitian
+    //   - consultDate: string (required) - YYYY-MM-DD
+    //   - clientName: string (required)
+    //   - data: map (required) - Full AppState
+    //   - createdAt: timestamp (required)
+    //   - updatedAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidConsultation(data) {
+      return data.userId is string &&
+             data.consultDate is string &&
+             data.clientName is string &&
+             data.clientName.size() > 0 &&
+             data.clientName.size() < 100 &&
+             data.data is map &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    match /consultations/{consultationId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isAuthenticated() && 
+                      isValidConsultation(request.resource.data) &&
+                      request.resource.data.userId == request.auth.uid;
+                      
+      allow update: if isAuthenticated() && 
+                      resource.data.userId == request.auth.uid &&
+                      isValidConsultation(request.resource.data) &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
