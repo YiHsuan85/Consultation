@@ -1,0 +1,5 @@
+{
+  "name": "Remix: 營養諮詢系統 (NCP)",
+  "description": "包含營養評估、診斷 (PES)、介入與監測的完整 NCP 流程紀錄工具，整合食物資料庫與份量計算功能。",
+  "requestFramePermissions": []
+}
