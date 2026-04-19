@@ -217,7 +217,14 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '亞培 葡勝納SR 200ml', category: '保健品', carbs: 24.5, protein: 9.3, fat: 6.8, kcal: 196, na: 178, k: 312, p: 120 },
   { name: '艾益生 力增飲鉻100 237ml', category: '保健品', carbs: 28.2, protein: 10, fat: 10.8, kcal: 250, na: 240, k: 290, p: 175 },
   { name: '思耐得 補體素鉻100 237ml', category: '保健品', carbs: 29, protein: 12, fat: 9, kcal: 245, na: 194, k: 237, p: 160 },
-  { name: '益富 益力壯鉻112 250ml', category: '保健品', carbs: 28.5, protein: 12.5, fat: 10.5, kcal: 259, na: 263, k: 406, p: 175 }
+  { name: '益富 益力壯鉻112 250ml', category: '保健品', carbs: 28.5, protein: 12.5, fat: 10.5, kcal: 259, na: 263, k: 406, p: 175 },
+  { name: '賀寶芙 草莓 260ml', category: '保健品', carbs: 13, protein: 9, fat: 0.8, kcal: 88, na: 90, k: 284, p: '' },
+  { name: '賀寶芙 薄荷巧克力 260ml', category: '保健品', carbs: 13, protein: 9, fat: 0.8, kcal: 88, na: 90, k: 284, p: '' },
+  { name: '賀寶芙 香草 260ml', category: '保健品', carbs: 13, protein: 9, fat: 0.8, kcal: 88, na: 90, k: 284, p: '' },
+  { name: '賀寶芙 巧克力 260ml', category: '保健品', carbs: 13, protein: 9, fat: 0.8, kcal: 88, na: 90, k: 438, p: '' },
+  { name: '賀寶芙 巧餅 260ml', category: '保健品', carbs: 13, protein: 9, fat: 1, kcal: 90, na: 160, k: 284, p: '' },
+  { name: '賀寶芙 拿鐵 260ml', category: '保健品', carbs: 13, protein: 9, fat: 0.8, kcal: 88, na: 95, k: 325, p: '' },
+  { name: '賀寶芙 芒果 260ml', category: '保健品', carbs: 13, protein: 9, fat: 0.8, kcal: 88, na: 90, k: 284, p: '' }
 ];
 
 export const DIAG_DATA: DiagnosisData = {
