@@ -93,6 +93,12 @@ export const generateWordDoc = async (state: AppState) => {
                 createHeaderCell("生活習慣"), createValueCell(`${state.clientHx.habits.smoke ? "抽菸 " : ""}${state.clientHx.habits.drink ? "喝酒" : ""}` || "無"),
               ],
             }),
+            new TableRow({
+              children: [
+                createHeaderCell("運動習慣"), createValueCell(`${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''} [因子: ${state.clientHx.exercise.activityFactor || 'N/A'}]`),
+                createHeaderCell(""), createValueCell(""),
+              ],
+            }),
           ],
         }),
 
@@ -314,6 +320,16 @@ export const generateReminderWordDoc = async (state: AppState) => {
               children: [
                 createHeaderCell("諮詢類型"), createValueCell(state.counselingType),
                 createHeaderCell("諮詢日期"), createValueCell(state.consultDate),
+              ],
+            }),
+            new TableRow({
+              children: [
+                createHeaderCell("運動習慣"), 
+                new TableCell({
+                  columnSpan: 3,
+                  children: [new Paragraph({ text: `${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''}` || "無" })],
+                  verticalAlign: VerticalAlign.CENTER,
+                })
               ],
             }),
           ],
