@@ -29,29 +29,16 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isValidConsultation(data) {
-      return data.userId is string &&
-             data.consultDate is string &&
-             data.clientName is string &&
-             data.clientName.size() > 0 &&
-             data.clientName.size() < 100 &&
-             data.data is map &&
-             data.createdAt is timestamp &&
-             data.updatedAt is timestamp;
-    }
-
     match /consultations/{consultationId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       
       allow create: if isAuthenticated() && 
-                      isValidConsultation(request.resource.data) &&
-                      request.resource.data.userId == request.auth.uid;
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.data is map;
                       
       allow update: if isAuthenticated() && 
                       resource.data.userId == request.auth.uid &&
-                      isValidConsultation(request.resource.data) &&
-                      request.resource.data.userId == request.auth.uid &&
-                      request.resource.data.createdAt == resource.data.createdAt;
+                      request.resource.data.userId == request.auth.uid;
 
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
