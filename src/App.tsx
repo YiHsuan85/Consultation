@@ -70,16 +70,16 @@ const INITIAL_STATE: AppState = {
   notes: '',
   clientHx: {
     name: '',
-    gender: '',
+    gender: '男',
     birthday: '',
-    job: '',
+    job: '在職中',
     medicalHx: [],
     medicalHxOther: '',
     familyHx: '',
     socialHx: '',
     region: '',
     habits: { smoke: false, drink: false },
-    exercise: { frequency: '', type: '', activityFactor: '' }
+    exercise: { frequency: '', name: '', type: '', activityFactor: '' }
   },
   anthropometry: {
     height: '',
@@ -789,12 +789,25 @@ export default function App() {
                       <label className="text-sm font-medium text-slate-700">運動習慣</label>
                       <div className="flex flex-col gap-2">
                         <div className="flex gap-2">
-                          <input type="text" placeholder="頻率" value={state.clientHx.exercise.frequency} onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, frequency: e.target.value}}})} className="w-1/2 px-3 py-2 rounded-lg border border-slate-200" />
+                          <input 
+                            type="text" 
+                            placeholder="頻率 (次/週)" 
+                            value={state.clientHx.exercise.frequency} 
+                            onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, frequency: e.target.value}}})} 
+                            className="w-1/2 px-3 py-2 rounded-lg border border-slate-200" 
+                          />
                           <select value={state.clientHx.exercise.type} onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, type: e.target.value}}})} className="w-1/2 px-3 py-2 rounded-lg border border-slate-200">
                             <option value="">選擇類型</option>
                             {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
                         </div>
+                        <input 
+                          type="text" 
+                          placeholder="具體運動 (例如: 游泳、慢跑...)" 
+                          value={state.clientHx.exercise.name} 
+                          onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, name: e.target.value}}})} 
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200" 
+                        />
                         <select 
                           value={state.clientHx.exercise.activityFactor} 
                           onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, activityFactor: e.target.value as any}}})} 
