@@ -96,6 +96,7 @@ export interface AppState {
   biochemistry: {
     [key: string]: string;
   };
+  biochemistryNotes: string;
   clinical: {
     history: string[];
     medications: string;
