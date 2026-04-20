@@ -93,10 +93,11 @@ const INITIAL_STATE: AppState = {
     edema: '無'
   },
   biochemistry: {
-    BP: '', FPG: '', HbA1c: '', BUN: '', Cr: '', eGFR: '', UPCR: '', 
+    BP: '', AC: '', PC: '', FPG: '', HbA1c: '', BUN: '', Cr: '', eGFR: '', UPCR: '', 
     UricAcid: '', Na: '', K: '', P: '', TC: '', HDL: '', LDL: '', 
     TG: '', AST: '', ALT: '', Alb: ''
   },
+  biochemistryNotes: '',
   clinical: {
     history: [],
     medications: ''
@@ -939,7 +940,7 @@ export default function App() {
                     生化數值 (Biochemistry)
                   </h2>
                 </div>
-                <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 border-b border-slate-100">
                   {Object.keys(state.biochemistry).map(key => {
                     const range = BIO_RANGES[key];
                     const val = state.biochemistry[key];
@@ -957,7 +958,7 @@ export default function App() {
 
                     return (
                       <div key={key} className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500 uppercase">{key === 'FPG' ? 'AC (FPG)' : key}</label>
+                        <label className="text-xs font-medium text-slate-500 uppercase">{key}</label>
                         <input 
                           type="text" 
                           value={val} 
@@ -976,6 +977,40 @@ export default function App() {
                       </div>
                     );
                   })}
+                </div>
+                <div className="p-6 bg-slate-50/50 space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4 text-blue-500" />
+                      數據備註與分析
+                    </label>
+                    <textarea 
+                      value={state.biochemistryNotes} 
+                      onChange={e => setState({...state, biochemistryNotes: e.target.value})}
+                      placeholder="輸入生化數值相關分析或備註..."
+                      rows={3}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
+                      <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">診斷參考值 (正常 | 糖尿病前期 | 糖尿病)</div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        <div><span className="text-slate-500">AC:</span> 100 | 100-125 | ≧126</div>
+                        <div><span className="text-slate-500">PC:</span> 140 | 140-199 | &gt;200</div>
+                        <div><span className="text-slate-500">A1c:</span> 4-5.6 | 5.7-6.4 | &gt;6.5%</div>
+                        <div><span className="text-slate-500">FPG:</span> &lt;200 | - | ≧200</div>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
+                      <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">控制目標</div>
+                      <div className="space-y-1">
+                        <div><span className="text-slate-700 font-medium underline">成人</span> AC 80-130 | PC 80-160 | A1c &lt;7.0 | BP &lt;130/80</div>
+                        <div><span className="text-slate-700 font-medium underline">老年(&gt;65)</span> AC 80-130 | 睡前 80-180 | A1c &lt;7-7.5 | BP &lt;140/90</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
 
