@@ -77,6 +77,7 @@ export interface AppState {
     };
     exercise: {
       frequency: string;
+      name: string;
       type: string;
       activityFactor: '無' | '輕度' | '中度' | '重度' | '';
     };
