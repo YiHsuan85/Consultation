@@ -293,7 +293,12 @@ export default function App() {
     return Math.round(weight * 30);
   }, [state.anthropometry.weight]);
 
-  // Persistence
+  // Persistence: Save to local storage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('nutrition_counseling_record', JSON.stringify(state));
+  }, [state]);
+
+  // Persistence: Load from local storage on mount
   useEffect(() => {
     const saved = localStorage.getItem('nutrition_counseling_record');
     if (saved) {
@@ -303,7 +308,7 @@ export default function App() {
         setState(prev => ({
           ...INITIAL_STATE,
           ...parsed,
-          // Deep merge for nested objects if necessary, but at least ensure top-level arrays exist
+          id: parsed.id, // Explicitly restore ID
           diagnoses: parsed.diagnoses || [],
           clientHx: { ...INITIAL_STATE.clientHx, ...(parsed.clientHx || {}) },
           anthropometry: { ...INITIAL_STATE.anthropometry, ...(parsed.anthropometry || {}) },
@@ -326,30 +331,43 @@ export default function App() {
     }
 
     setIsSaving(true);
+    console.group('Saving Record');
     try {
+      // 1. Prepare clean data mapping - remove ID from the 'data' payload to avoid recursive fields
+      const { id, ...cleanState } = state;
+      
       const payload = {
         userId: user.uid,
         consultDate: state.consultDate,
         clientName: state.clientHx.name || '未命名個案',
-        data: state,
+        data: cleanState,
         updatedAt: Timestamp.now()
       };
 
-      if (state.id) {
-        await updateDoc(doc(db, 'consultations', state.id), payload);
-        alert('紀錄已更新。');
+      console.log('Target ID:', id);
+      console.log('Payload:', payload);
+
+      if (id) {
+        // Update existing
+        const docRef = doc(db, 'consultations', id);
+        await updateDoc(docRef, payload);
+        alert('紀錄已更新成功。');
       } else {
+        // Create new
         const docRef = await addDoc(collection(db, 'consultations'), {
           ...payload,
           createdAt: Timestamp.now()
         });
         setState(prev => ({ ...prev, id: docRef.id }));
-        alert('新紀錄已儲存。');
+        alert('新紀錄已建立並儲存。');
       }
-    } catch (error) {
-      console.error('Save error:', error);
-      alert('儲存失敗，請檢查權限設定。');
+    } catch (error: any) {
+      console.error('Save error details:', error);
+      const errorCode = error.code || 'unknown';
+      const errorMessage = error.message || '未知錯誤';
+      alert(`儲存失敗: ${errorCode}\n${errorMessage}\n\n提醒：如果紀錄包含大量照片，請嘗試移除部分照片後再試。`);
     } finally {
+      console.groupEnd();
       setIsSaving(false);
     }
   };
