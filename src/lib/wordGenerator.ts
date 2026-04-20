@@ -145,6 +145,13 @@ export const generateWordDoc = async (state: AppState) => {
             return rows.length > 0 ? rows : [new TableRow({ children: [createValueCell("無紀錄")] })];
           })(),
         }),
+        state.biochemistryNotes ? new Paragraph({
+          children: [
+            new TextRun({ text: "備註: ", bold: true }),
+            new TextRun({ text: state.biochemistryNotes }),
+          ],
+          spacing: { before: 200 }
+        }) : new Paragraph({ text: "" }),
 
         new Paragraph({ text: "4. 飲食史 (Diet Hx)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `飲食型態: ${state.diet.type} / 傾向: ${state.diet.preference}` }),
@@ -354,6 +361,13 @@ export const generateReminderWordDoc = async (state: AppState) => {
             return rows.length > 0 ? rows : [new TableRow({ children: [createValueCell("無紀錄")] })];
           })(),
         }),
+        state.biochemistryNotes ? new Paragraph({
+          children: [
+            new TextRun({ text: "數據分析備註: ", bold: true }),
+            new TextRun({ text: state.biochemistryNotes }),
+          ],
+          spacing: { before: 200 }
+        }) : new Paragraph({ text: "" }),
 
         // 營養控制目標
         new Paragraph({ text: "三、營養控制目標", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
