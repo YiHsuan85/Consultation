@@ -669,7 +669,7 @@ export default function App() {
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="date" 
-                value={state.consultDate}
+                value={state.consultDate || ''}
                 onChange={e => setState({...state, consultDate: e.target.value})}
                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               />
@@ -680,7 +680,7 @@ export default function App() {
             <input 
               type="text" 
               placeholder="例如：控制血糖、體重管理..."
-              value={state.goal}
+              value={state.goal || ''}
               onChange={e => setState({...state, goal: e.target.value})}
               className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
             />
@@ -689,7 +689,7 @@ export default function App() {
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">諮詢紀錄</label>
             <textarea 
               placeholder="紀錄諮詢過程中的重點..."
-              value={state.notes}
+              value={state.notes || ''}
               onChange={e => setState({...state, notes: e.target.value})}
               className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all h-24"
             />
@@ -716,18 +716,18 @@ export default function App() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">姓名</label>
-                    <input type="text" value={state.clientHx.name} onChange={e => setState({...state, clientHx: {...state.clientHx, name: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="text" value={state.clientHx.name || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, name: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">性別</label>
-                    <select value={state.clientHx.gender} onChange={e => setState({...state, clientHx: {...state.clientHx, gender: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                    <select value={state.clientHx.gender || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, gender: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
                       <option>男</option>
                       <option>女</option>
                     </select>
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">生日</label>
-                    <input type="date" value={state.clientHx.birthday} onChange={e => setState({...state, clientHx: {...state.clientHx, birthday: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="date" value={state.clientHx.birthday || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, birthday: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                     {state.clientHx.birthday && (
                       <div className="text-[10px] text-slate-400 ml-1">
                         年齡: {calculateAge(state.clientHx.birthday)} 歲
@@ -736,7 +736,7 @@ export default function App() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">工作狀況</label>
-                    <select value={state.clientHx.job} onChange={e => setState({...state, clientHx: {...state.clientHx, job: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                    <select value={state.clientHx.job || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, job: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
                       <option>在職中</option>
                       <option>退休</option>
                     </select>
@@ -768,7 +768,7 @@ export default function App() {
                         <input 
                           type="text" 
                           placeholder="例如：3a期"
-                          value={state.clientHx.medicalHxOther}
+                          value={state.clientHx.medicalHxOther || ''}
                           onChange={e => setState({...state, clientHx: {...state.clientHx, medicalHxOther: e.target.value}})}
                           className="px-2 py-1 text-xs rounded border border-slate-200 w-32"
                         />
@@ -778,18 +778,18 @@ export default function App() {
                   <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">家族史 (Family Hx)</label>
-                      <input type="text" value={state.clientHx.familyHx} onChange={e => setState({...state, clientHx: {...state.clientHx, familyHx: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="例如：高血壓、糖尿病..." />
+                      <input type="text" value={state.clientHx.familyHx || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, familyHx: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="例如：高血壓、糖尿病..." />
                     </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">社會史 (Social Hx)</label>
-                      <input type="text" value={state.clientHx.socialHx} onChange={e => setState({...state, clientHx: {...state.clientHx, socialHx: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="例如：與家人同住、外食為主..." />
+                      <input type="text" value={state.clientHx.socialHx || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, socialHx: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="例如：與家人同住、外食為主..." />
                     </div>
                   </div>
 
                   <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">宗教/飲食禁忌</label>
-                      <input type="text" value={state.clientHx.region} onChange={e => setState({...state, clientHx: {...state.clientHx, region: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                      <input type="text" value={state.clientHx.region || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, region: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700">生活習慣</label>
@@ -811,11 +811,11 @@ export default function App() {
                           <input 
                             type="text" 
                             placeholder="頻率 (次/週)" 
-                            value={state.clientHx.exercise.frequency} 
+                            value={state.clientHx.exercise.frequency || ''} 
                             onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, frequency: e.target.value}}})} 
                             className="w-1/2 px-3 py-2 rounded-lg border border-slate-200" 
                           />
-                          <select value={state.clientHx.exercise.type} onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, type: e.target.value}}})} className="w-1/2 px-3 py-2 rounded-lg border border-slate-200">
+                          <select value={state.clientHx.exercise.type || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, type: e.target.value}}})} className="w-1/2 px-3 py-2 rounded-lg border border-slate-200">
                             <option value="">選擇類型</option>
                             {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
@@ -823,12 +823,12 @@ export default function App() {
                         <input 
                           type="text" 
                           placeholder="具體運動 (例如: 游泳、慢跑...)" 
-                          value={state.clientHx.exercise.name} 
+                          value={state.clientHx.exercise.name || ''} 
                           onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, name: e.target.value}}})} 
                           className="w-full px-3 py-2 rounded-lg border border-slate-200" 
                         />
                         <select 
-                          value={state.clientHx.exercise.activityFactor} 
+                          value={state.clientHx.exercise.activityFactor || ''} 
                           onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, activityFactor: e.target.value as any}}})} 
                           className="w-full px-3 py-2 rounded-lg border border-slate-200"
                         >
@@ -877,7 +877,7 @@ export default function App() {
                       <input 
                         type="text" 
                         placeholder="其他病史..." 
-                        value={state.clientHx.medicalHxOther}
+                        value={state.clientHx.medicalHxOther || ''}
                         onChange={e => setState({...state, clientHx: {...state.clientHx, medicalHxOther: e.target.value}})}
                         className="flex-1 min-w-[200px] px-3 py-1 text-sm rounded border border-slate-200"
                       />
@@ -897,15 +897,15 @@ export default function App() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">身高 (cm)</label>
-                    <input type="number" value={state.anthropometry.height} onChange={e => setState({...state, anthropometry: {...state.anthropometry, height: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="number" value={state.anthropometry.height || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, height: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">體重 (kg)</label>
-                    <input type="number" value={state.anthropometry.weight} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weight: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="number" value={state.anthropometry.weight || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weight: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">BMI</label>
-                    <div className={`px-3 py-2 rounded-lg font-bold border ${parseFloat(state.anthropometry.bmi) >= 24 ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                    <div className={`px-3 py-2 rounded-lg font-bold border ${parseFloat(state.anthropometry.bmi || '0') >= 24 ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
                       {state.anthropometry.bmi || '--'}
                     </div>
                   </div>
@@ -928,19 +928,19 @@ export default function App() {
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">腰圍 (cm)</label>
-                    <input type="number" value={state.anthropometry.waist} onChange={e => setState({...state, anthropometry: {...state.anthropometry, waist: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="number" value={state.anthropometry.waist || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, waist: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">體重變化 (1個月)</label>
-                    <input type="text" value={state.anthropometry.weightChange} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weightChange: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="text" value={state.anthropometry.weightChange || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weightChange: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">體脂率 (%)</label>
-                    <input type="number" step="0.1" value={state.anthropometry.bodyFat} onChange={e => setState({...state, anthropometry: {...state.anthropometry, bodyFat: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                    <input type="number" step="0.1" value={state.anthropometry.bodyFat || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, bodyFat: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">水腫狀況</label>
-                    <select value={state.anthropometry.edema} onChange={e => setState({...state, anthropometry: {...state.anthropometry, edema: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                    <select value={state.anthropometry.edema || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, edema: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
                       <option>無</option>
                       <option>輕微 (+)</option>
                       <option>中度 (++)</option>
@@ -979,7 +979,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500 uppercase">{key}</label>
                         <input 
                           type="text" 
-                          value={val} 
+                          value={val || ''} 
                           onChange={e => setState({...state, biochemistry: {...state.biochemistry, [key]: e.target.value}})}
                           className={`w-full px-2 py-1 text-sm rounded border transition-colors ${
                             isAbnormal 
@@ -1003,7 +1003,7 @@ export default function App() {
                       數據備註與分析
                     </label>
                     <textarea 
-                      value={state.biochemistryNotes} 
+                      value={state.biochemistryNotes || ''} 
                       onChange={e => setState({...state, biochemistryNotes: e.target.value})}
                       placeholder="輸入生化數值相關分析或備註..."
                       rows={3}
@@ -1065,7 +1065,7 @@ export default function App() {
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">目前服用藥物</label>
                     <textarea 
-                      value={state.clinical.medications}
+                      value={state.clinical.medications || ''}
                       onChange={e => setState({...state, clinical: {...state.clinical, medications: e.target.value}})}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 h-20"
                       placeholder="列出目前服用的藥物..."
@@ -1086,7 +1086,7 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">飲食型態</label>
-                      <select value={state.diet.type} onChange={e => setState({...state, diet: {...state.diet, type: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                      <select value={state.diet.type || ''} onChange={e => setState({...state, diet: {...state.diet, type: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
                         <option>口服</option>
                         <option>特殊型態飲食</option>
                         <option>管灌</option>
@@ -1094,7 +1094,7 @@ export default function App() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">飲食傾向</label>
-                      <select value={state.diet.preference} onChange={e => setState({...state, diet: {...state.diet, preference: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                      <select value={state.diet.preference || ''} onChange={e => setState({...state, diet: {...state.diet, preference: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
                         <option>葷</option>
                         <option>素</option>
                         <option>初一.十五素</option>
@@ -1108,7 +1108,7 @@ export default function App() {
                       <label className="text-sm font-medium text-slate-700">目前飲水量 (ml/d)</label>
                       <input 
                         type="number" 
-                        value={state.diet.currentWater} 
+                        value={state.diet.currentWater || ''} 
                         onChange={e => setState({...state, diet: {...state.diet, currentWater: e.target.value}})} 
                         className="w-full px-3 py-2 rounded-lg border border-slate-200" 
                         placeholder="例如：1500"
@@ -1133,7 +1133,7 @@ export default function App() {
                     <label className="text-sm font-medium text-slate-700">非處方中藥或保健品</label>
                     <input 
                       type="text" 
-                      value={state.diet.supplements} 
+                      value={state.diet.supplements || ''} 
                       onChange={e => setState({...state, diet: {...state.diet, supplements: e.target.value}})} 
                       placeholder="例如：魚油、葉黃素、中藥粉..."
                       className="w-full px-3 py-2 rounded-lg border border-slate-200" 
@@ -1280,7 +1280,7 @@ export default function App() {
                             <td className="px-4 py-3 font-medium text-slate-800">{log.name}</td>
                             <td className="px-4 py-3">
                               <select 
-                                value={log.category} 
+                                value={log.category || ''} 
                                 onChange={e => {
                                   const newLogs = state.diet.logs.map(l => l.id === log.id ? {...l, category: e.target.value} : l);
                                   setState({...state, diet: {...state.diet, logs: newLogs}});
@@ -1293,7 +1293,7 @@ export default function App() {
                             <td className="px-4 py-3">
                               <input 
                                 type="number" 
-                                value={log.qty} 
+                                value={log.qty || 0} 
                                 step="0.5"
                                 onChange={e => {
                                   const newLogs = state.diet.logs.map(l => l.id === log.id ? {...l, qty: parseFloat(e.target.value) || 0} : l);
@@ -1375,7 +1375,7 @@ export default function App() {
                       <div className="space-y-1">
                         <label className="text-sm font-medium text-slate-700">1. 診斷領域 (Domain)</label>
                         <select 
-                          value={currentDiagnosis.domain}
+                          value={currentDiagnosis.domain || ''}
                           onChange={e => setCurrentDiagnosis({...currentDiagnosis, domain: e.target.value, problem: '', etiology: '', symptom: ''})}
                           className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
                         >
@@ -1387,7 +1387,7 @@ export default function App() {
                         <label className="text-sm font-medium text-slate-700">2. 問題 Problem (P)</label>
                         <div className="space-y-2">
                           <select 
-                            value={currentDiagnosis.problem}
+                            value={currentDiagnosis.problem || ''}
                             disabled={!currentDiagnosis.domain}
                             onChange={e => setCurrentDiagnosis({...currentDiagnosis, problem: e.target.value, etiology: '', symptom: ''})}
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:bg-slate-50 disabled:text-slate-400"
@@ -1410,7 +1410,7 @@ export default function App() {
                         <label className="text-sm font-medium text-slate-700">3. 原因 Etiology (E)</label>
                         <div className="space-y-2">
                           <select 
-                            value={currentDiagnosis.etiology}
+                            value={currentDiagnosis.etiology || ''}
                             disabled={!currentDiagnosis.problem}
                             onChange={e => setCurrentDiagnosis({...currentDiagnosis, etiology: e.target.value})}
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:bg-slate-50"
@@ -1434,7 +1434,7 @@ export default function App() {
                         <label className="text-sm font-medium text-slate-700">4. 症狀 Symptoms (S)</label>
                         <div className="space-y-2">
                           <select 
-                            value={currentDiagnosis.symptom}
+                            value={currentDiagnosis.symptom || ''}
                             disabled={!currentDiagnosis.problem}
                             onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptom: e.target.value})}
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:bg-slate-50"
@@ -1564,7 +1564,7 @@ export default function App() {
                       <div className="flex gap-2">
                         <input 
                           type="number" 
-                          value={state.diet.targetKcal}
+                          value={state.diet.targetKcal || ''}
                           onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
                           placeholder="例如：1500"
                           className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 outline-none"
@@ -1587,21 +1587,21 @@ export default function App() {
                             <span className="text-[10px] text-slate-400">調整比例(%):</span>
                             <input 
                               type="number" 
-                              value={state.intervention.macroConfig?.carbsPercent} 
+                              value={state.intervention.macroConfig?.carbsPercent || 0} 
                               onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, carbsPercent: parseInt(e.target.value) || 0}}})}
                               className="w-12 px-1 py-0.5 text-[10px] border rounded"
                               placeholder="醣"
                             />
                             <input 
                               type="number" 
-                              value={state.intervention.macroConfig?.proteinPercent} 
+                              value={state.intervention.macroConfig?.proteinPercent || 0} 
                               onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, proteinPercent: parseInt(e.target.value) || 0}}})}
                               className="w-12 px-1 py-0.5 text-[10px] border rounded"
                               placeholder="蛋"
                             />
                             <input 
                               type="number" 
-                              value={state.intervention.macroConfig?.fatPercent} 
+                              value={state.intervention.macroConfig?.fatPercent || 0} 
                               onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, fatPercent: parseInt(e.target.value) || 0}}})}
                               className="w-12 px-1 py-0.5 text-[10px] border rounded"
                               placeholder="脂"
@@ -1825,7 +1825,7 @@ export default function App() {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700">是否需轉介其他專業人員</label>
                       <textarea 
-                        value={state.intervention.referral}
+                        value={state.intervention.referral || ''}
                         onChange={e => setState({...state, intervention: {...state.intervention, referral: e.target.value}})}
                         placeholder="例如：轉介復健科評估吞嚥功能..."
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 h-24"
@@ -1861,7 +1861,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">日期</label>
                         <input 
                           type="date" 
-                          value={currentMonitoring.date}
+                          value={currentMonitoring.date || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, date: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
@@ -1871,7 +1871,7 @@ export default function App() {
                         <input 
                           type="number" 
                           step="0.1"
-                          value={currentMonitoring.weight}
+                          value={currentMonitoring.weight || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, weight: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
@@ -1881,7 +1881,7 @@ export default function App() {
                         <input 
                           type="number" 
                           step="0.1"
-                          value={currentMonitoring.hba1c}
+                          value={currentMonitoring.hba1c || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, hba1c: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
@@ -1891,7 +1891,7 @@ export default function App() {
                         <input 
                           type="number" 
                           step="0.1"
-                          value={currentMonitoring.egfr}
+                          value={currentMonitoring.egfr || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, egfr: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
@@ -1900,7 +1900,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">TG (mg/dL)</label>
                         <input 
                           type="number" 
-                          value={currentMonitoring.tg}
+                          value={currentMonitoring.tg || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, tg: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
@@ -1909,7 +1909,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">LDL (mg/dL)</label>
                         <input 
                           type="number" 
-                          value={currentMonitoring.ldl}
+                          value={currentMonitoring.ldl || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, ldl: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
@@ -1918,7 +1918,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">其他 (自由填寫)</label>
                         <input 
                           type="text" 
-                          value={currentMonitoring.other}
+                          value={currentMonitoring.other || ''}
                           onChange={e => setCurrentMonitoring({...currentMonitoring, other: e.target.value})}
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                           placeholder="例如：血壓、尿酸、體脂率等..."
@@ -2050,7 +2050,7 @@ export default function App() {
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input 
                           type="date" 
-                          value={state.monitoring.nextDate}
+                          value={state.monitoring.nextDate || ''}
                           onChange={e => setState({...state, monitoring: {...state.monitoring, nextDate: e.target.value}})}
                           className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200"
                         />
@@ -2060,7 +2060,7 @@ export default function App() {
                       <label className="text-sm font-medium text-slate-700">監測指標與計畫</label>
                       <textarea 
                         rows={4}
-                        value={state.monitoring.plan}
+                        value={state.monitoring.plan || ''}
                         onChange={e => setState({...state, monitoring: {...state.monitoring, plan: e.target.value}})}
                         placeholder="紀錄預計追蹤的生化數值、體重變化或飲食遵從性..."
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all"
@@ -2113,7 +2113,7 @@ export default function App() {
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">諮詢類型</label>
                         <select 
-                          value={state.counselingType} 
+                          value={state.counselingType || ''} 
                           onChange={e => setState({...state, counselingType: e.target.value})}
                           className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
                         >
@@ -2264,7 +2264,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">諮詢日期</label>
                         <input 
                           type="date" 
-                          value={state.consultDate} 
+                          value={state.consultDate || ''} 
                           onChange={e => setState({...state, consultDate: e.target.value})}
                           className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
                         />
@@ -2273,7 +2273,7 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">營養師</label>
                         <input 
                           type="text" 
-                          value={state.dietitian} 
+                          value={state.dietitian || ''} 
                           onChange={e => setState({...state, dietitian: e.target.value})}
                           className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
                         />
@@ -2437,7 +2437,7 @@ export default function App() {
                         <div className="text-xs text-blue-600 font-bold uppercase mb-1">熱量 (kcal/天)</div>
                         <input 
                           type="number" 
-                          value={state.diet.targetKcal} 
+                          value={state.diet.targetKcal || ''} 
                           onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
                           className="text-2xl font-bold text-blue-700 bg-transparent border-none focus:ring-0 w-full"
                         />
@@ -2845,7 +2845,7 @@ export default function App() {
                     <h3 className="text-md font-bold text-blue-700 border-b pb-2">備註與注意事項</h3>
                     <textarea 
                       rows={4}
-                      value={state.reminderNotes}
+                      value={state.reminderNotes || ''}
                       onChange={e => setState({...state, reminderNotes: e.target.value})}
                       placeholder="輸入備註或注意事項..."
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
