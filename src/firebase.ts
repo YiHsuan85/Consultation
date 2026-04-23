@@ -27,7 +27,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app, "Consultation");
-export const db = getFirestore(app);
+const db = getFirestore(app, "ai-studio-1f35997a-3f5f-44c0-b4bc-cf324207c935");
 const googleProvider = new GoogleAuthProvider ();
 
 
