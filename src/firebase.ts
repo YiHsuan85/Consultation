@@ -13,6 +13,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+console.log("Firebase Key Loaded:", firebaseConfig.apiKey ? "Exist" : "Empty");
+console.log("Value starts with:", String(firebaseConfig.apiKey).substring(0, 5));
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 const db = getFirestore(app, "ai-studio-1f35997a-3f5f-44c0-b4bc-cf324207c935");
