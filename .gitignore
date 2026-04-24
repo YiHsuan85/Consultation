@@ -1,43 +1,3 @@
-# 設定檔與秘密（最重要！）
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# 依賴套件（這非常大，不應該上傳，GitHub Actions 會自己 npm install）
-node_modules/
-dist/
-dist-ssr/
-*.local
-
-# 日誌檔案
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# 編輯器暫存檔 (VS Code, JetBrains)
-.vscode/*
-!.vscode/extensions.json
-.idea/
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# 測試結果
-/coverage
-/test-results
-
-# TypeScript 編譯暫存
-*.tsbuildinfo
-
-
-
-
 node_modules/
 build/
 dist/
@@ -46,4 +6,3 @@ coverage/
 *.log
 .env*
 !.env.example
-
