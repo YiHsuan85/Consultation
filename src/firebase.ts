@@ -1,119 +1,38 @@
-export interface ClientHistory {
-  name: string;
-  gender: 'male' | 'female' | '';
-  birthday: string;
-  workStatus: string;
-  medicalHistory: string[];
-  kidneyStage: string;
-  familyHistory: string;
-  socialHistory: string;
-  mealPreparer: string;
-  region: string;
-  smoking: string;
-  alcohol: string;
-  exerciseFrequency: string;
-  exerciseType: string;
-  activityFactor: 'none' | 'light' | 'moderate' | 'heavy' | '';
-}
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getFirestore, collection, addDoc, updateDoc, doc, query, where, onSnapshot, orderBy, Timestamp, deleteDoc, getDocFromServer } from 'firebase/firestore';
+import firebaseConfig from '../firebase-applet-config.json';
 
-export interface Anthropometry {
-  height: number;
-  weight: number;
-  standardWeight: number;
-  adjustedWeight: number;
-  weightChange: string;
-  bmi: number;
-  bodyFat: number;
-  edema: boolean;
-}
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app, "ai-studio-1f35997a-3f5f-44c0-b4bc-cf324207c935");
+export const googleProvider = new GoogleAuthProvider();
 
-export interface Biochemistry {
-  bp: string;
-  fpg: string;
-  hba1c: string;
-  bun: string;
-  cr: string;
-  egfr: string;
-  upcr: string;
-  uricAcid: string;
-  na: string;
-  k: string;
-  p: string;
-  tc: string;
-  hdl: string;
-  ldl: string;
-  tg: string;
-  ast: string;
-  alt: string;
-  alb: string;
+// Test connection
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.error("Please check your Firebase configuration.");
+    }
+  }
 }
+testConnection();
 
-export interface Clinical {
-  currentHistory: string[];
-  otherHistory: string;
-  medications: string;
-}
-
-export interface DietHistory {
-  pattern: 'oral' | 'special' | 'tube' | '';
-  mealFreq: Record<string, boolean>;
-  eatingOutFreq: Record<string, boolean>;
-  preference: string;
-  appetiteChange: string;
-  supplements: string;
-  dietaryHistory: string;
-}
-
-export interface FoodEntry {
-  id: string;
-  name: string;
-  category: string;
-  portions: number;
-  carbs: number;
-  protein: number;
-  fat: number;
-  na: number;
-  k: number;
-  p: number;
-  calories: number;
-  meal: 'breakfast' | 'morningSnack' | 'lunch' | 'afternoonSnack' | 'dinner' | 'eveningSnack';
-}
-
-export interface PES {
-  id: string;
-  domain: string;
-  problem: string;
-  etiology: string;
-  symptoms: string;
-}
-
-export interface MonitoringRecord {
-  date: string;
-  weight: number;
-  hba1c: number;
-  egfr: number;
-  tg: number;
-  ldl: number;
-}
-
-export interface NutritionRecord {
-  id: string;
-  date: string;
-  goal: string;
-  notes: string;
-  assessment: {
-    clientHx: ClientHistory;
-    anthropometry: Anthropometry;
-    biochemistry: Biochemistry;
-    clinical: Clinical;
-    diet: DietHistory;
-    foodEntries: FoodEntry[];
-    waterIntake: number;
-  };
-  diagnosis: PES[];
-  intervention: {
-    plan: string;
-    education: string[];
-  };
-  monitoring: MonitoringRecord[];
-}
+export { 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged, 
+  collection, 
+  addDoc, 
+  updateDoc, 
+  doc, 
+  query, 
+  where, 
+  onSnapshot, 
+  orderBy, 
+  Timestamp,
+  deleteDoc
+};
+export type { User };
