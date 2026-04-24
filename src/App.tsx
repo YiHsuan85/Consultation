@@ -17,7 +17,8 @@ import {
   LogOut,
   LogIn,
   History,
-  X
+  X,
+  Pill
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord } from './types';
@@ -63,6 +64,7 @@ import {
   NUTRITION_EDUCATION_CONTENT,
   BIO_RANGES
 } from './constants';
+import { MEDICATIONS } from './constants/medications';
 
 const INITIAL_STATE: AppState = {
   consultDate: new Date().toISOString().split('T')[0],
@@ -90,7 +92,8 @@ const INITIAL_STATE: AppState = {
     ibw: '',
     abw: '',
     bodyFat: '',
-    edema: '無'
+    edema: '無',
+    notes: ''
   },
   biochemistry: {
     BP: '', AC: '', PC: '', FPG: '', HbA1c: '', BUN: '', Cr: '', eGFR: '', UPCR: '', 
@@ -98,6 +101,7 @@ const INITIAL_STATE: AppState = {
     TG: '', AST: '', ALT: '', Alb: ''
   },
   biochemistryNotes: '',
+  biochemistryDate: new Date().toISOString().split('T')[0],
   clinical: {
     history: [],
     medications: ''
@@ -170,8 +174,9 @@ const GuidelineCheckbox = ({ label, id, state, setState }: { label: string, id: 
 
 export default function App() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
-  const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder'>('assessment');
+  const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications'>('assessment');
   const [searchQuery, setSearchQuery] = useState('');
+  const [medicationSearchQuery, setMedicationSearchQuery] = useState('');
   const [selectedFoodCategory, setSelectedFoodCategory] = useState<string>('');
   const [selectedFoodItem, setSelectedFoodItem] = useState<string>('');
   const [selectedMeal, setSelectedMeal] = useState('早餐');
@@ -183,6 +188,9 @@ export default function App() {
     egfr: '',
     tg: '',
     ldl: '',
+    tc: '',
+    uricAcid: '',
+    bp: '',
     other: ''
   });
 
@@ -572,6 +580,7 @@ export default function App() {
                 { id: 'diagnosis', label: '營養診斷', icon: Stethoscope },
                 { id: 'intervention', label: '營養介入', icon: Utensils },
                 { id: 'monitoring', label: '營養監測', icon: Activity },
+                { id: 'medications', label: '藥物', icon: Pill },
                 { id: 'reminder', label: '諮詢小提醒', icon: Bell },
               ].map((tab) => (
                 <button
@@ -947,16 +956,35 @@ export default function App() {
                       <option>嚴重 (+++)</option>
                     </select>
                   </div>
+                  <div className="space-y-1 md:col-span-2">
+                    <label className="text-sm font-medium text-slate-700">備註 (Notes)</label>
+                    <input 
+                      type="text" 
+                      value={state.anthropometry.notes || ''} 
+                      onChange={e => setState({...state, anthropometry: {...state.anthropometry, notes: e.target.value}})} 
+                      placeholder="自由填寫備註..."
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200" 
+                    />
+                  </div>
                 </div>
               </section>
 
               {/* Biochemistry */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Activity className="w-5 h-5 text-blue-600" />
                     生化數值 (Biochemistry)
                   </h2>
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-slate-600">報告日期</label>
+                    <input 
+                      type="date"
+                      value={state.biochemistryDate || ''}
+                      onChange={e => setState({...state, biochemistryDate: e.target.value})}
+                      className="px-3 py-1.5 text-sm rounded-lg border border-slate-200"
+                    />
+                  </div>
                 </div>
                 <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 border-b border-slate-100">
                   {Object.keys(state.biochemistry).map(key => {
@@ -1856,7 +1884,7 @@ export default function App() {
                   {/* Monitoring Input Form */}
                   <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-6">
                     <h3 className="font-bold text-slate-700">新增監測紀錄</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-slate-500">日期</label>
                         <input 
@@ -1914,7 +1942,36 @@ export default function App() {
                           className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
                         />
                       </div>
-                      <div className="space-y-1 col-span-2 md:col-span-3 lg:col-span-6">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">TC (mg/dL)</label>
+                        <input 
+                          type="number" 
+                          value={currentMonitoring.tc || ''}
+                          onChange={e => setCurrentMonitoring({...currentMonitoring, tc: e.target.value})}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">Uric Acid</label>
+                        <input 
+                          type="number" 
+                          step="0.1"
+                          value={currentMonitoring.uricAcid || ''}
+                          onChange={e => setCurrentMonitoring({...currentMonitoring, uricAcid: e.target.value})}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-slate-500">血壓 (BP)</label>
+                        <input 
+                          type="text" 
+                          value={currentMonitoring.bp || ''}
+                          onChange={e => setCurrentMonitoring({...currentMonitoring, bp: e.target.value})}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
+                          placeholder="ex: 120/80"
+                        />
+                      </div>
+                      <div className="space-y-1 col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-5">
                         <label className="text-xs font-medium text-slate-500">其他 (自由填寫)</label>
                         <input 
                           type="text" 
@@ -1938,7 +1995,7 @@ export default function App() {
                             });
                             setCurrentMonitoring({
                               date: new Date().toISOString().split('T')[0],
-                              weight: '', hba1c: '', egfr: '', tg: '', ldl: '', other: ''
+                              weight: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: ''
                             });
                           }
                         }}
@@ -1962,6 +2019,9 @@ export default function App() {
                             <th className="px-4 py-3">eGFR</th>
                             <th className="px-4 py-3">TG (mg/dL)</th>
                             <th className="px-4 py-3">LDL (mg/dL)</th>
+                            <th className="px-4 py-3">TC (mg/dL)</th>
+                            <th className="px-4 py-3">Uric Acid</th>
+                            <th className="px-4 py-3">血壓</th>
                             <th className="px-4 py-3">其他</th>
                             <th className="px-4 py-3 text-center">操作</th>
                           </tr>
@@ -1969,7 +2029,7 @@ export default function App() {
                         <tbody className="divide-y divide-slate-100">
                           {state.monitoring.history.length === 0 ? (
                             <tr>
-                              <td colSpan={8} className="px-4 py-8 text-center text-slate-400">尚無歷史紀錄</td>
+                              <td colSpan={11} className="px-4 py-8 text-center text-slate-400">尚無歷史紀錄</td>
                             </tr>
                           ) : (
                             state.monitoring.history.map((record, idx) => (
@@ -1980,6 +2040,9 @@ export default function App() {
                                 <td className="px-4 py-3">{record.egfr || '--'}</td>
                                 <td className="px-4 py-3">{record.tg || '--'}</td>
                                 <td className="px-4 py-3">{record.ldl || '--'}</td>
+                                <td className="px-4 py-3">{record.tc || '--'}</td>
+                                <td className="px-4 py-3">{record.uricAcid || '--'}</td>
+                                <td className="px-4 py-3">{record.bp || '--'}</td>
                                 <td className="px-4 py-3 max-w-xs truncate" title={record.other}>{record.other || '--'}</td>
                                 <td className="px-4 py-3 text-center">
                                   <button 
@@ -2901,6 +2964,85 @@ export default function App() {
 
                   {/* Guideline Specifics */}
                   {renderGuidelineSpecifics()}
+                </div>
+              </section>
+            </motion.div>
+          )}
+
+          {activeTab === 'medications' && (
+            <motion.div
+              key="medications"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <Pill className="w-5 h-5 text-indigo-600" />
+                    藥物查詢與衛教 (Medications)
+                  </h2>
+                  <div className="relative max-w-xs w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <input
+                      type="text"
+                      className="block w-full pl-10 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm"
+                      placeholder="搜尋藥品名稱或適應症..."
+                      value={medicationSearchQuery}
+                      onChange={(e) => setMedicationSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="p-6 bg-slate-50/50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {MEDICATIONS.filter(med => 
+                      med.name.toLowerCase().includes(medicationSearchQuery.toLowerCase()) || 
+                      (med.genericName && med.genericName.toLowerCase().includes(medicationSearchQuery.toLowerCase())) ||
+                      med.indication.toLowerCase().includes(medicationSearchQuery.toLowerCase())
+                    ).map((med, idx) => (
+                      <div key={idx} className="bg-white border text-sm border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        <div className="p-4 bg-indigo-50/50 border-b border-slate-100">
+                          <h3 className="font-bold text-indigo-900 text-base">{med.name}</h3>
+                          {med.genericName && <p className="text-xs text-indigo-600/70 mt-1">{med.genericName}</p>}
+                        </div>
+                        <div className="p-4 space-y-4 flex-1">
+                          <div>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">適應症</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">{med.indication}</span>
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">用法與劑量</span>
+                            <p className="text-slate-700">{med.dosage}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">注意事項</span>
+                            <ul className="list-disc list-outside ml-4 text-amber-700 space-y-1">
+                              {med.precautions.map((p, i) => <li key={i}>{p}</li>)}
+                            </ul>
+                          </div>
+                          <div className="pt-2 border-t border-slate-100">
+                            <span className="text-xs font-bold text-rose-500 uppercase tracking-wider block mb-1">營養交互作用</span>
+                            <ul className="list-disc list-outside ml-4 text-rose-700 space-y-1">
+                              {med.nutritionInteraction.map((p, i) => <li key={i}>{p}</li>)}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {MEDICATIONS.filter(med => 
+                    med.name.toLowerCase().includes(medicationSearchQuery.toLowerCase()) || 
+                    (med.genericName && med.genericName.toLowerCase().includes(medicationSearchQuery.toLowerCase())) ||
+                    med.indication.toLowerCase().includes(medicationSearchQuery.toLowerCase())
+                  ).length === 0 && (
+                    <div className="text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
+                      <Pill className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                      <p>找不到符合「{medicationSearchQuery}」的藥物</p>
+                    </div>
+                  )}
                 </div>
               </section>
             </motion.div>
