@@ -70,8 +70,6 @@ export interface AppState {
     birthday: string;
     job: string;
     jobDescription: string;
-    medicalHx: string[];
-    medicalHxOther: string;
     familyHx: string;
     socialHx: string;
     region: string;
@@ -104,8 +102,10 @@ export interface AppState {
   biochemistryNotes: string;
   biochemistryDate?: string;
   clinical: {
-    history: string[];
-    historyOther?: string;
+    giStatus: string[];
+    giStatusOther?: string;
+    medicalHx: string[];
+    medicalHxOther: string;
     medications: string;
   };
   diet: {
@@ -117,6 +117,8 @@ export interface AppState {
     targetWater: string;
     currentWater: string;
     supplements: string;
+    allergies: string[];
+    allergiesOther: string;
     logs: (FoodItem & { id: string; qty: number; meal: string })[];
   };
   diagnoses: PES[];
