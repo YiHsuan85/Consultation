@@ -83,7 +83,7 @@ export const generateWordDoc = async (state: AppState) => {
             }),
             new TableRow({
               children: [
-                createHeaderCell("既往病史"), createValueCell(state.clientHx.medicalHx.join(", ") + (state.clientHx.medicalHxOther ? ` (${state.clientHx.medicalHxOther})` : "")),
+                createHeaderCell("既往病史"), createValueCell(state.clinical.medicalHx.join(", ") + (state.clinical.medicalHxOther ? ` (${state.clinical.medicalHxOther})` : "")),
                 createHeaderCell("家族史"), createValueCell(state.clientHx.familyHx),
               ],
             }),
@@ -156,7 +156,12 @@ export const generateWordDoc = async (state: AppState) => {
         new Paragraph({ text: "4. 飲食史 (Diet Hx)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `飲食型態: ${state.diet.type} / 傾向: ${state.diet.preference}` }),
         new Paragraph({ text: `飲水量: ${state.diet.currentWater} ml/d` }),
+        new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || "無"}${state.diet.allergies.includes("其他") ? ` (${state.diet.allergiesOther})` : ""}` }),
         new Paragraph({ text: `保健品: ${state.diet.supplements || "無"}` }),
+
+        new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
+        new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatus.includes("其他") ? ` (${state.clinical.giStatusOther})` : ""}` }),
+        new Paragraph({ text: `目前服用藥物: ${state.clinical.medications || "無"}` }),
 
         // 2. Diagnosis
         new Paragraph({
