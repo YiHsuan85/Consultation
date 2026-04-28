@@ -121,6 +121,7 @@ const INITIAL_STATE: AppState = {
     allergies: [],
     allergiesOther: '',
     meals: [],
+    mealsOther: '',
     logs: []
   },
   diagnoses: [],
@@ -1201,7 +1202,7 @@ export default function App() {
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-slate-700">飲食過敏</label>
                     <div className="flex flex-wrap gap-4">
-                      {['花生', '蝦', '蟹', '牛奶', '其他'].map(item => (
+                      {['花生', '蝦', '蟹', '牛奶'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -1214,28 +1215,26 @@ export default function App() {
                             }}
                             className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
                           />
-                          <span className="text-sm text-slate-600">{item}</span>
+                          <span className="text-sm text-slate-600 font-medium">{item}</span>
                         </label>
                       ))}
-                    </div>
-                    {state.diet.allergies?.includes('其他') && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-slate-500">其他過敏說明:</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                        <span className="text-xs text-slate-400">其他:</span>
                         <input 
                           type="text" 
-                          placeholder="請輸入其他過敏項目..."
+                          placeholder="其他過敏項目..."
                           value={state.diet.allergiesOther || ''}
                           onChange={e => setState({...state, diet: {...state.diet, allergiesOther: e.target.value}})}
-                          className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
+                          className="w-full px-3 py-1 text-sm rounded border border-slate-200"
                         />
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-slate-700">餐次</label>
                     <div className="flex flex-wrap gap-4">
-                      {['早餐', '早點', '午餐', '午點', '晚餐', '晚點'].map(item => (
+                      {['早餐', '早點', '午餐', '午點', '晚餐', '晚點', '大小餐', '其他'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -1248,10 +1247,22 @@ export default function App() {
                             }}
                             className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
                           />
-                          <span className="text-sm text-slate-600">{item}</span>
+                          <span className="text-sm text-slate-600 font-medium">{item}</span>
                         </label>
                       ))}
                     </div>
+                    {state.diet.meals?.includes('其他') && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-slate-500">其他餐次說明:</span>
+                        <input 
+                          type="text" 
+                          placeholder="請輸入其他餐次..."
+                          value={state.diet.mealsOther || ''}
+                          onChange={e => setState({...state, diet: {...state.diet, mealsOther: e.target.value}})}
+                          className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* 便當油脂估計備註 */}
