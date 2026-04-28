@@ -76,8 +76,6 @@ const INITIAL_STATE: AppState = {
     birthday: '',
     job: '在職中',
     jobDescription: '',
-    medicalHx: [],
-    medicalHxOther: '',
     familyHx: '',
     socialHx: '',
     region: '',
@@ -104,8 +102,10 @@ const INITIAL_STATE: AppState = {
   biochemistryNotes: '',
   biochemistryDate: new Date().toISOString().split('T')[0],
   clinical: {
-    history: [],
-    historyOther: '',
+    giStatus: [],
+    giStatusOther: '',
+    medicalHx: [],
+    medicalHxOther: '',
     medications: ''
   },
   diet: {
@@ -117,6 +117,8 @@ const INITIAL_STATE: AppState = {
     targetWater: '',
     currentWater: '',
     supplements: '',
+    allergies: [],
+    allergiesOther: '',
     logs: []
   },
   diagnoses: [],
@@ -763,39 +765,6 @@ export default function App() {
                     />
                   </div>
 
-                  <div className="md:col-span-4 space-y-3">
-                    <label className="text-sm font-medium text-slate-700">Medical Hx / Surgical Hx</label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {['糖尿病', '腎臟病', '心血管', '高血壓', '痛風', '腎結石', '高血脂'].map(hx => (
-                        <label key={hx} className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={state.clientHx.medicalHx.includes(hx)}
-                            onChange={e => {
-                              const newHx = e.target.checked 
-                                ? [...state.clientHx.medicalHx, hx]
-                                : state.clientHx.medicalHx.filter(h => h !== hx);
-                              setState({...state, clientHx: {...state.clientHx, medicalHx: newHx}});
-                            }}
-                            className="w-4 h-4 text-blue-600 rounded border-slate-300" 
-                          />
-                          <span className="text-sm text-slate-600">{hx}</span>
-                        </label>
-                      ))}
-                    </div>
-                    {state.clientHx.medicalHx.includes('腎臟病') && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-slate-500">腎臟病期數:</span>
-                        <input 
-                          type="text" 
-                          placeholder="例如：3a期"
-                          value={state.clientHx.medicalHxOther || ''}
-                          onChange={e => setState({...state, clientHx: {...state.clientHx, medicalHxOther: e.target.value}})}
-                          className="px-2 py-1 text-xs rounded border border-slate-200 w-32"
-                        />
-                      </div>
-                    )}
-                  </div>
                   <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">家族史 (Family Hx)</label>
@@ -860,50 +829,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="md:col-span-4 space-y-2">
-                    <label className="text-sm font-medium text-slate-700">既往病史 (Medical Hx / Surgical Hx)</label>
-                    <div className="flex flex-wrap gap-4">
-                      {['糖尿病', '腎臟病', '心血管', '高血壓', '痛風', '腎結石', 'GORD', '高血脂'].map(item => (
-                        <div key={item} className="flex items-center gap-4">
-                          <label className="flex items-center gap-2 cursor-pointer group">
-                            <input 
-                              type="checkbox" 
-                              checked={state.clientHx.medicalHx.includes(item)}
-                              onChange={e => {
-                                const newHx = e.target.checked 
-                                  ? [...state.clientHx.medicalHx, item]
-                                  : state.clientHx.medicalHx.filter(h => h !== item);
-                                setState({...state, clientHx: {...state.clientHx, medicalHx: newHx}});
-                              }}
-                              className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
-                            />
-                            <span className="text-sm text-slate-600 group-hover:text-slate-900">{item}</span>
-                          </label>
-                          {item === '腎臟病' && state.clientHx.medicalHx.includes('腎臟病') && (
-                            <select 
-                              value={state.clientHx.medicalHxOther.includes('期') ? state.clientHx.medicalHxOther.split('期')[0] : ''}
-                              onChange={e => setState({...state, clientHx: {...state.clientHx, medicalHxOther: e.target.value + '期'}})}
-                              className="px-2 py-1 text-xs rounded border border-slate-200"
-                            >
-                              <option value="">選擇期數</option>
-                              <option value="第一">第一期</option>
-                              <option value="第二">第二期</option>
-                              <option value="第三">第三期</option>
-                              <option value="第四">第四期</option>
-                              <option value="第五">第五期</option>
-                            </select>
-                          )}
-                        </div>
-                      ))}
-                      <input 
-                        type="text" 
-                        placeholder="其他病史..." 
-                        value={state.clientHx.medicalHxOther || ''}
-                        onChange={e => setState({...state, clientHx: {...state.clientHx, medicalHxOther: e.target.value}})}
-                        className="flex-1 min-w-[200px] px-3 py-1 text-sm rounded border border-slate-200"
-                      />
-                    </div>
-                  </div>
                 </div>
               </section>
 
@@ -1109,34 +1034,85 @@ export default function App() {
                   </h2>
                 </div>
                 <div className="p-6 space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">目前病史 / 症狀</label>
+                  <div className="space-y-4">
+                    <label className="text-sm font-medium text-slate-700">既往病史 (Medical Hx / Surgical Hx)</label>
                     <div className="flex flex-wrap gap-4">
-                      {['無', '吞嚥困難', '厭食', '噁心', '嘔吐', '腹瀉', '便秘', '高血壓', '其他'].map(item => (
+                      {['糖尿病', '腎臟病', '心血管', '高血壓', '痛風', '腎結石', 'GORD', '高血脂'].map(item => (
+                        <div key={item} className="flex items-center gap-4">
+                          <label className="flex items-center gap-2 cursor-pointer group">
+                            <input 
+                              type="checkbox" 
+                              checked={state.clinical.medicalHx.includes(item)}
+                              onChange={e => {
+                                const newHx = e.target.checked 
+                                  ? [...state.clinical.medicalHx, item]
+                                  : state.clinical.medicalHx.filter(h => h !== item);
+                                setState({...state, clinical: {...state.clinical, medicalHx: newHx}});
+                              }}
+                              className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
+                            />
+                            <span className="text-sm text-slate-600 group-hover:text-slate-900 font-medium">{item}</span>
+                          </label>
+                          {item === '腎臟病' && state.clinical.medicalHx.includes('腎臟病') && (
+                            <select 
+                              value={state.clinical.medicalHxOther.includes('期') ? state.clinical.medicalHxOther.split('期')[0] : ''}
+                              onChange={e => setState({...state, clinical: {...state.clinical, medicalHxOther: e.target.value + '期'}})}
+                              className="px-2 py-1 text-xs rounded border border-slate-200"
+                            >
+                              <option value="">選擇期數</option>
+                              <option value="第一">第一期</option>
+                              <option value="第二">第二期</option>
+                              <option value="第三">第三期</option>
+                              <option value="第四">第四期</option>
+                              <option value="第五">第五期</option>
+                            </select>
+                          )}
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                        <span className="text-xs text-slate-400">其他:</span>
+                        <input 
+                          type="text" 
+                          placeholder="其他病史內容..." 
+                          value={state.clinical.medicalHxOther || ''}
+                          onChange={e => {
+                            // If it's a manual entry, we don't necessarily update the medicalHx array unless needed
+                            setState({...state, clinical: {...state.clinical, medicalHxOther: e.target.value}});
+                          }}
+                          className="w-full px-3 py-1 text-sm rounded border border-slate-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 space-y-3">
+                    <label className="text-sm font-medium text-slate-700 font-bold">腸胃狀況</label>
+                    <div className="flex flex-wrap gap-4">
+                      {['無', '吞嚥困難', '厭食', '噁心', '嘔吐', '腹瀉', '便秘', '其他'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
-                            checked={state.clinical.history.includes(item)}
+                            checked={state.clinical.giStatus.includes(item)}
                             onChange={e => {
-                              const newHx = e.target.checked 
-                                ? [...state.clinical.history, item]
-                                : state.clinical.history.filter(h => h !== item);
-                              setState({...state, clinical: {...state.clinical, history: newHx}});
+                              const newStatus = e.target.checked 
+                                ? [...state.clinical.giStatus, item]
+                                : state.clinical.giStatus.filter(h => h !== item);
+                              setState({...state, clinical: {...state.clinical, giStatus: newStatus}});
                             }}
                             className="w-4 h-4 text-blue-600 rounded" 
                           />
-                          <span className="text-sm text-slate-600">{item}</span>
+                          <span className="text-sm text-slate-600 font-medium">{item}</span>
                         </label>
                       ))}
                     </div>
-                    {state.clinical.history.includes('其他') && (
+                    {state.clinical.giStatus.includes('其他') && (
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-slate-500">其他症狀說明:</span>
+                        <span className="text-xs text-slate-500">其他狀況說明:</span>
                         <input 
                           type="text" 
-                          placeholder="請輸入其他病史或症狀..."
-                          value={state.clinical.historyOther || ''}
-                          onChange={e => setState({...state, clinical: {...state.clinical, historyOther: e.target.value}})}
+                          placeholder="請輸入其他腸胃狀況..."
+                          value={state.clinical.giStatusOther || ''}
+                          onChange={e => setState({...state, clinical: {...state.clinical, giStatusOther: e.target.value}})}
                           className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
                         />
                       </div>
@@ -1218,6 +1194,40 @@ export default function App() {
                       placeholder="例如：魚油、葉黃素、中藥粉..."
                       className="w-full px-3 py-2 rounded-lg border border-slate-200" 
                     />
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700">飲食過敏</label>
+                    <div className="flex flex-wrap gap-4">
+                      {['花生', '蝦', '蟹', '牛奶', '其他'].map(item => (
+                        <label key={item} className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={state.diet.allergies?.includes(item)} 
+                            onChange={e => {
+                              const newAllergies = e.target.checked 
+                                ? [...(state.diet.allergies || []), item]
+                                : (state.diet.allergies || []).filter(h => h !== item);
+                              setState({...state, diet: {...state.diet, allergies: newAllergies}});
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
+                          />
+                          <span className="text-sm text-slate-600">{item}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {state.diet.allergies?.includes('其他') && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-slate-500">其他過敏說明:</span>
+                        <input 
+                          type="text" 
+                          placeholder="請輸入其他過敏項目..."
+                          value={state.diet.allergiesOther || ''}
+                          onChange={e => setState({...state, diet: {...state.diet, allergiesOther: e.target.value}})}
+                          className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="relative">
