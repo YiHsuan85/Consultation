@@ -119,6 +119,7 @@ const INITIAL_STATE: AppState = {
     supplements: '',
     allergies: [],
     allergiesOther: '',
+    meals: [],
     logs: []
   },
   diagnoses: [],
@@ -1228,6 +1229,28 @@ export default function App() {
                         />
                       </div>
                     )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700">餐次</label>
+                    <div className="flex flex-wrap gap-4">
+                      {['早餐', '早點', '午餐', '午點', '晚餐', '晚點'].map(item => (
+                        <label key={item} className="flex items-center gap-2 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={state.diet.meals?.includes(item)} 
+                            onChange={e => {
+                              const newMeals = e.target.checked 
+                                ? [...(state.diet.meals || []), item]
+                                : (state.diet.meals || []).filter(m => m !== item);
+                              setState({...state, diet: {...state.diet, meals: newMeals}});
+                            }}
+                            className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
+                          />
+                          <span className="text-sm text-slate-600">{item}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="relative">
