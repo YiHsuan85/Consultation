@@ -155,9 +155,9 @@ export const generateWordDoc = async (state: AppState) => {
 
         new Paragraph({ text: "4. 飲食史 (Diet Hx)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `飲食型態: ${state.diet.type} / 傾向: ${state.diet.preference}` }),
-        new Paragraph({ text: `餐次: ${state.diet.meals.join(", ") || "未填寫"}` }),
+        new Paragraph({ text: `餐次: ${state.diet.meals.join(", ") || "未填寫"}${state.diet.meals.includes("其他") ? ` (${state.diet.mealsOther})` : ""}` }),
         new Paragraph({ text: `飲水量: ${state.diet.currentWater} ml/d` }),
-        new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || "無"}${state.diet.allergies.includes("其他") ? ` (${state.diet.allergiesOther})` : ""}` }),
+        new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || (state.diet.allergiesOther ? "" : "無")}${state.diet.allergiesOther ? (state.diet.allergies.length > 0 ? "、" : "") + state.diet.allergiesOther : ""}` }),
         new Paragraph({ text: `保健品: ${state.diet.supplements || "無"}` }),
 
         new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
