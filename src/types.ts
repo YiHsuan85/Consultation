@@ -120,6 +120,7 @@ export interface AppState {
     allergies: string[];
     allergiesOther: string;
     meals: string[];
+    mealsOther?: string;
     logs: (FoodItem & { id: string; qty: number; meal: string })[];
   };
   diagnoses: PES[];
