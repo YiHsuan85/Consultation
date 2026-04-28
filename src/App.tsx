@@ -75,6 +75,7 @@ const INITIAL_STATE: AppState = {
     gender: '男',
     birthday: '',
     job: '在職中',
+    jobDescription: '',
     medicalHx: [],
     medicalHxOther: '',
     familyHx: '',
@@ -104,6 +105,7 @@ const INITIAL_STATE: AppState = {
   biochemistryDate: new Date().toISOString().split('T')[0],
   clinical: {
     history: [],
+    historyOther: '',
     medications: ''
   },
   diet: {
@@ -750,11 +752,21 @@ export default function App() {
                       <option>退休</option>
                     </select>
                   </div>
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">工作說明</label>
+                    <input 
+                      type="text" 
+                      value={state.clientHx.jobDescription || ''} 
+                      onChange={e => setState({...state, clientHx: {...state.clientHx, jobDescription: e.target.value}})} 
+                      placeholder="簡述工作內容..."
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200" 
+                    />
+                  </div>
 
                   <div className="md:col-span-4 space-y-3">
                     <label className="text-sm font-medium text-slate-700">Medical Hx / Surgical Hx</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                      {['糖尿病', '腎臟病', '心血管', '痛風', '腎結石', '高血脂'].map(hx => (
+                      {['糖尿病', '腎臟病', '心血管', '高血壓', '痛風', '腎結石', '高血脂'].map(hx => (
                         <label key={hx} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -851,7 +863,7 @@ export default function App() {
                   <div className="md:col-span-4 space-y-2">
                     <label className="text-sm font-medium text-slate-700">既往病史 (Medical Hx / Surgical Hx)</label>
                     <div className="flex flex-wrap gap-4">
-                      {['糖尿病', '腎臟病', '心血管', '痛風', '腎結石', 'GORD', '高血脂'].map(item => (
+                      {['糖尿病', '腎臟病', '心血管', '高血壓', '痛風', '腎結石', 'GORD', '高血脂'].map(item => (
                         <div key={item} className="flex items-center gap-4">
                           <label className="flex items-center gap-2 cursor-pointer group">
                             <input 
@@ -985,6 +997,34 @@ export default function App() {
                       className="px-3 py-1.5 text-sm rounded-lg border border-slate-200"
                     />
                   </div>
+                  <button
+                    onClick={() => {
+                      const newRecord: MonitoringRecord = {
+                        date: state.biochemistryDate || new Date().toISOString().split('T')[0],
+                        weight: state.anthropometry.weight || '',
+                        hba1c: state.biochemistry.HbA1c || '',
+                        egfr: state.biochemistry.eGFR || '',
+                        tg: state.biochemistry.TG || '',
+                        ldl: state.biochemistry.LDL || '',
+                        tc: state.biochemistry.TC || '',
+                        uricAcid: state.biochemistry.UricAcid || '',
+                        bp: state.biochemistry.BP || '',
+                        other: ''
+                      };
+                      setState({
+                        ...state,
+                        monitoring: {
+                          ...state.monitoring,
+                          history: [newRecord, ...state.monitoring.history]
+                        }
+                      });
+                      alert('數據已同步至營養監測紀錄');
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors shadow-sm"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    同步至監測紀錄
+                  </button>
                 </div>
                 <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 border-b border-slate-100">
                   {Object.keys(state.biochemistry).map(key => {
@@ -1072,7 +1112,7 @@ export default function App() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">目前病史 / 症狀</label>
                     <div className="flex flex-wrap gap-4">
-                      {['無', '吞嚥困難', '厭食', '噁心', '嘔吐', '腹瀉', '便秘'].map(item => (
+                      {['無', '吞嚥困難', '厭食', '噁心', '嘔吐', '腹瀉', '便秘', '高血壓', '其他'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -1089,6 +1129,18 @@ export default function App() {
                         </label>
                       ))}
                     </div>
+                    {state.clinical.history.includes('其他') && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-slate-500">其他症狀說明:</span>
+                        <input 
+                          type="text" 
+                          placeholder="請輸入其他病史或症狀..."
+                          value={state.clinical.historyOther || ''}
+                          onChange={e => setState({...state, clinical: {...state.clinical, historyOther: e.target.value}})}
+                          className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
+                        />
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">目前服用藥物</label>
