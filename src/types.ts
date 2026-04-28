@@ -54,9 +54,9 @@ export interface MonitoringRecord {
   egfr: string;
   tg: string;
   ldl: string;
-  tc?: string;
-  uricAcid?: string;
-  bp?: string;
+  tc: string;
+  uricAcid: string;
+  bp: string;
   other: string;
 }
 
@@ -69,6 +69,7 @@ export interface AppState {
     gender: string;
     birthday: string;
     job: string;
+    jobDescription: string;
     medicalHx: string[];
     medicalHxOther: string;
     familyHx: string;
@@ -104,6 +105,7 @@ export interface AppState {
   biochemistryDate?: string;
   clinical: {
     history: string[];
+    historyOther?: string;
     medications: string;
   };
   diet: {
