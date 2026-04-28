@@ -18,7 +18,8 @@ import {
   LogIn,
   History,
   X,
-  Pill
+  Pill,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord } from './types';
@@ -1250,6 +1251,28 @@ export default function App() {
                           <span className="text-sm text-slate-600">{item}</span>
                         </label>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* 便當油脂估計備註 */}
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2 shadow-sm">
+                    <div className="flex items-center gap-2 text-amber-800 font-bold border-b border-amber-200 pb-2 mb-2">
+                      <Info className="w-4 h-4" />
+                      <span className="text-sm">便當油脂估計參考</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100">
+                        <span className="text-[11px] font-bold text-amber-600 uppercase">一般蔬菜</span>
+                        <span className="text-sm text-amber-900 font-medium tracking-tight">每樣蔬菜：0.5-1 ex</span>
+                      </div>
+                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100">
+                        <span className="text-[11px] font-bold text-amber-600 uppercase">吸油食材</span>
+                        <span className="text-sm text-amber-900 font-medium tracking-tight">茄子、苦瓜、豆皮、干絲：1-1.5 以上</span>
+                      </div>
+                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100">
+                        <span className="text-[11px] font-bold text-amber-600 uppercase">炸物/勾芡</span>
+                        <span className="text-sm text-amber-900 font-medium tracking-tight">排骨、糖醋、三杯：1.5-2 以上</span>
+                      </div>
                     </div>
                   </div>
 
