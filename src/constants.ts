@@ -44,13 +44,16 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '熱狗、五花肉 50g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, na: '', k: '', p: '' },
   // 全榖雜糧類
   { name: '白飯 40g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
-  { name: '稀飯 125g(半碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
+  { name: '稀飯 125g(半碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },  
+  { name: '熟麵條 60g(1/2碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '米粉 30-50g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '冬粉 1/4碗', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
+  { name: '冬粉 1/4碗', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },  
   { name: '地瓜 (小 1/2個)', category: '全榖雜糧類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: '', k: '', p: '' },
   { name: '南瓜 85g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: 1.3, k: 402.5, p: 43.4 },
   { name: '綠豆 25g(熟3匙)', category: '全榖雜糧類', carbs: 15, protein: 5, fat: 0, kcal: 80, na: '', k: '', p: '' },
   { name: '帶殼栗子 50g (4顆)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
+  { name: '薄片吐司 1片', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '厚片吐司 1片', category: '全榖雜糧類', carbs: 30, protein: 4, fat: 0, kcal: 140, na: '', k: '', p: '' },
   { name: '市售饅頭 1顆', category: '全榖雜糧類', carbs: 60, protein: 8, fat: 0, kcal: 280, na: '', k: '', p: '' },
   // 蔬菜類
