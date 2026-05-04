@@ -8,17 +8,48 @@
         "userId": { "type": "string", "description": "The UID of the dietitian" },
         "consultDate": { "type": "string", "format": "date" },
         "clientName": { "type": "string" },
+        "patientId": { "type": "string", "description": "The linked patient ID" },
         "data": { "type": "object", "description": "The full AppState JSON" },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "consultDate", "clientName", "data"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "A patient profile with checklist items",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner of the record" },
+        "name": { "type": "string" },
+        "birthday": { "type": "string", "format": "date" },
+        "gender": { "type": "string", "enum": ["男", "女"] },
+        "checklist": {
+          "type": "object",
+          "properties": {
+            "consultation": { "type": "boolean" },
+            "personalizedMsg": { "type": "boolean" },
+            "fu1": { "type": "boolean" },
+            "fu2": { "type": "boolean" },
+            "fu3": { "type": "boolean" },
+            "fu4": { "type": "boolean" }
+          }
+        },
+        "consultDate": { "type": "string", "format": "date", "description": "The most recent consultation date for follow-up calculation" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "birthday", "gender"]
     }
   },
   "firestore": {
     "/consultations/{consultationId}": {
       "schema": "Consultation",
       "description": "Collection of consultation records"
+    },
+    "/patients/{patientId}": {
+      "schema": "Patient",
+      "description": "Collection of patients"
     }
   }
 }
