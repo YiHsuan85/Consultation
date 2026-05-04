@@ -465,6 +465,11 @@ export default function App() {
       const k = typeof item.k === 'number' ? item.k : parseFloat(item.k || '0') || 0;
       const p = typeof item.p === 'number' ? item.p : parseFloat(item.p || '0') || 0;
       
+      const newCategories = { ...acc.categories };
+      if (item.category) {
+        newCategories[item.category] = (newCategories[item.category] || 0) + qty;
+      }
+
       return {
         carbs: acc.carbs + (item.carbs * qty),
         protein: acc.protein + (item.protein * qty),
@@ -472,9 +477,10 @@ export default function App() {
         kcal: acc.kcal + ((item.carbs * 4 + item.protein * 4 + item.fat * 9) * qty),
         na: acc.na + (na * qty),
         k: acc.k + (k * qty),
-        p: acc.p + (p * qty)
+        p: acc.p + (p * qty),
+        categories: newCategories
       };
-    }, { carbs: 0, protein: 0, fat: 0, kcal: 0, na: 0, k: 0, p: 0 });
+    }, { carbs: 0, protein: 0, fat: 0, kcal: 0, na: 0, k: 0, p: 0, categories: {} as Record<string, number> });
   }, [state.diet.logs]);
 
   const filteredFood = useMemo(() => {
@@ -1388,14 +1394,28 @@ export default function App() {
                     )}
                   </div>
 
-                  <div className="flex justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
-                    <div className="text-sm font-bold text-blue-800">目前飲食攝取總計</div>
-                    <div className="flex gap-6 text-sm">
-                      <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總熱量</span><span className="font-bold text-blue-900">{dietTotals.kcal.toFixed(0)} kcal</span></div>
-                      <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總醣類</span><span className="font-bold text-blue-900">{dietTotals.carbs.toFixed(1)} g</span></div>
-                      <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總蛋白質</span><span className="font-bold text-blue-900">{dietTotals.protein.toFixed(1)} g</span></div>
-                      <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總脂肪</span><span className="font-bold text-blue-900">{dietTotals.fat.toFixed(1)} g</span></div>
+                  <div className="flex flex-col gap-4 bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-bold text-blue-800">目前飲食攝取總計</div>
+                      <div className="flex gap-6 text-sm">
+                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總熱量</span><span className="font-bold text-blue-900">{dietTotals.kcal.toFixed(0)} kcal</span></div>
+                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總醣類</span><span className="font-bold text-blue-900">{dietTotals.carbs.toFixed(1)} g</span></div>
+                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總蛋白質</span><span className="font-bold text-blue-900">{dietTotals.protein.toFixed(1)} g</span></div>
+                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總脂肪</span><span className="font-bold text-blue-900">{dietTotals.fat.toFixed(1)} g</span></div>
+                      </div>
                     </div>
+                    {Object.keys(dietTotals.categories).length > 0 && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-2 pt-3 border-t border-blue-200">
+                        {Object.entries(dietTotals.categories).map(([category, count]) => (
+                          count > 0 && (
+                            <div key={category} className="flex items-center gap-1.5">
+                              <span className="text-xs text-blue-700/70 font-medium">{category}:</span>
+                              <span className="text-sm font-bold text-blue-800">{count.toFixed(1)} <span className="text-[10px] font-normal opacity-70">份</span></span>
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="overflow-x-auto rounded-lg border border-slate-200">
