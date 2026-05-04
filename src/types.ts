@@ -160,3 +160,22 @@ export interface AppState {
     [key: string]: any;
   };
 }
+
+export interface Patient {
+  id?: string;
+  userId: string;
+  name: string;
+  birthday: string;
+  gender: '男' | '女';
+  checklist: {
+    consultation: boolean;
+    personalizedMsg: boolean;
+    fu1: boolean;
+    fu2: boolean;
+    fu3: boolean;
+    fu4: boolean;
+  };
+  consultDate?: string;
+  createdAt: any;
+  updatedAt: any;
+}
