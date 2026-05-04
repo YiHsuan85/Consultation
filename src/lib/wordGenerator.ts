@@ -159,6 +159,31 @@ export const generateWordDoc = async (state: AppState) => {
         new Paragraph({ text: `飲水量: ${state.diet.currentWater} ml/d` }),
         new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || (state.diet.allergiesOther ? "" : "無")}${state.diet.allergiesOther ? (state.diet.allergies.length > 0 ? "、" : "") + state.diet.allergiesOther : ""}` }),
         new Paragraph({ text: `保健品: ${state.diet.supplements || "無"}` }),
+        (() => {
+          const totals = state.diet.logs.reduce((acc, item) => {
+            const qty = item.qty || 0;
+            const newCategories = { ...acc.categories };
+            if (item.category) {
+              newCategories[item.category] = (newCategories[item.category] || 0) + qty;
+            }
+            return {
+              kcal: acc.kcal + ((item.carbs * 4 + item.protein * 4 + item.fat * 9) * qty),
+              categories: newCategories
+            };
+          }, { kcal: 0, categories: {} as Record<string, number> });
+
+          const categoryItems = Object.entries(totals.categories)
+            .filter(([_, count]) => count > 0)
+            .map(([cat, count]) => `${cat}: ${count.toFixed(1)} 份`);
+
+          return new Paragraph({
+            children: [
+              new TextRun({ text: "目前攝取估計: ", bold: true }),
+              new TextRun({ text: `${Math.round(totals.kcal)} kcal / ${categoryItems.join("、") || "無食物紀錄"}` }),
+            ],
+            spacing: { before: 100 }
+          });
+        })(),
 
         new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatus.includes("其他") ? ` (${state.clinical.giStatusOther})` : ""}` }),
