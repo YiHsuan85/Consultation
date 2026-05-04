@@ -19,11 +19,14 @@ import {
   History,
   X,
   Pill,
-  Info
+  Info,
+  LayoutDashboard,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AppState, FoodItem, PES, MonitoringRecord } from './types';
+import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
 import { generateWordDoc, generateReminderWordDoc } from './lib/wordGenerator';
+import { addDays, format, parseISO, isSameDay } from 'date-fns';
 import { 
   auth, 
   db, 
@@ -180,7 +183,11 @@ const GuidelineCheckbox = ({ label, id, state, setState }: { label: string, id: 
 );
 
 export default function App() {
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [activePage, setActivePage] = useState<'dashboard' | 'consultation'>('dashboard');
   const [state, setState] = useState<AppState>(INITIAL_STATE);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications'>('assessment');
   const [searchQuery, setSearchQuery] = useState('');
   const [medicationSearchQuery, setMedicationSearchQuery] = useState('');
@@ -201,26 +208,73 @@ export default function App() {
     other: ''
   });
 
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      if (!u) {
-        setHistory([]);
-        setState(INITIAL_STATE);
-      }
+      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      setPatients([]);
+      return;
+    }
+    const q = query(
+      collection(db, 'patients'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const docs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Patient[];
+      setPatients(docs);
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  const handlePatientAction = async (patientId: string, action: keyof Patient['checklist'], value: boolean) => {
+    const patientRef = doc(db, 'patients', patientId);
+    await updateDoc(patientRef, {
+      [`checklist.${action}`]: value,
+      updatedAt: Timestamp.now()
+    });
+  };
+
+  const handleAddPatient = async (name: string, birthday: string, gender: any) => {
+    if (!user) return;
+    const newPatient: Omit<Patient, 'id'> = {
+      userId: user.uid,
+      name,
+      birthday,
+      gender,
+      checklist: {
+        consultation: false,
+        personalizedMsg: false,
+        fu1: false,
+        fu2: false,
+        fu3: false,
+        fu4: false
+      },
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now()
+    };
+    await addDoc(collection(db, 'patients'), newPatient);
+  };
+
+  const [history, setHistory] = useState<any[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
   // History Listener
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setHistory([]);
+      return;
+    }
     const q = query(
       collection(db, 'consultations'),
       where('userId', '==', user.uid),
@@ -292,14 +346,15 @@ export default function App() {
 
   // Recommended Macros Breakdown
   const recommendedMacros = useMemo(() => {
-    if (!recommendedKcal) return null;
+    const kcal = parseFloat(state.diet.targetKcal) || recommendedKcal;
+    if (!kcal) return null;
     const config = state.intervention.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
     return {
-      carbs: Math.round((recommendedKcal * (config.carbsPercent / 100)) / 4),
-      protein: Math.round((recommendedKcal * (config.proteinPercent / 100)) / 4),
-      fat: Math.round((recommendedKcal * (config.fatPercent / 100)) / 9)
+      carbs: ((kcal * (config.carbsPercent / 100)) / 4).toFixed(1),
+      protein: ((kcal * (config.proteinPercent / 100)) / 4).toFixed(1),
+      fat: ((kcal * (config.fatPercent / 100)) / 9).toFixed(1)
     };
-  }, [recommendedKcal, state.intervention.macroConfig]);
+  }, [recommendedKcal, state.diet.targetKcal, state.intervention.macroConfig]);
 
   // Recommended Water Intake Calculation (Weight * 30)
   const recommendedWater = useMemo(() => {
@@ -376,6 +431,15 @@ export default function App() {
         setState(prev => ({ ...prev, id: docRef.id }));
         alert('新紀錄已建立並儲存。');
       }
+
+      // Sync consultDate to patients record if matching patient exists
+      const matchingPatient = patients.find(p => p.name === (state.clientHx.name || '未命名個案'));
+      if (matchingPatient && matchingPatient.id) {
+        await updateDoc(doc(db, 'patients', matchingPatient.id), {
+          consultDate: state.consultDate,
+          updatedAt: Timestamp.now()
+        });
+      }
     } catch (error: any) {
       console.error('Save error details:', error);
       const errorCode = error.code || 'unknown';
@@ -439,6 +503,192 @@ export default function App() {
     window.print();
   };
 
+  const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [newPatientData, setNewPatientData] = useState({ name: '', birthday: '', gender: '女' as '男' | '女' });
+
+  const Dashboard = () => {
+    const [q, setQ] = useState('');
+    const filteredPatients = patients.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
+
+    const upcomingEvents = useMemo(() => {
+      const events: any[] = [];
+      patients.forEach(p => {
+        if (!p.consultDate) return;
+        let base;
+        try {
+          base = parseISO(p.consultDate);
+        } catch (e) {
+          return;
+        }
+        const schedule = [
+          { label: '第一次追蹤', days: 30, key: 'fu1' },
+          { label: '第二次追蹤', days: 60, key: 'fu2' },
+          { label: '第三次追蹤', days: 90, key: 'fu3' },
+          { label: '第四次追蹤', days: 120, key: 'fu4' },
+        ];
+        schedule.forEach(s => {
+          if (!p.checklist[s.key as keyof Patient['checklist']]) {
+            const date = addDays(base, s.days);
+            events.push({
+              name: p.name,
+              label: s.label,
+              fullLabel: `${p.name} - ${s.label}`,
+              date,
+              patientId: p.id
+            });
+          }
+        });
+      });
+      return events.sort((a, b) => a.date.getTime() - b.date.getTime());
+    }, [patients]);
+
+    return (
+      <div className="space-y-6">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">病人總覽</h1>
+            <p className="text-slate-500 text-sm">管理您的諮詢對象與追蹤進度</p>
+          </div>
+          <div className="flex gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input 
+                type="text" 
+                placeholder="搜尋姓名..."
+                value={q}
+                onChange={e => setQ(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              />
+            </div>
+            <button 
+              onClick={() => setIsPatientModalOpen(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 whitespace-nowrap"
+            >
+              <Plus className="w-4 h-4" />
+              新增病人
+            </button>
+          </div>
+        </header>
+
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100 italic">
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">姓名</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">生日 / 年齡</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">性別</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">追蹤進度</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">操作</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredPatients.map(p => (
+                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-800">{p.name}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-600">{p.birthday || '--'}</div>
+                        <div className="text-xs text-slate-400">{p.birthday ? calculateAge(p.birthday) : '--'} 歲</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{p.gender}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          {[
+                            { key: 'consultation', label: '諮', title: '諮詢' },
+                            { key: 'personalizedMsg', label: '框', title: '個人化' },
+                            { key: 'fu1', label: '1', title: '1st f/u' },
+                            { key: 'fu2', label: '2', title: '2nd f/u' },
+                            { key: 'fu3', label: '3', title: '3rd f/u' },
+                            { key: 'fu4', label: '4', title: '4th f/u' },
+                          ].map(item => (
+                            <button 
+                              key={item.key}
+                              title={item.title}
+                              onClick={() => handlePatientAction(p.id!, item.key as any, !p.checklist[item.key as keyof Patient['checklist']])}
+                              className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all ${
+                                p.checklist[item.key as keyof Patient['checklist']]
+                                  ? 'bg-blue-600 text-white shadow-sm'
+                                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => {
+                            setState({
+                              ...INITIAL_STATE,
+                              id: undefined,
+                              consultDate: new Date().toISOString().split('T')[0],
+                              clientHx: {
+                                ...INITIAL_STATE.clientHx,
+                                name: p.name,
+                                gender: p.gender,
+                                birthday: p.birthday
+                              }
+                            });
+                            setActivePage('consultation');
+                            setActiveTab('assessment');
+                          }}
+                          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
+                        >
+                          <Stethoscope className="w-3 h-3" />
+                          開新諮詢
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredPatients.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400 italic font-mono uppercase tracking-widest text-[10px]">
+                        尚無病人紀錄
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-b pb-4">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              追蹤行程行事曆 (Follow-up Schedule)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {upcomingEvents.slice(0, 12).map((ev, idx) => (
+                <div key={idx} className="flex flex-col p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all group">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-xs font-mono text-blue-600 font-black bg-blue-50 px-2 py-1 rounded-lg">
+                      {format(ev.date, 'yyyy/MM/dd')}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      {format(ev.date, 'EEEE')}
+                    </div>
+                  </div>
+                  <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
+                    {ev.fullLabel}
+                  </div>
+                </div>
+              ))}
+              {upcomingEvents.length === 0 && (
+                <div className="col-span-full text-center py-12 text-slate-400 italic text-sm bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
+                  目前無待追蹤行程。當您儲存諮詢紀錄時，系統將自動為您生成四次每月追蹤提醒。
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const handleDownloadWord = () => {
     generateReminderWordDoc(state);
   };
@@ -491,198 +741,154 @@ export default function App() {
     );
   }, [searchQuery]);
 
-  const suggestedPortions = useMemo(() => {
-    const type = state.intervention.dietType;
-    if (type === 'Custom') {
-      return state.intervention.customGuidelines || {};
-    }
-    const target = parseInt(state.diet.targetKcal) || 1500;
-    
-    const guidelines = DIET_GUIDELINES[type];
-    if (!guidelines) return {};
-    
-    // Find the nearest calorie level
-    const levels = Object.keys(guidelines).map(Number).sort((a, b) => a - b);
-    const nearest = levels.reduce((prev, curr) => 
-      Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev
+
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-slate-500 font-medium">系統載入中...</p>
+        </div>
+      </div>
     );
-    
-    return guidelines[nearest.toString()] || {};
-  }, [state.intervention.dietType, state.diet.targetKcal, state.intervention.customGuidelines]);
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-blue-100">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl shadow-xl flex items-center justify-center mx-auto mb-6 transform -rotate-6">
+              <Stethoscope className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">NCP 助理紀錄系統</h1>
+            <p className="text-slate-500 text-sm">專業營養師的數位諮詢助理</p>
+          </div>
+          
+          <div className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-200">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-slate-800 mb-1">歡迎回來</h2>
+                <p className="text-sm text-slate-500">請登入您的帳號以開始進行諮詢紀錄</p>
+              </div>
+              
+              <button 
+                onClick={handleLogin}
+                className="w-full flex items-center justify-center gap-4 bg-white hover:bg-slate-50 text-slate-700 py-3 px-6 rounded-2xl font-bold border-2 border-slate-100 transition-all active:scale-[0.98] shadow-sm"
+              >
+                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 pointer-events-none" referrerPolicy="no-referrer" />
+                使用 Google 帳號登入
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center gap-4">
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 truncate">
-                營養諮詢系統
-              </h1>
-            </div>
-            
-            <div className="flex items-center gap-1 sm:gap-2">
-              {user ? (
-                <>
-                  <button 
-                    onClick={() => setIsHistoryOpen(true)}
-                    className="flex items-center gap-2 px-2 sm:px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors text-sm font-medium"
-                    title="歷史紀錄"
-                  >
-                    <History className="w-4 h-4" />
-                    <span className="hidden lg:inline">歷史紀錄</span>
-                  </button>
-                  <button 
-                    onClick={() => generateWordDoc(state)}
-                    className="flex items-center gap-2 px-2 sm:px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-                    title="下載 Word"
-                  >
-                    <FileDown className="w-4 h-4" />
-                    <span className="hidden sm:inline">下載 Word</span>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      if(confirm('確定要清空所有紀錄嗎？')) setState(INITIAL_STATE);
-                    }}
-                    className="flex items-center gap-2 px-2 sm:px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-                    title="清空"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">清空</span>
-                  </button>
-                  <button 
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md text-sm font-medium shrink-0 disabled:opacity-50"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span className="hidden sm:inline">{state.id ? '更新紀錄' : '儲存紀錄'}</span>
-                    <span className="sm:hidden">{state.id ? '更新' : '儲存'}</span>
-                  </button>
-                  <button 
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-2 sm:px-3 py-2 text-slate-500 hover:text-slate-700 transition-colors"
-                    title="登出"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <button 
-                  onClick={handleLogin}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md text-sm font-medium"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>登入</span>
-                </button>
-              )}
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-blue-100 text-slate-800">
+      {/* Side Navigation */}
+      <aside className="fixed left-0 top-0 bottom-0 w-20 bg-white border-r border-slate-200 flex flex-col items-center py-8 gap-10 z-40">
+        <div className="w-12 h-12 bg-blue-600 rounded-xl shadow-lg flex items-center justify-center transform hover:rotate-12 transition-transform cursor-pointer" onClick={() => setActivePage('dashboard')}>
+          <Stethoscope className="w-6 h-6 text-white" />
         </div>
-        
-        {/* Tab Navigation - Scrollable on mobile */}
-        <div className="border-t border-slate-100 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex overflow-x-auto no-scrollbar py-2 space-x-1">
-              {[
-                { id: 'assessment', label: '營養評估', icon: User },
-                { id: 'diagnosis', label: '營養診斷', icon: Stethoscope },
-                { id: 'intervention', label: '營養介入', icon: Utensils },
-                { id: 'monitoring', label: '營養監測', icon: Activity },
-                { id: 'medications', label: '藥物', icon: Pill },
-                { id: 'reminder', label: '諮詢小提醒', icon: Bell },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
-                    activeTab === tab.id 
-                      ? 'bg-blue-50 text-blue-700 shadow-sm' 
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-          </div>
+        <nav className="flex-1 flex flex-col gap-6">
+          <button 
+            onClick={() => setActivePage('dashboard')}
+            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activePage === 'dashboard' ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-50'}`}
+          >
+            <LayoutDashboard className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={() => setActivePage('consultation')}
+            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${activePage === 'consultation' ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-50'}`}
+          >
+            <ClipboardList className="w-6 h-6" />
+          </button>
+          <button onClick={() => setIsHistoryOpen(true)} className="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:bg-slate-50">
+            <History className="w-6 h-6" />
+          </button>
+        </nav>
+        <div className="mt-auto space-y-4 text-center">
+          <button onClick={handleLogout} className="w-12 h-12 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+            <LogOut className="w-6 h-6" />
+          </button>
         </div>
-      </nav>
+      </aside>
 
-      {/* History Sidebar */}
-      <AnimatePresence>
-        {isHistoryOpen && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsHistoryOpen(false)}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
-            />
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              className="fixed right-0 top-0 h-full w-80 bg-white shadow-2xl z-[70] flex flex-col"
-            >
-              <div className="p-4 border-b flex justify-between items-center bg-slate-50">
-                <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                  <History className="w-5 h-5 text-blue-600" />
-                  諮詢歷史紀錄
-                </h2>
-                <button onClick={() => setIsHistoryOpen(false)} className="p-1 hover:bg-slate-200 rounded">
-                  <X className="w-5 h-5" />
-                </button>
+      <main className="pl-24 pt-8 pb-16 px-8 max-w-7xl mx-auto">
+        {isPatientModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8">
+              <h2 className="text-xl font-bold mb-6 italic underline">新增病人</h2>
+              <div className="space-y-4">
+                <input type="text" placeholder="姓名" className="w-full px-4 py-3 rounded-xl border" value={newPatientData.name} onChange={e => setNewPatientData({...newPatientData, name: e.target.value})} />
+                <input type="date" className="w-full px-4 py-3 rounded-xl border" value={newPatientData.birthday} onChange={e => setNewPatientData({...newPatientData, birthday: e.target.value})} />
+                <div className="flex gap-2">
+                  <button onClick={() => setNewPatientData({...newPatientData, gender: '男'})} className={`flex-1 py-3 rounded-xl border ${newPatientData.gender === '男' ? 'bg-blue-50 border-blue-600 text-blue-600' : ''}`}>男</button>
+                  <button onClick={() => setNewPatientData({...newPatientData, gender: '女'})} className={`flex-1 py-3 rounded-xl border ${newPatientData.gender === '女' ? 'bg-blue-50 border-blue-600 text-blue-600' : ''}`}>女</button>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <button onClick={() => setIsPatientModalOpen(false)} className="flex-1 py-3 bg-slate-100 rounded-xl">取消</button>
+                  <button onClick={() => { handleAddPatient(newPatientData.name, newPatientData.birthday, newPatientData.gender); setIsPatientModalOpen(false); }} className="flex-1 py-3 bg-blue-600 text-white rounded-xl">確認</button>
+                </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {history.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400">
-                    <ClipboardList className="w-12 h-12 mx-auto opacity-20 mb-4" />
-                    <p>尚無儲存紀錄</p>
-                  </div>
-                ) : (
-                  history.map((record) => (
-                    <div 
-                      key={record.id}
-                      onClick={() => loadRecord(record)}
-                      className={`p-3 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
-                        state.id === record.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-300'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-bold text-slate-800">{record.clientName}</span>
-                        <button 
-                          onClick={(e) => deleteRecord(e, record.id)}
-                          className="text-slate-300 hover:text-red-500 p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="text-xs text-slate-500 flex flex-col gap-1">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          諮詢日: {record.consultDate}
-                        </div>
-                        <div className="text-[10px] opacity-60">
-                          最後更新: {record.updatedAt?.toDate().toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          </>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+        {activePage === 'dashboard' ? <Dashboard /> : (
+          <div className="space-y-6">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">諮詢紀錄</h1>
+                <p className="text-sm text-slate-500 uppercase tracking-widest text-[10px]">Standardized NCP Workflow</p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => generateWordDoc(state)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-all font-bold text-xs uppercase tracking-widest"
+                >
+                  <FileDown className="w-4 h-4" />
+                  WORD
+                </button>
+                <button 
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-bold text-xs uppercase tracking-widest"
+                >
+                  <Save className="w-4 h-4" />
+                  SAVE
+                </button>
+              </div>
+            </header>
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
+              <nav className="bg-slate-50/50 border-b border-slate-200 p-2 flex gap-1 overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'assessment', label: '營養評估', icon: User },
+                  { id: 'diagnosis', label: '營養診斷', icon: Stethoscope },
+                  { id: 'intervention', label: '營養介入', icon: Utensils },
+                  { id: 'monitoring', label: '營養監測', icon: Activity },
+                  { id: 'medications', label: '藥物資訊', icon: Pill },
+                  { id: 'reminder', label: '諮詢小提醒', icon: Bell },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[11px] font-black transition-all uppercase tracking-widest shrink-0 ${
+                      activeTab === tab.id 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                        : 'text-slate-400 hover:text-slate-800 hover:bg-white'
+                    }`}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="flex-1 p-8 md:p-12 overflow-y-auto">
         {/* Basic Info Card */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-1">
@@ -714,7 +920,7 @@ export default function App() {
               value={state.notes || ''}
               onChange={e => setState({...state, notes: e.target.value})}
               className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all h-24"
-            />
+            ></textarea>
           </div>
         </div>
 
@@ -1010,7 +1216,7 @@ export default function App() {
                       placeholder="輸入生化數值相關分析或備註..."
                       rows={3}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                    />
+                    ></textarea>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1134,7 +1340,7 @@ export default function App() {
                       onChange={e => setState({...state, clinical: {...state.clinical, medications: e.target.value}})}
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 h-20"
                       placeholder="列出目前服用的藥物..."
-                    />
+                    ></textarea>
                   </div>
                 </div>
               </section>
@@ -1707,238 +1913,82 @@ export default function App() {
                 </div>
                 <div className="p-6 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="space-y-2">
-                      <div className="text-sm font-bold text-slate-500 uppercase">疾病類型</div>
-                      <div className="flex gap-4">
-                        {['DM', 'CKD', 'Custom'].map(type => (
-                          <label key={type} className="flex items-center gap-2 cursor-pointer">
+                    <div className="space-y-4">
+                      <div className="text-sm font-bold text-slate-500 uppercase">建議熱量需求與三大營養素比例</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-400">建議熱量 (kcal/d)</label>
+                          <div className="flex gap-2">
                             <input 
-                              type="radio" 
-                              name="dietType" 
-                              checked={state.intervention.dietType === type}
-                              onChange={() => setState({...state, intervention: {...state.intervention, dietType: type as any}})}
-                              className="w-4 h-4 text-green-600" 
+                              type="number" 
+                              value={state.diet.targetKcal || ''}
+                              onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
+                              placeholder="例如：1800"
+                              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 outline-none"
                             />
-                            <span className={`font-medium ${state.intervention.dietType === type ? 'text-green-700' : 'text-slate-600'}`}>
-                              {type === 'DM' ? '糖尿病 (DM)' : type === 'CKD' ? '腎臟病 (CKD)' : '自定義 (Custom)'}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-sm font-bold text-slate-500 uppercase">建議熱量 (kcal/d)</div>
-                      <div className="flex gap-2">
-                        <input 
-                          type="number" 
-                          value={state.diet.targetKcal || ''}
-                          onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
-                          placeholder="例如：1500"
-                          className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 outline-none"
-                        />
-                        <button 
-                          onClick={() => setState({...state, diet: {...state.diet, targetKcal: recommendedKcal.toString()}})}
-                          className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-xs font-bold hover:bg-green-200 transition-colors"
-                        >
-                          帶入建議值 ({recommendedKcal})
-                        </button>
-                      </div>
-                      {recommendedMacros && (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex gap-4 text-[10px] font-bold text-green-600/70 uppercase tracking-wider">
-                            <span>醣: {recommendedMacros.carbs}g ({state.intervention.macroConfig?.carbsPercent}%)</span>
-                            <span>蛋: {recommendedMacros.protein}g ({state.intervention.macroConfig?.proteinPercent}%)</span>
-                            <span>脂: {recommendedMacros.fat}g ({state.intervention.macroConfig?.fatPercent}%)</span>
+                            <button 
+                              onClick={() => setState({...state, diet: {...state.diet, targetKcal: recommendedKcal.toString()}})}
+                              className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-[10px] font-bold hover:bg-green-200 transition-colors"
+                            >
+                              帶入建議值 ({recommendedKcal})
+                            </button>
                           </div>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-slate-400">三大營養素分配 (%)</label>
                           <div className="flex gap-2 items-center">
-                            <span className="text-[10px] text-slate-400">調整比例(%):</span>
-                            <input 
-                              type="number" 
-                              value={state.intervention.macroConfig?.carbsPercent || 0} 
-                              onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, carbsPercent: parseInt(e.target.value) || 0}}})}
-                              className="w-12 px-1 py-0.5 text-[10px] border rounded"
-                              placeholder="醣"
-                            />
-                            <input 
-                              type="number" 
-                              value={state.intervention.macroConfig?.proteinPercent || 0} 
-                              onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, proteinPercent: parseInt(e.target.value) || 0}}})}
-                              className="w-12 px-1 py-0.5 text-[10px] border rounded"
-                              placeholder="蛋"
-                            />
-                            <input 
-                              type="number" 
-                              value={state.intervention.macroConfig?.fatPercent || 0} 
-                              onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, fatPercent: parseInt(e.target.value) || 0}}})}
-                              className="w-12 px-1 py-0.5 text-[10px] border rounded"
-                              placeholder="脂"
-                            />
-                            <span className={`text-[10px] font-bold ${(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0) === 100 ? 'text-green-500' : 'text-red-500'}`}>
-                              Total: {(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0)}%
-                            </span>
+                            <div className="flex flex-col flex-1">
+                              <span className="text-[10px] text-slate-400 text-center mb-1">醣類</span>
+                              <input 
+                                type="number" 
+                                value={state.intervention.macroConfig?.carbsPercent || 0} 
+                                onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, carbsPercent: parseInt(e.target.value) || 0}}})}
+                                className="w-full px-2 py-2 text-sm border rounded-lg text-center"
+                              />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                              <span className="text-[10px] text-slate-400 text-center mb-1">蛋白質</span>
+                              <input 
+                                type="number" 
+                                value={state.intervention.macroConfig?.proteinPercent || 0} 
+                                onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, proteinPercent: parseInt(e.target.value) || 0}}})}
+                                className="w-full px-2 py-2 text-sm border rounded-lg text-center"
+                              />
+                            </div>
+                            <div className="flex flex-col flex-1">
+                              <span className="text-[10px] text-slate-400 text-center mb-1">脂肪</span>
+                              <input 
+                                type="number" 
+                                value={state.intervention.macroConfig?.fatPercent || 0} 
+                                onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, fatPercent: parseInt(e.target.value) || 0}}})}
+                                className="w-full px-2 py-2 text-sm border rounded-lg text-center"
+                              />
+                            </div>
+                          </div>
+                          <div className="text-right">
+                             <span className={`text-[10px] font-bold ${(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0) === 100 ? 'text-green-500' : 'text-red-500'}`}>
+                               總計: {(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0)}%
+                             </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {recommendedMacros && (
+                        <div className="grid grid-cols-3 gap-4 p-4 bg-green-50 rounded-xl border border-green-100">
+                          <div className="text-center">
+                            <div className="text-[10px] text-green-600 font-bold mb-1">醣類</div>
+                            <div className="text-lg font-black text-green-700">{recommendedMacros.carbs}g <span className="text-xs font-normal opacity-70">({state.intervention.macroConfig?.carbsPercent}%)</span></div>
+                          </div>
+                          <div className="text-center border-x border-green-200">
+                            <div className="text-[10px] text-green-600 font-bold mb-1">蛋白質</div>
+                            <div className="text-lg font-black text-green-700">{recommendedMacros.protein}g <span className="text-xs font-normal opacity-70">({state.intervention.macroConfig?.proteinPercent}%)</span></div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-[10px] text-green-600 font-bold mb-1">脂肪</div>
+                            <div className="text-lg font-black text-green-700">{recommendedMacros.fat}g <span className="text-xs font-normal opacity-70">({state.intervention.macroConfig?.fatPercent}%)</span></div>
                           </div>
                         </div>
                       )}
-                    </div>
-                  </div>
-
-                  {state.intervention.dietType === 'Custom' && (
-                    <div className="p-4 bg-orange-50 rounded-lg border border-orange-100 space-y-4">
-                      <div className="text-sm font-bold text-orange-700 uppercase">自定義建議份量 (Custom Portions)</div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                        {INTERVENTION_CATEGORIES.map(cat => (
-                          <div key={cat} className="space-y-1">
-                            <label className="text-xs font-medium text-slate-500">{cat}</label>
-                            <input 
-                              type="number" 
-                              step="0.5"
-                              value={state.intervention.customGuidelines?.[cat] || ''}
-                              onChange={e => {
-                                const newCustom = { ...state.intervention.customGuidelines };
-                                newCustom[cat] = parseFloat(e.target.value) || 0;
-                                setState({...state, intervention: {...state.intervention, customGuidelines: newCustom}});
-                              }}
-                              className="w-full px-2 py-1 text-sm rounded border border-slate-200"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                      飲食指南參考 (Reference Guidelines)
-                    </h3>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* DM Reference */}
-                      <div className="space-y-2">
-                        <div className="text-sm font-bold text-blue-700">糖尿病 (DM) 份量建議表</div>
-                        <div className="overflow-x-auto rounded-lg border border-blue-100">
-                          <table className="w-full text-[10px] text-left">
-                            <thead className="bg-blue-50 text-blue-800">
-                              <tr>
-                                <th className="px-2 py-1">kcal</th>
-                                {INTERVENTION_CATEGORIES.map(cat => <th key={cat} className="px-1 py-1">{cat.slice(0, 2)}</th>)}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-blue-50">
-                              {Object.entries(DIET_GUIDELINES['DM']).map(([kcal, plan]) => (
-                                <tr key={kcal} className={state.diet.targetKcal === kcal ? 'bg-blue-100 font-bold' : ''}>
-                                  <td className="px-2 py-1">{kcal}</td>
-                                  {INTERVENTION_CATEGORIES.map(cat => <td key={cat} className="px-1 py-1 text-center">{plan[cat] || '--'}</td>)}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                      {/* CKD Reference */}
-                      <div className="space-y-2">
-                        <div className="text-sm font-bold text-orange-700">腎臟病 (CKD) 份量建議表</div>
-                        <div className="overflow-x-auto rounded-lg border border-orange-100">
-                          <table className="w-full text-[10px] text-left">
-                            <thead className="bg-orange-50 text-orange-800">
-                              <tr>
-                                <th className="px-2 py-1">kcal</th>
-                                {INTERVENTION_CATEGORIES.map(cat => <th key={cat} className="px-1 py-1">{cat.slice(0, 2)}</th>)}
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-orange-50">
-                              {Object.entries(DIET_GUIDELINES['CKD']).map(([kcal, plan]) => (
-                                <tr key={kcal} className={state.diet.targetKcal === kcal ? 'bg-orange-100 font-bold' : ''}>
-                                  <td className="px-2 py-1">{kcal}</td>
-                                  {INTERVENTION_CATEGORIES.map(cat => <td key={cat} className="px-1 py-1 text-center">{plan[cat] || '--'}</td>)}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-end">
-                      <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                        一日飲食規劃
-                        <span className="text-xs font-normal text-slate-500">(依據熱量目標自動建議)</span>
-                      </h3>
-                      <div className="flex items-center gap-4">
-                        <button 
-                          onClick={() => {
-                            const newMealPlan = { ...state.intervention.mealPlan };
-                            INTERVENTION_CATEGORIES.forEach(cat => {
-                              const total = suggestedPortions[cat] || 0;
-                              if (total > 0) {
-                                if (!newMealPlan[cat]) newMealPlan[cat] = { breakfast: '', morningSnack: '', lunch: '', afternoonSnack: '', dinner: '', eveningSnack: '' };
-                                
-                                // Simple distribution logic: 1/3 for each main meal
-                                const portion = (total / 3).toFixed(1);
-                                newMealPlan[cat].breakfast = portion;
-                                newMealPlan[cat].lunch = portion;
-                                newMealPlan[cat].dinner = portion;
-                              }
-                            });
-                            setState({ ...state, intervention: { ...state.intervention, mealPlan: newMealPlan } });
-                          }}
-                          className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200 transition-colors"
-                        >
-                          套用建議份量 (平均分配)
-                        </button>
-                        <div className="text-sm text-green-600 font-medium">
-                          建議級距: {state.diet.targetKcal || '1500'} kcal
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="overflow-x-auto rounded-xl border border-slate-200">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-green-50 text-green-800 font-bold">
-                          <tr>
-                            <th className="px-4 py-3 border-r border-green-100">食物類別</th>
-                            <th className="px-4 py-3 text-center border-r border-green-100">建議份數</th>
-                            {MEALS.map(meal => <th key={meal} className="px-4 py-3 text-center">{meal}</th>)}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {INTERVENTION_CATEGORIES.map(cat => (
-                            <tr key={cat} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-4 py-3 font-medium text-slate-700 border-r border-slate-100">{cat}</td>
-                              <td className="px-4 py-3 text-center font-bold text-blue-600 border-r border-slate-100">
-                                {suggestedPortions[cat] || '--'}
-                              </td>
-                              {MEALS.map(meal => (
-                                <td key={meal} className="px-2 py-2">
-                                  <input 
-                                    type="text" 
-                                    placeholder="--"
-                                    value={state.intervention.mealPlan[cat]?.[meal as keyof typeof state.intervention.mealPlan[string]] || ''}
-                                    onChange={e => {
-                                      const newMealPlan = { ...state.intervention.mealPlan };
-                                      if (!newMealPlan[cat]) newMealPlan[cat] = { breakfast: '', morningSnack: '', lunch: '', afternoonSnack: '', dinner: '', eveningSnack: '' };
-                                      
-                                      const mealKeyMap: { [key: string]: string } = {
-                                        '早餐': 'breakfast',
-                                        '早點': 'morningSnack',
-                                        '午餐': 'lunch',
-                                        '午點': 'afternoonSnack',
-                                        '晚餐': 'dinner',
-                                        '晚點': 'eveningSnack'
-                                      };
-                                      
-                                      const key = mealKeyMap[meal] as keyof typeof state.intervention.mealPlan[string];
-                                      newMealPlan[cat][key] = e.target.value;
-                                      setState({ ...state, intervention: { ...state.intervention, mealPlan: newMealPlan } });
-                                    }}
-                                    className="w-full text-center py-1 rounded border border-transparent hover:border-slate-200 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all"
-                                  />
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
                     </div>
                   </div>
 
@@ -1996,7 +2046,7 @@ export default function App() {
                         onChange={e => setState({...state, intervention: {...state.intervention, referral: e.target.value}})}
                         placeholder="例如：轉介復健科評估吞嚥功能..."
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 h-24"
-                      />
+                      ></textarea>
                     </div>
                   </div>
                 </div>
@@ -2266,7 +2316,7 @@ export default function App() {
                         onChange={e => setState({...state, monitoring: {...state.monitoring, plan: e.target.value}})}
                         placeholder="紀錄預計追蹤的生化數值、體重變化或飲食遵從性..."
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all"
-                      />
+                      ></textarea>
                     </div>
                   </div>
                 </div>
@@ -3051,7 +3101,7 @@ export default function App() {
                       onChange={e => setState({...state, reminderNotes: e.target.value})}
                       placeholder="輸入備註或注意事項..."
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    />
+                    ></textarea>
                   </div>
 
                   {/* (6) 衛教資訊 */}
@@ -3188,30 +3238,33 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Footer Actions */}
-        <div className="mt-12 flex justify-between items-center text-slate-400 text-sm border-t border-slate-200 pt-8">
-          <p>© 2026 營養諮詢紀錄系統 - NCP 專業版</p>
-          <div className="flex gap-4">
-            <button 
-              onClick={() => {
-                if(confirm('確定要清空所有紀錄嗎？')) setState(INITIAL_STATE);
-              }}
-              className="hover:text-red-500 transition-colors"
-            >
-              清空紀錄
-            </button>
-            <button 
-              onClick={handlePrint}
-              className="hover:text-blue-600 transition-colors"
-            >
-              列印報告
-            </button>
+            <div className="mt-12 flex justify-between items-center text-slate-400 text-sm border-t border-slate-200 pt-8 no-print">
+              <p>© 2026 營養諮詢紀錄系統 - NCP 專業版</p>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => {
+                    if(confirm('確定要清空所有紀錄嗎？')) setState(INITIAL_STATE);
+                  }}
+                  className="hover:text-red-500 transition-colors"
+                >
+                  清空紀錄
+                </button>
+                <button 
+                  onClick={handlePrint}
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  列印報告
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
+    )}
+  </main>
 
       {/* Hidden Full Report for Printing */}
-      <div className="hidden print:block p-8 space-y-12 bg-white text-slate-900">
+      <div className="hidden print:block p-8 space-y-12 bg-white text-slate-900 absolute top-0 left-0 w-full z-[100]">
         <div className="text-center border-b-2 border-slate-900 pb-4">
           <h1 className="text-3xl font-bold">營養諮詢紀錄報告</h1>
           <p className="text-slate-500 mt-2">諮詢日期: {state.consultDate}</p>
@@ -3265,34 +3318,28 @@ export default function App() {
         <section className="space-y-4">
           <h2 className="text-xl font-bold border-l-4 border-blue-600 pl-3">三、營養介入 (Intervention)</h2>
           <div className="text-sm space-y-2">
-            <div><span className="font-bold">建議熱量:</span> {state.diet.targetKcal} kcal/d</div>
-            <div><span className="font-bold">建議飲水量:</span> {recommendedWater} ml/d</div>
-            <div>
-              <h3 className="font-bold mt-2">一日飲食規劃:</h3>
-              <table className="w-full border-collapse border border-slate-300 text-xs mt-1">
-                <thead>
-                  <tr className="bg-slate-100">
-                    <th className="border border-slate-300 p-1">類別</th>
-                    {MEALS.map(m => <th key={m} className="border border-slate-300 p-1">{m}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {INTERVENTION_CATEGORIES.map(cat => (
-                    <tr key={cat}>
-                      <td className="border border-slate-300 p-1 font-bold">{cat}</td>
-                      {MEALS.map(meal => {
-                        const mealKeyMap: { [key: string]: string } = {
-                          '早餐': 'breakfast', '早點': 'morningSnack', '午餐': 'lunch', 
-                          '午點': 'afternoonSnack', '晚餐': 'dinner', '晚點': 'eveningSnack'
-                        };
-                        const key = mealKeyMap[meal] as keyof typeof state.intervention.mealPlan[string];
-                        return <td key={meal} className="border border-slate-300 p-1 text-center">{state.intervention.mealPlan[cat]?.[key] || '--'}</td>;
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+              <div className="border p-2">
+                <span className="font-bold">建議熱量:</span> {state.diet.targetKcal} kcal/d
+              </div>
+              {recommendedMacros && (
+                <>
+                  <div className="border p-2">
+                    <span className="font-bold">醣類 (g):</span> {recommendedMacros.carbs} ({state.intervention.macroConfig?.carbsPercent}%)
+                  </div>
+                  <div className="border p-2">
+                    <span className="font-bold">蛋白質 (g):</span> {recommendedMacros.protein} ({state.intervention.macroConfig?.proteinPercent}%)
+                  </div>
+                  <div className="border p-2">
+                    <span className="font-bold">脂肪 (g):</span> {recommendedMacros.fat} ({state.intervention.macroConfig?.fatPercent}%)
+                  </div>
+                </>
+              )}
             </div>
+            <div>
+              <span className="font-bold">建議飲水量:</span> {recommendedWater} ml/d
+            </div>
+
             {state.intervention.educationTopics.length > 0 && (
               <div>
                 <h3 className="font-bold mt-2">營養教育重點:</h3>
