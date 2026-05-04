@@ -135,9 +135,20 @@ const INITIAL_STATE: AppState = {
     mealPlan: {},
     referral: '',
     macroConfig: {
-      carbsPercent: 55,
-      proteinPercent: 15,
+      carbsPercent: 50,
+      proteinPercent: 20,
       fatPercent: 30
+    },
+    portions: {
+      '低脂乳品': 0,
+      '全脂乳品': 0,
+      '全榖根莖': 0,
+      '低脂豆魚蛋肉': 0,
+      '中脂豆魚蛋肉': 0,
+      '蔬菜': 0,
+      '水果': 0,
+      '堅果': 0,
+      '低氮澱粉': 0
     }
   },
   monitoring: {
@@ -432,12 +443,35 @@ export default function App() {
         alert('新紀錄已建立並儲存。');
       }
 
-      // Sync consultDate to patients record if matching patient exists
-      const matchingPatient = patients.find(p => p.name === (state.clientHx.name || '未命名個案'));
+      // Sync patient data to the dashboard automatically
+      const patientName = state.clientHx.name || '未命名個案';
+      const matchingPatient = patients.find(p => p.name === patientName);
+      
+      const patientPayload = {
+        name: patientName,
+        birthday: state.clientHx.birthday || '',
+        gender: state.clientHx.gender || '男',
+        consultDate: state.consultDate,
+        updatedAt: Timestamp.now()
+      };
+
       if (matchingPatient && matchingPatient.id) {
-        await updateDoc(doc(db, 'patients', matchingPatient.id), {
-          consultDate: state.consultDate,
-          updatedAt: Timestamp.now()
+        // Update existing patient record
+        await updateDoc(doc(db, 'patients', matchingPatient.id), patientPayload);
+      } else {
+        // Create new patient record if not exists
+        await addDoc(collection(db, 'patients'), {
+          ...patientPayload,
+          userId: user.uid,
+          checklist: {
+            consultation: true,
+            personalizedMsg: false,
+            fu1: false,
+            fu2: false,
+            fu3: false,
+            fu4: false
+          },
+          createdAt: Timestamp.now()
         });
       }
     } catch (error: any) {
@@ -1912,83 +1946,391 @@ export default function App() {
                   </h2>
                 </div>
                 <div className="p-6 space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="space-y-4">
-                      <div className="text-sm font-bold text-slate-500 uppercase">建議熱量需求與三大營養素比例</div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-xs font-bold text-slate-400">建議熱量 (kcal/d)</label>
-                          <div className="flex gap-2">
-                            <input 
-                              type="number" 
-                              value={state.diet.targetKcal || ''}
-                              onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
-                              placeholder="例如：1800"
-                              className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 outline-none"
-                            />
-                            <button 
-                              onClick={() => setState({...state, diet: {...state.diet, targetKcal: recommendedKcal.toString()}})}
-                              className="px-3 py-2 bg-green-100 text-green-700 rounded-lg text-[10px] font-bold hover:bg-green-200 transition-colors"
-                            >
-                              帶入建議值 ({recommendedKcal})
-                            </button>
-                          </div>
+                  <div className="space-y-6 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                    <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">建議熱量需求與三大營養素比例</div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Calorie Input Block */}
+                      <div className="space-y-3 p-4 bg-white rounded-xl border border-slate-200">
+                        <label className="text-xs font-bold text-slate-400 block tracking-tight">1. 建議熱量需求 (kcal/d)</label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="number" 
+                            value={state.diet.targetKcal || ''}
+                            onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
+                            placeholder="例如：1800"
+                            className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                          />
+                          <button 
+                            onClick={() => setState({...state, diet: {...state.diet, targetKcal: recommendedKcal.toString()}})}
+                            className="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-[10px] font-bold hover:bg-green-200 transition-colors whitespace-nowrap"
+                          >
+                            帶入建議值 ({recommendedKcal})
+                          </button>
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-bold text-slate-400">三大營養素分配 (%)</label>
-                          <div className="flex gap-2 items-center">
-                            <div className="flex flex-col flex-1">
-                              <span className="text-[10px] text-slate-400 text-center mb-1">醣類</span>
+                      </div>
+
+                      {/* Macronutrient Proportion Block */}
+                      <div className="space-y-3 p-4 bg-white rounded-xl border border-slate-200">
+                        <div className="flex justify-between items-center">
+                          <label className="text-xs font-bold text-slate-400 tracking-tight">2. 三大營養素分配 (%)</label>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0) === 100 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                             總計: {(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0)}%
+                          </span>
+                        </div>
+                        <div className="flex gap-4 items-center">
+                          <div className="flex flex-col flex-1 items-center">
+                            <span className="text-[10px] text-slate-400 font-bold mb-1">醣類</span>
+                            <div className="relative w-full">
                               <input 
                                 type="number" 
                                 value={state.intervention.macroConfig?.carbsPercent || 0} 
                                 onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, carbsPercent: parseInt(e.target.value) || 0}}})}
-                                className="w-full px-2 py-2 text-sm border rounded-lg text-center"
+                                className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
                               />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
                             </div>
-                            <div className="flex flex-col flex-1">
-                              <span className="text-[10px] text-slate-400 text-center mb-1">蛋白質</span>
+                          </div>
+                          <div className="flex flex-col flex-1 items-center">
+                            <span className="text-[10px] text-slate-400 font-bold mb-1">蛋白質</span>
+                            <div className="relative w-full">
                               <input 
                                 type="number" 
                                 value={state.intervention.macroConfig?.proteinPercent || 0} 
                                 onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, proteinPercent: parseInt(e.target.value) || 0}}})}
-                                className="w-full px-2 py-2 text-sm border rounded-lg text-center"
+                                className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
                               />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
                             </div>
-                            <div className="flex flex-col flex-1">
-                              <span className="text-[10px] text-slate-400 text-center mb-1">脂肪</span>
+                          </div>
+                          <div className="flex flex-col flex-1 items-center">
+                            <span className="text-[10px] text-slate-400 font-bold mb-1">脂肪</span>
+                            <div className="relative w-full">
                               <input 
                                 type="number" 
                                 value={state.intervention.macroConfig?.fatPercent || 0} 
                                 onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, fatPercent: parseInt(e.target.value) || 0}}})}
-                                className="w-full px-2 py-2 text-sm border rounded-lg text-center"
+                                className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
                               />
+                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
                             </div>
-                          </div>
-                          <div className="text-right">
-                             <span className={`text-[10px] font-bold ${(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0) === 100 ? 'text-green-500' : 'text-red-500'}`}>
-                               總計: {(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0)}%
-                             </span>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      {recommendedMacros && (
-                        <div className="grid grid-cols-3 gap-4 p-4 bg-green-50 rounded-xl border border-green-100">
-                          <div className="text-center">
-                            <div className="text-[10px] text-green-600 font-bold mb-1">醣類</div>
-                            <div className="text-lg font-black text-green-700">{recommendedMacros.carbs}g <span className="text-xs font-normal opacity-70">({state.intervention.macroConfig?.carbsPercent}%)</span></div>
+                    {/* Result Summary Block */}
+                    {recommendedMacros && (
+                      <div className="flex flex-col sm:flex-row gap-4 p-5 bg-green-600 rounded-xl shadow-lg shadow-green-100 text-white">
+                        <div className="flex-1 text-center sm:text-left flex flex-col justify-center">
+                          <div className="text-[10px] font-bold opacity-80 uppercase tracking-widest">每日目標熱量</div>
+                          <div className="text-2xl font-black">{state.diet.targetKcal || recommendedKcal} <span className="text-sm font-normal">kcal</span></div>
+                        </div>
+                        <div className="hidden sm:block w-px bg-white/20 my-2" />
+                        <div className="flex-[3] grid grid-cols-3 gap-2">
+                          <div className="text-center group">
+                            <div className="text-[10px] font-bold opacity-80 mb-1">醣類 (g)</div>
+                            <div className="text-xl font-black">{recommendedMacros.carbs}</div>
+                            <div className="text-[10px] opacity-60">({state.intervention.macroConfig?.carbsPercent}%)</div>
                           </div>
-                          <div className="text-center border-x border-green-200">
-                            <div className="text-[10px] text-green-600 font-bold mb-1">蛋白質</div>
-                            <div className="text-lg font-black text-green-700">{recommendedMacros.protein}g <span className="text-xs font-normal opacity-70">({state.intervention.macroConfig?.proteinPercent}%)</span></div>
+                          <div className="text-center border-x border-white/10">
+                            <div className="text-[10px] font-bold opacity-80 mb-1">蛋白質 (g)</div>
+                            <div className="text-xl font-black">{recommendedMacros.protein}</div>
+                            <div className="text-[10px] opacity-60">({state.intervention.macroConfig?.proteinPercent}%)</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-[10px] text-green-600 font-bold mb-1">脂肪</div>
-                            <div className="text-lg font-black text-green-700">{recommendedMacros.fat}g <span className="text-xs font-normal opacity-70">({state.intervention.macroConfig?.fatPercent}%)</span></div>
+                            <div className="text-[10px] font-bold opacity-80 mb-1">脂肪 (g)</div>
+                            <div className="text-xl font-black">{recommendedMacros.fat}</div>
+                            <div className="text-[10px] opacity-60">({state.intervention.macroConfig?.fatPercent}%)</div>
                           </div>
                         </div>
-                      )}
+                      </div>
+                    )}
+
+                    {/* Portions Calculator Section */}
+                    <div className="space-y-6 pt-6 border-t border-slate-200">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="bg-green-100 p-1.5 rounded-lg">
+                          <Calculator className="w-5 h-5 text-green-600" />
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">六大類食物份數計算與建議</h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                        {/* Table Column - Spanning 9/12 */}
+                        <div className="xl:col-span-9 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                          <table className="w-full text-xs text-left border-collapse">
+                            <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
+                              <tr>
+                                <th className="px-3 py-2.5 border-b border-r border-slate-200">食物類別</th>
+                                <th className="px-3 py-2.5 border-b border-r border-slate-200 text-center w-20">份數</th>
+                                <th className="px-3 py-2.5 border-b border-r border-slate-200 text-center text-[10px]">強白 (g)</th>
+                                <th className="px-3 py-2.5 border-b border-r border-slate-200 text-center text-[10px]">醣類 (g)</th>
+                                <th className="px-3 py-2.5 border-b border-r border-slate-200 text-center text-[10px]">脂肪 (g)</th>
+                                <th className="px-3 py-2.5 border-b border-slate-200 text-center text-[10px]">熱量 (kcal)</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 italic">
+                              {[
+                                { key: '低脂乳品', p: 8, c: 12, f: 4, k: 120 },
+                                { key: '全脂乳品', p: 8, c: 12, f: 8, k: 150 },
+                                { key: '全榖根莖', p: 2, c: 15, f: 0, k: 70 },
+                                { key: '低脂豆魚蛋肉', p: 7, c: 0, f: 3, k: 55 },
+                                { key: '中脂豆魚蛋肉', p: 7, c: 0, f: 5, k: 75 },
+                                { key: '蔬菜', p: 1, c: 5, f: 0, k: 25 },
+                                { key: '水果', p: 0, c: 15, f: 0, k: 60 },
+                                { key: '堅果', p: 0, c: 0, f: 5, k: 45 },
+                                { key: '低氮澱粉', p: 1, c: 15, f: 0, k: 64 }
+                              ].map((row) => {
+                                const portions = state.intervention.portions?.[row.key] || 0;
+                                return (
+                                  <tr key={row.key} className="hover:bg-slate-50 transition-colors">
+                                    <td className="px-3 py-1.5 font-bold text-slate-600 border-r border-slate-100">{row.key}</td>
+                                    <td className="px-2 py-1.5 border-r border-slate-100">
+                                      <input 
+                                        type="number"
+                                        step="0.5"
+                                        value={portions || ''}
+                                        onChange={(e) => {
+                                          const val = parseFloat(e.target.value) || 0;
+                                          setState({
+                                            ...state,
+                                            intervention: {
+                                              ...state.intervention,
+                                              portions: {
+                                                ...state.intervention.portions,
+                                                [row.key]: val
+                                              }
+                                            }
+                                          });
+                                        }}
+                                        className="w-full h-8 text-center border border-slate-200 rounded-md focus:ring-1 focus:ring-green-500 outline-none font-black text-blue-600 bg-slate-50/30"
+                                      />
+                                    </td>
+                                    <td className="px-3 py-1.5 text-center text-slate-400 border-r border-slate-100">{row.p}</td>
+                                    <td className="px-3 py-1.5 text-center text-slate-400 border-r border-slate-100">{row.c}</td>
+                                    <td className="px-3 py-1.5 text-center text-slate-400 border-r border-slate-100">{row.f}</td>
+                                    <td className="px-3 py-1.5 text-center text-slate-400">{row.k}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                            <tfoot className="bg-slate-800 text-white font-bold">
+                              {(() => {
+                                const portVals: any = {
+                                  '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
+                                  '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
+                                  '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
+                                  '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
+                                  '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
+                                  '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
+                                  '水果': { p: 0, c: 15, f: 0, k: 60 },
+                                  '堅果': { p: 0, c: 0, f: 5, k: 45 },
+                                  '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
+                                };
+                                let totalP = 0, totalC = 0, totalF = 0, totalK = 0;
+                                Object.entries(state.intervention.portions || {}).forEach(([key, val]) => {
+                                  if (portVals[key]) {
+                                    totalP += val * portVals[key].p;
+                                    totalC += val * portVals[key].c;
+                                    totalF += val * portVals[key].f;
+                                    totalK += val * portVals[key].k;
+                                  }
+                                });
+                                return (
+                                  <>
+                                    <tr>
+                                      <td className="px-3 py-1.5 border-r border-slate-700 text-center text-[10px]" colSpan={2}>總計公克 (g)</td>
+                                      <td className="px-3 py-1.5 text-center border-r border-slate-700 text-green-400">{totalP.toFixed(0)}</td>
+                                      <td className="px-3 py-1.5 text-center border-r border-slate-700 text-blue-400">{totalC.toFixed(0)}</td>
+                                      <td className="px-3 py-1.5 text-center border-r border-slate-700 text-orange-400">{totalF.toFixed(0)}</td>
+                                      <td className="px-3 py-1.5 text-center bg-green-700 font-black">{totalK.toFixed(0)}</td>
+                                    </tr>
+                                    <tr className="bg-slate-900 border-t border-slate-700">
+                                      <td className="px-3 py-1.5 border-r border-slate-800 text-center text-[10px]" colSpan={2}>能量佔比 (%)</td>
+                                      <td className="px-3 py-1.5 text-center border-r border-slate-800 text-green-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalP * 4 / totalK) * 100).toFixed(1) : '0.0'}%</td>
+                                      <td className="px-3 py-1.5 text-center border-r border-slate-800 text-blue-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalC * 4 / totalK) * 100).toFixed(1) : '0.0'}%</td>
+                                      <td className="px-3 py-1.5 text-center border-r border-slate-800 text-orange-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalF * 9 / totalK) * 100).toFixed(1) : '0.0'}%</td>
+                                      <td className="px-3 py-1.5 text-center opacity-40 text-[9px] uppercase tracking-tighter italic">Total Kcal</td>
+                                    </tr>
+                                  </>
+                                );
+                              })()}
+                            </tfoot>
+                          </table>
+                        </div>
+
+                        {/* Suggestions Column - Spanning 3/12 */}
+                        <div className="xl:col-span-3 space-y-4">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">智能份數助理</h4>
+                              <div className="flex gap-1">
+                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse delay-75" />
+                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse delay-150" />
+                              </div>
+                            </div>
+                            
+                            {(() => {
+                              const portVals: any = {
+                                '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
+                                '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
+                                '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
+                                '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
+                                '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
+                                '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
+                                '水果': { p: 0, c: 15, f: 0, k: 60 },
+                                '堅果': { p: 0, c: 0, f: 5, k: 45 },
+                                '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
+                              };
+                              const targetC = parseFloat(recommendedMacros?.carbs || '0');
+                              const targetP = parseFloat(recommendedMacros?.protein || '0');
+                              
+                              let currentC_others = 0;
+                              let currentP_others = 0;
+
+                              Object.entries(state.intervention.portions || {}).forEach(([key, val]) => {
+                                if (key !== '全榖根莖') currentC_others += (val || 0) * (portVals[key]?.c || 0);
+                                if (key !== '中脂豆魚蛋肉') currentP_others += (val || 0) * (portVals[key]?.p || 0);
+                              });
+
+                              const wholeGrainsSug = Math.max(0, (targetC - currentC_others) / 15);
+                              const medFatMeatSug = Math.max(0, (targetP - currentP_others) / 7);
+
+                              return (
+                                <div className="space-y-3">
+                                  <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="text-[10px] font-bold text-blue-600">全榖根莖</span>
+                                      <span className="text-sm font-black text-blue-700">{wholeGrainsSug.toFixed(1)} <span className="text-[10px] font-normal">份</span></span>
+                                    </div>
+                                    <button 
+                                      onClick={() => {
+                                        setState({
+                                          ...state,
+                                          intervention: {
+                                            ...state.intervention,
+                                            portions: {
+                                              ...state.intervention.portions,
+                                              '全榖根莖': parseFloat(wholeGrainsSug.toFixed(1))
+                                            }
+                                          }
+                                        });
+                                      }}
+                                      className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-md shadow-sm transition-all active:scale-95"
+                                    >
+                                      套用建議
+                                    </button>
+                                  </div>
+
+                                  <div className="p-3 bg-orange-50/50 rounded-lg border border-orange-100">
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="text-[10px] font-bold text-orange-600">中脂肉類</span>
+                                      <span className="text-sm font-black text-orange-700">{medFatMeatSug.toFixed(1)} <span className="text-[10px] font-normal">份</span></span>
+                                    </div>
+                                    <button 
+                                      onClick={() => {
+                                        setState({
+                                          ...state,
+                                          intervention: {
+                                            ...state.intervention,
+                                            portions: {
+                                              ...state.intervention.portions,
+                                              '中脂豆魚蛋肉': parseFloat(medFatMeatSug.toFixed(1))
+                                            }
+                                          }
+                                        });
+                                      }}
+                                      className="w-full py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-bold rounded-md shadow-sm transition-all active:scale-95"
+                                    >
+                                      套用建議
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="pt-2 italic text-[9px] text-slate-400 space-y-1 border-t border-slate-100">
+                                    <p className="flex items-center gap-1"><Info className="w-2.5 h-2.5" /> 建議先輸入菜、果、乳份數</p>
+                                    <p className="flex items-center gap-1"><Info className="w-2.5 h-2.5" /> 助理會依目標剩餘量回推</p>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Guideline Reference Tables */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">飲食指南參考 (Reference Guidelines)</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* DM Table */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between border-b border-blue-100 pb-1">
+                            <span className="text-xs font-black text-blue-600 uppercase">糖尿病 (DM) 份量建議</span>
+                          </div>
+                          <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+                            <table className="w-full text-[10px] text-left">
+                              <thead className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-100">
+                                <tr>
+                                  <th className="px-2 py-1.5 border-r border-slate-100">kcal</th>
+                                  {INTERVENTION_CATEGORIES.map(cat => (
+                                    <th key={cat} className="px-1 py-1.5 text-center min-w-[28px]">{cat.slice(0, 2)}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {Object.entries(DIET_GUIDELINES['DM']).map(([kcal, plan]) => {
+                                  const isMatched = Math.abs(parseInt(kcal) - (parseInt(state.diet.targetKcal) || recommendedKcal)) < 50;
+                                  return (
+                                    <tr key={kcal} className={`hover:bg-blue-50/30 transition-colors ${isMatched ? 'bg-blue-50/50 font-bold text-blue-700' : 'text-slate-500'}`}>
+                                      <td className="px-2 py-1.5 font-mono border-r border-slate-100 bg-slate-50/30">{kcal}</td>
+                                      {INTERVENTION_CATEGORIES.map((cat, idx) => (
+                                        <td key={idx} className="px-1 py-1.5 text-center">{plan[cat] || '--'}</td>
+                                      ))}
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        {/* CKD Table */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between border-b border-orange-100 pb-1">
+                            <span className="text-xs font-black text-orange-600 uppercase">腎臟病 (CKD) 份量建議</span>
+                          </div>
+                          <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white">
+                            <table className="w-full text-[10px] text-left">
+                              <thead className="bg-slate-50 text-slate-500 font-bold uppercase border-b border-slate-100">
+                                <tr>
+                                  <th className="px-2 py-1.5 border-r border-slate-100">kcal</th>
+                                  {INTERVENTION_CATEGORIES.map(cat => (
+                                    <th key={cat} className="px-1 py-1.5 text-center min-w-[28px]">{cat.slice(0, 2)}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                {Object.entries(DIET_GUIDELINES['CKD']).map(([kcal, plan]) => {
+                                  const isMatched = Math.abs(parseInt(kcal) - (parseInt(state.diet.targetKcal) || recommendedKcal)) < 50;
+                                  return (
+                                    <tr key={kcal} className={`hover:bg-orange-50/30 transition-colors ${isMatched ? 'bg-orange-50/50 font-bold text-orange-700' : 'text-slate-500'}`}>
+                                      <td className="px-2 py-1.5 font-mono border-r border-slate-100 bg-slate-50/30">{kcal}</td>
+                                      {INTERVENTION_CATEGORIES.map((cat, idx) => (
+                                        <td key={idx} className="px-1 py-1.5 text-center">{plan[cat] || '--'}</td>
+                                      ))}
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
