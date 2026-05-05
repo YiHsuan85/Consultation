@@ -194,6 +194,287 @@ const GuidelineCheckbox = ({ label, id, state, setState }: { label: string, id: 
   </label>
 );
 
+const Dashboard = ({ 
+  patients, 
+  history, 
+  setIsPatientModalOpen, 
+  setHistoryFilter, 
+  setIsHistoryOpen, 
+  loadRecord, 
+  setState, 
+  setActivePage, 
+  setActiveTab, 
+  deletePatient,
+  handlePatientAction,
+  calculateAge,
+  currentMonth,
+  setCurrentMonth,
+  INITIAL_STATE
+}: any) => {
+  const [q, setQ] = useState('');
+  const filteredPatients = patients.filter((p: Patient) => p.name.toLowerCase().includes(q.toLowerCase()));
+
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth));
+    const end = endOfWeek(endOfMonth(currentMonth));
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  const upcomingEvents = useMemo(() => {
+    const events: any[] = [];
+    patients.forEach((p: Patient) => {
+      if (!p.consultDate) return;
+      let base;
+      try {
+        base = parseISO(p.consultDate);
+      } catch (e) {
+        return;
+      }
+      const schedule = [
+        { label: '1st f/u', days: 14, key: 'fu1' },
+        { label: '2nd f/u', days: 28, key: 'fu2' },
+        { label: '3rd f/u', days: 56, key: 'fu3' },
+        { label: '4th f/u', days: 84, key: 'fu4' },
+      ];
+      schedule.forEach(s => {
+        if (!p.checklist[s.key as keyof Patient['checklist']]) {
+          const date = addDays(base, s.days);
+          events.push({
+            name: p.name,
+            label: s.label,
+            fullLabel: `${p.name} - ${s.label}`,
+            date,
+            patientId: p.id
+          });
+        }
+      });
+    });
+    return events.sort((a, b) => a.date.getTime() - b.date.getTime());
+  }, [patients]);
+
+  return (
+    <div className="space-y-6">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">病人總覽</h1>
+          <p className="text-slate-500 text-sm">管理您的諮詢對象與追蹤進度</p>
+        </div>
+        <div className="flex gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="搜尋姓名..."
+              value={q}
+              onChange={e => setQ(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            />
+          </div>
+          <button 
+            onClick={() => setIsPatientModalOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            新增病人
+          </button>
+        </div>
+      </header>
+
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100 italic">
+                  <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">姓名</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">生日 / 年齡</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">性別</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">追蹤進度</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredPatients.map((p: Patient) => (
+                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-800">{p.name}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-slate-600">{p.birthday || '--'}</div>
+                      <div className="text-xs text-slate-400">{p.birthday ? calculateAge(p.birthday) : '--'} 歲</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{p.gender}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        {[
+                          { key: 'consultation', label: '諮', title: '諮詢' },
+                          { key: 'personalizedMsg', label: '框', title: '個人化' },
+                          { key: 'fu1', label: '1', title: '1st f/u' },
+                          { key: 'fu2', label: '2', title: '2nd f/u' },
+                          { key: 'fu3', label: '3', title: '3rd f/u' },
+                          { key: 'fu4', label: '4', title: '4th f/u' },
+                        ].map(item => (
+                          <button 
+                            key={item.key}
+                            title={item.title}
+                            onClick={() => handlePatientAction(p.id!, item.key as any, !p.checklist[item.key as keyof Patient['checklist']])}
+                            className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all ${
+                              p.checklist[item.key as keyof Patient['checklist']]
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                            }`}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        {(() => {
+                          const latest = history
+                            .filter((h: any) => h.clientName === p.name)
+                            .sort((a: any, b: any) => b.consultDate.localeCompare(a.consultDate))[0];
+                          
+                          return (
+                            <button 
+                              onClick={() => {
+                                if (latest) {
+                                  loadRecord(latest);
+                                } else {
+                                  // If no history, start a new one with patient info
+                                  setState({
+                                    ...INITIAL_STATE,
+                                    id: undefined,
+                                    consultDate: new Date().toISOString().split('T')[0],
+                                    clientHx: {
+                                      ...INITIAL_STATE.clientHx,
+                                      name: p.name,
+                                      gender: p.gender,
+                                      birthday: p.birthday
+                                    }
+                                  });
+                                }
+                                setActivePage('consultation');
+                                setActiveTab('assessment');
+                              }}
+                              className="bg-green-50 hover:bg-green-100 text-green-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
+                            >
+                              <FileText className="w-3 h-3" />
+                              {latest ? '編輯紀錄' : '建立紀錄'}
+                            </button>
+                          );
+                        })()}
+                        <button 
+                          onClick={(e) => {
+                            console.log('Trash button clicked for patient:', p.name);
+                            deletePatient(e, p);
+                          }}
+                          className="bg-red-50 hover:bg-red-100 text-red-500 p-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm"
+                          title="刪除個案"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredPatients.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400 italic font-mono uppercase tracking-widest text-[10px]">
+                      尚無病人紀錄
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-600" />
+              追蹤行程行事曆 (Follow-up Calendar)
+            </h2>
+            <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <button 
+                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180" />
+              </button>
+              <div className="text-sm font-black text-slate-700 min-w-[100px] text-center uppercase tracking-widest">
+                {format(currentMonth, 'yyyy年 M月')}
+              </div>
+              <button 
+                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
+              >
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 border-t border-l border-slate-100 mb-2">
+            {['週日', '週一', '週二', '週三', '週四', '週五', '週六'].map(d => (
+              <div key={d} className="py-2 text-center text-[10px] font-bold text-slate-400 border-r border-b border-slate-100 bg-slate-50/50">
+                {d}
+              </div>
+            ))}
+            {calendarDays.map((day: Date, i: number) => {
+              const dayEvents = upcomingEvents.filter(ev => isSameDay(ev.date, day));
+              const isCurrentMonth = isSameMonth(day, currentMonth);
+              const isToday = isSameDay(day, new Date());
+
+              return (
+                <div 
+                  key={i} 
+                  className={`min-h-[100px] p-1 border-r border-b border-slate-100 transition-colors ${
+                    isCurrentMonth ? 'bg-white' : 'bg-slate-50/30'
+                  } ${isToday ? 'ring-1 ring-blue-500 ring-inset relative z-10' : ''}`}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className={`text-[10px] font-mono font-bold ${
+                      isToday ? 'bg-blue-600 text-white px-1.5 rounded-full' : 
+                      isCurrentMonth ? 'text-slate-500' : 'text-slate-300'
+                    }`}>
+                      {format(day, 'd')}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {dayEvents.map((ev, idx) => (
+                      <div 
+                        key={idx}
+                        className="text-[9px] p-1 rounded bg-blue-50 text-blue-700 font-bold border border-blue-100 truncate flex items-center gap-1 group cursor-pointer hover:bg-blue-600 hover:text-white transition-colors"
+                        title={ev.fullLabel}
+                      >
+                        <div className="w-1 h-1 rounded-full bg-blue-400 group-hover:bg-white shrink-0" />
+                        {ev.fullLabel}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="mt-4 flex flex-wrap gap-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-full bg-blue-400" />
+              <span className="text-[10px] text-slate-500 font-medium">預定追蹤</span>
+            </div>
+            <div className="flex items-center gap-1.5 ml-auto text-[10px] text-slate-400 italic">
+              <Info className="w-3 h-3" />
+              點擊病人姓名可快速查看狀態
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -278,7 +559,6 @@ export default function App() {
   };
 
   const [history, setHistory] = useState<any[]>([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // History Listener
@@ -515,21 +795,22 @@ export default function App() {
       intervention: { ...INITIAL_STATE.intervention, ...(record.data.intervention || {}) },
       monitoring: { ...INITIAL_STATE.monitoring, ...(record.data.monitoring || {}) }
     });
-    setIsHistoryOpen(false);
     alert(`已載入 ${record.clientName} 的紀錄。`);
   };
 
-  const deleteRecord = async (e: React.MouseEvent, id: string) => {
+  const deletePatient = (e: React.MouseEvent, p: Patient) => {
     e.stopPropagation();
-    if (confirm('確定要刪除此紀錄嗎？')) {
-      try {
-        await deleteDoc(doc(db, 'consultations', id));
-        if (state.id === id) {
-          setState(INITIAL_STATE);
-        }
-      } catch (error) {
-        alert('刪除失敗。');
-      }
+    setPatientToDelete(p);
+  };
+
+  const confirmDeletePatient = async () => {
+    if (!patientToDelete?.id) return;
+    try {
+      await deleteDoc(doc(db, 'patients', patientToDelete.id));
+      setPatientToDelete(null);
+    } catch (error) {
+      console.error('Firestore delete error:', error);
+      alert(`刪除失敗：${error instanceof Error ? error.message : '未知錯誤'}`);
     }
   };
 
@@ -553,278 +834,11 @@ export default function App() {
 
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
   const [newPatientData, setNewPatientData] = useState({ name: '', birthday: '', gender: '女' as '男' | '女' });
+  const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
 
-  const [historyFilter, setHistoryFilter] = useState('');
-  const filteredHistory = history.filter(h => 
-    !historyFilter || h.clientName === historyFilter
-  );
+  // Removed inner Dashboard definition
 
-  const Dashboard = () => {
-    const [q, setQ] = useState('');
-    const filteredPatients = patients.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
-
-    const [currentMonth, setCurrentMonth] = useState(new Date());
-
-    const calendarDays = useMemo(() => {
-      const start = startOfWeek(startOfMonth(currentMonth));
-      const end = endOfWeek(endOfMonth(currentMonth));
-      return eachDayOfInterval({ start, end });
-    }, [currentMonth]);
-
-    const upcomingEvents = useMemo(() => {
-      const events: any[] = [];
-      patients.forEach(p => {
-        if (!p.consultDate) return;
-        let base;
-        try {
-          base = parseISO(p.consultDate);
-        } catch (e) {
-          return;
-        }
-        const schedule = [
-          { label: '第一次追蹤', days: 14, key: 'fu1' },
-          { label: '第二次追蹤', days: 28, key: 'fu2' },
-          { label: '第三次追蹤', days: 56, key: 'fu3' },
-          { label: '第四次追蹤', days: 84, key: 'fu4' },
-        ];
-        schedule.forEach(s => {
-          if (!p.checklist[s.key as keyof Patient['checklist']]) {
-            const date = addDays(base, s.days);
-            events.push({
-              name: p.name,
-              label: s.label,
-              fullLabel: `${p.name} - ${s.label}`,
-              date,
-              patientId: p.id
-            });
-          }
-        });
-      });
-      return events.sort((a, b) => a.date.getTime() - b.date.getTime());
-    }, [patients]);
-
-    return (
-      <div className="space-y-6">
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">病人總覽</h1>
-            <p className="text-slate-500 text-sm">管理您的諮詢對象與追蹤進度</p>
-          </div>
-          <div className="flex gap-3 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="搜尋姓名..."
-                value={q}
-                onChange={e => setQ(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              />
-            </div>
-            <button 
-              onClick={() => setIsPatientModalOpen(true)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95 whitespace-nowrap"
-            >
-              <Plus className="w-4 h-4" />
-              新增病人
-            </button>
-          </div>
-        </header>
-
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 italic">
-                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">姓名</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">生日 / 年齡</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">性別</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">追蹤進度</th>
-                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredPatients.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-slate-800">{p.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-slate-600">{p.birthday || '--'}</div>
-                        <div className="text-xs text-slate-400">{p.birthday ? calculateAge(p.birthday) : '--'} 歲</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{p.gender}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          {[
-                            { key: 'consultation', label: '諮', title: '諮詢' },
-                            { key: 'personalizedMsg', label: '框', title: '個人化' },
-                            { key: 'fu1', label: '1', title: '1st f/u' },
-                            { key: 'fu2', label: '2', title: '2nd f/u' },
-                            { key: 'fu3', label: '3', title: '3rd f/u' },
-                            { key: 'fu4', label: '4', title: '4th f/u' },
-                          ].map(item => (
-                            <button 
-                              key={item.key}
-                              title={item.title}
-                              onClick={() => handlePatientAction(p.id!, item.key as any, !p.checklist[item.key as keyof Patient['checklist']])}
-                              className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all ${
-                                p.checklist[item.key as keyof Patient['checklist']]
-                                  ? 'bg-blue-600 text-white shadow-sm'
-                                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-                              }`}
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button 
-                            onClick={() => {
-                              setHistoryFilter(p.name);
-                              setIsHistoryOpen(true);
-                            }}
-                            className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
-                          >
-                            <History className="w-3 h-3" />
-                            歷程
-                          </button>
-                          {(() => {
-                            const latest = history
-                              .filter(h => h.clientName === p.name)
-                              .sort((a, b) => b.consultDate.localeCompare(a.consultDate))[0];
-                            
-                            return (
-                              <button 
-                                onClick={() => {
-                                  if (latest) {
-                                    loadRecord(latest);
-                                  } else {
-                                    // If no history, start a new one with patient info
-                                    setState({
-                                      ...INITIAL_STATE,
-                                      id: undefined,
-                                      consultDate: new Date().toISOString().split('T')[0],
-                                      clientHx: {
-                                        ...INITIAL_STATE.clientHx,
-                                        name: p.name,
-                                        gender: p.gender,
-                                        birthday: p.birthday
-                                      }
-                                    });
-                                  }
-                                  setActivePage('consultation');
-                                  setActiveTab('assessment');
-                                }}
-                                className="bg-green-50 hover:bg-green-100 text-green-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
-                              >
-                                <FileText className="w-3 h-3" />
-                                {latest ? '查看最近紀錄' : '建立初次諮詢'}
-                              </button>
-                            );
-                          })()}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {filteredPatients.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400 italic font-mono uppercase tracking-widest text-[10px]">
-                        尚無病人紀錄
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                追蹤行程行事曆 (Follow-up Calendar)
-              </h2>
-              <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                <button 
-                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
-                >
-                  <ArrowRight className="w-4 h-4 rotate-180" />
-                </button>
-                <div className="text-sm font-black text-slate-700 min-w-[100px] text-center uppercase tracking-widest">
-                  {format(currentMonth, 'yyyy年 M月')}
-                </div>
-                <button 
-                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-7 border-t border-l border-slate-100 mb-2">
-              {['週日', '週一', '週二', '週三', '週四', '週五', '週六'].map(d => (
-                <div key={d} className="py-2 text-center text-[10px] font-bold text-slate-400 border-r border-b border-slate-100 bg-slate-50/50">
-                  {d}
-                </div>
-              ))}
-              {calendarDays.map((day, i) => {
-                const dayEvents = upcomingEvents.filter(ev => isSameDay(ev.date, day));
-                const isCurrentMonth = isSameMonth(day, currentMonth);
-                const isToday = isSameDay(day, new Date());
-
-                return (
-                  <div 
-                    key={i} 
-                    className={`min-h-[100px] p-1 border-r border-b border-slate-100 transition-colors ${
-                      isCurrentMonth ? 'bg-white' : 'bg-slate-50/30'
-                    } ${isToday ? 'ring-1 ring-blue-500 ring-inset relative z-10' : ''}`}
-                  >
-                    <div className="flex justify-between items-center mb-1">
-                      <span className={`text-[10px] font-mono font-bold ${
-                        isToday ? 'bg-blue-600 text-white px-1.5 rounded-full' : 
-                        isCurrentMonth ? 'text-slate-500' : 'text-slate-300'
-                      }`}>
-                        {format(day, 'd')}
-                      </span>
-                    </div>
-                    <div className="space-y-1">
-                      {dayEvents.map((ev, idx) => (
-                        <div 
-                          key={idx}
-                          className="text-[9px] p-1 rounded bg-blue-50 text-blue-700 font-bold border border-blue-100 truncate flex items-center gap-1 group cursor-pointer hover:bg-blue-600 hover:text-white transition-colors"
-                          title={ev.fullLabel}
-                        >
-                          <div className="w-1 h-1 rounded-full bg-blue-400 group-hover:bg-white shrink-0" />
-                          {ev.fullLabel}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="mt-4 flex flex-wrap gap-4">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-blue-400" />
-                <span className="text-[10px] text-slate-500 font-medium">預定追蹤</span>
-              </div>
-              <div className="flex items-center gap-1.5 ml-auto text-[10px] text-slate-400 italic">
-                <Info className="w-3 h-3" />
-                點擊病人姓名可快速查看狀態
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const handleDownloadWord = () => {
     generateReminderWordDoc(state);
@@ -944,9 +958,6 @@ export default function App() {
           >
             <ClipboardList className="w-6 h-6" />
           </button>
-          <button onClick={() => setIsHistoryOpen(true)} className="w-12 h-12 rounded-xl flex items-center justify-center transition-all text-slate-400 hover:bg-slate-50">
-            <History className="w-6 h-6" />
-          </button>
         </nav>
         <div className="mt-auto space-y-4 text-center">
           <button onClick={handleLogout} className="w-12 h-12 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
@@ -975,7 +986,51 @@ export default function App() {
             </div>
           </div>
         )}
-        {activePage === 'dashboard' ? <Dashboard /> : (
+
+        {patientToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8">
+              <h2 className="text-xl font-bold mb-4 text-red-600 flex items-center gap-2">
+                <Trash2 className="w-6 h-6" />
+                刪除個案
+              </h2>
+              <p className="text-slate-600 mb-8">
+                確定要刪除個案「<span className="font-bold text-slate-900">{patientToDelete.name}</span>」嗎？<br/>
+                這將會從總覽清單中移除個案，但不會刪除該個案過去的諮詢紀錄。
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setPatientToDelete(null)} 
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+                >
+                  取消
+                </button>
+                <button 
+                  onClick={confirmDeletePatient} 
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-sm"
+                >
+                  確認刪除
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {activePage === 'dashboard' ? (
+          <Dashboard 
+            patients={patients}
+            history={history}
+            loadRecord={loadRecord}
+            setState={setState}
+            setActivePage={setActivePage}
+            setActiveTab={setActiveTab}
+            deletePatient={deletePatient}
+            handlePatientAction={handlePatientAction}
+            calculateAge={calculateAge}
+            currentMonth={currentMonth}
+            setCurrentMonth={setCurrentMonth}
+            INITIAL_STATE={INITIAL_STATE}
+          />
+        ) : (
           <div className="space-y-6">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div>
@@ -3683,77 +3738,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* History Sidebar */}
-        <AnimatePresence>
-          {isHistoryOpen && (
-            <>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => { setIsHistoryOpen(false); setHistoryFilter(''); }}
-                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50"
-              />
-              <motion.div 
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                className="fixed right-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-[60] flex flex-col"
-              >
-                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                  <div>
-                    <h2 className="font-black text-slate-800 flex items-center gap-2">
-                      <History className="w-5 h-5 text-blue-600" />
-                      諮詢歷程
-                    </h2>
-                    {historyFilter && (
-                      <p className="text-[10px] text-blue-600 font-bold uppercase mt-0.5">正在檢視: {historyFilter}</p>
-                    )}
-                  </div>
-                  <button onClick={() => { setIsHistoryOpen(false); setHistoryFilter(''); }} className="p-2 hover:bg-slate-200 rounded-lg text-slate-400">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                {historyFilter && (
-                  <div className="px-4 py-2 border-b border-slate-100">
-                    <button 
-                      onClick={() => setHistoryFilter('')}
-                      className="text-[10px] text-slate-400 hover:text-blue-600 font-bold flex items-center gap-1"
-                    >
-                      <X className="w-3 h-3" /> 清除篩選，顯示全部
-                    </button>
-                  </div>
-                )}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {filteredHistory.map((h: any) => (
-                    <div 
-                      key={h.id}
-                      onClick={() => loadRecord(h)}
-                      className="p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group"
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-black text-blue-600">{h.consultDate}</span>
-                        <button 
-                          onClick={(e) => deleteRecord(e, h.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 text-red-400 rounded transition-all"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <div className="font-bold text-slate-800">{h.clientName}</div>
-                      <div className="text-[10px] text-slate-400 mt-1 line-clamp-1">{h.data.goal || '無註記目標'}</div>
-                    </div>
-                  ))}
-                  {filteredHistory.length === 0 && (
-                    <div className="text-center py-10 text-slate-400 italic text-sm">尚無紀錄</div>
-                  )}
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-            <div className="mt-12 flex justify-between items-center text-slate-400 text-sm border-t border-slate-200 pt-8 no-print">
+        <div className="mt-12 flex justify-between items-center text-slate-400 text-sm border-t border-slate-200 pt-8 no-print">
               <p>© 2026 營養諮詢紀錄系統 - NCP 專業版</p>
               <div className="flex gap-4">
                 <button 
