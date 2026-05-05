@@ -222,6 +222,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: 'Qburger鮪魚玉米可朗芙 123g', category: '外食類', carbs: 25.9, protein: 10.6, fat: 21.4, kcal: 336, na: 376, k:'', p: ''},
   { name: 'Qburger經典可朗芙 55g', category: '外食類', carbs: 21.7, protein: 4.4, fat: 8.8, kcal: 181.8, na: 235, k:'', p: ''},
   { name: 'Qburger花醬可朗芙 72g', category: '外食類', carbs: 26.3, protein: 7.5, fat: 17.1, kcal: 287.5, na: 276, k:'', p: ''},
+  { name: '桂格 即沖即食大燕麥片 37.5g（1湯匙）', category: '外食類', carbs: 25.3, protein:4.9 , fat: 3, kcal: 140, na: 2, k:'', p: ''},
   
   // 醬料類
   { name: '醬油膏 5g', category: '醬料類', carbs: 1, protein: 0.3, fat: 0, kcal: 5, na: 202.5, k: 16.4, p: 5.5 },
