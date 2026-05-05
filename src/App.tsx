@@ -20,13 +20,14 @@ import {
   X,
   Pill,
   Info,
+  FileText,
   LayoutDashboard,
   Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
 import { generateWordDoc, generateReminderWordDoc } from './lib/wordGenerator';
-import { addDays, format, parseISO, isSameDay } from 'date-fns';
+import { addDays, format, parseISO, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths } from 'date-fns';
 import { 
   auth, 
   db, 
@@ -500,7 +501,20 @@ export default function App() {
   };
 
   const loadRecord = (record: any) => {
-    setState({ ...record.data, id: record.id });
+    // Deep merge with INITIAL_STATE to ensure compatibility with new fields
+    setState({
+      ...INITIAL_STATE,
+      ...record.data,
+      id: record.id,
+      // Ensure nested objects are handled
+      clientHx: { ...INITIAL_STATE.clientHx, ...(record.data.clientHx || {}) },
+      anthropometry: { ...INITIAL_STATE.anthropometry, ...(record.data.anthropometry || {}) },
+      biochemistry: { ...INITIAL_STATE.biochemistry, ...(record.data.biochemistry || {}) },
+      clinical: { ...INITIAL_STATE.clinical, ...(record.data.clinical || {}) },
+      diet: { ...INITIAL_STATE.diet, ...(record.data.diet || {}) },
+      intervention: { ...INITIAL_STATE.intervention, ...(record.data.intervention || {}) },
+      monitoring: { ...INITIAL_STATE.monitoring, ...(record.data.monitoring || {}) }
+    });
     setIsHistoryOpen(false);
     alert(`已載入 ${record.clientName} 的紀錄。`);
   };
@@ -540,9 +554,22 @@ export default function App() {
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
   const [newPatientData, setNewPatientData] = useState({ name: '', birthday: '', gender: '女' as '男' | '女' });
 
+  const [historyFilter, setHistoryFilter] = useState('');
+  const filteredHistory = history.filter(h => 
+    !historyFilter || h.clientName === historyFilter
+  );
+
   const Dashboard = () => {
     const [q, setQ] = useState('');
     const filteredPatients = patients.filter(p => p.name.toLowerCase().includes(q.toLowerCase()));
+
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+
+    const calendarDays = useMemo(() => {
+      const start = startOfWeek(startOfMonth(currentMonth));
+      const end = endOfWeek(endOfMonth(currentMonth));
+      return eachDayOfInterval({ start, end });
+    }, [currentMonth]);
 
     const upcomingEvents = useMemo(() => {
       const events: any[] = [];
@@ -555,10 +582,10 @@ export default function App() {
           return;
         }
         const schedule = [
-          { label: '第一次追蹤', days: 30, key: 'fu1' },
-          { label: '第二次追蹤', days: 60, key: 'fu2' },
-          { label: '第三次追蹤', days: 90, key: 'fu3' },
-          { label: '第四次追蹤', days: 120, key: 'fu4' },
+          { label: '第一次追蹤', days: 14, key: 'fu1' },
+          { label: '第二次追蹤', days: 28, key: 'fu2' },
+          { label: '第三次追蹤', days: 56, key: 'fu3' },
+          { label: '第四次追蹤', days: 84, key: 'fu4' },
         ];
         schedule.forEach(s => {
           if (!p.checklist[s.key as keyof Patient['checklist']]) {
@@ -654,27 +681,52 @@ export default function App() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => {
-                            setState({
-                              ...INITIAL_STATE,
-                              id: undefined,
-                              consultDate: new Date().toISOString().split('T')[0],
-                              clientHx: {
-                                ...INITIAL_STATE.clientHx,
-                                name: p.name,
-                                gender: p.gender,
-                                birthday: p.birthday
-                              }
-                            });
-                            setActivePage('consultation');
-                            setActiveTab('assessment');
-                          }}
-                          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
-                        >
-                          <Stethoscope className="w-3 h-3" />
-                          開新諮詢
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button 
+                            onClick={() => {
+                              setHistoryFilter(p.name);
+                              setIsHistoryOpen(true);
+                            }}
+                            className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
+                          >
+                            <History className="w-3 h-3" />
+                            歷程
+                          </button>
+                          {(() => {
+                            const latest = history
+                              .filter(h => h.clientName === p.name)
+                              .sort((a, b) => b.consultDate.localeCompare(a.consultDate))[0];
+                            
+                            return (
+                              <button 
+                                onClick={() => {
+                                  if (latest) {
+                                    loadRecord(latest);
+                                  } else {
+                                    // If no history, start a new one with patient info
+                                    setState({
+                                      ...INITIAL_STATE,
+                                      id: undefined,
+                                      consultDate: new Date().toISOString().split('T')[0],
+                                      clientHx: {
+                                        ...INITIAL_STATE.clientHx,
+                                        name: p.name,
+                                        gender: p.gender,
+                                        birthday: p.birthday
+                                      }
+                                    });
+                                  }
+                                  setActivePage('consultation');
+                                  setActiveTab('assessment');
+                                }}
+                                className="bg-green-50 hover:bg-green-100 text-green-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap"
+                              >
+                                <FileText className="w-3 h-3" />
+                                {latest ? '查看最近紀錄' : '建立初次諮詢'}
+                              </button>
+                            );
+                          })()}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -691,31 +743,82 @@ export default function App() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-            <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-b pb-4">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              追蹤行程行事曆 (Follow-up Schedule)
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {upcomingEvents.slice(0, 12).map((ev, idx) => (
-                <div key={idx} className="flex flex-col p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all group">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="text-xs font-mono text-blue-600 font-black bg-blue-50 px-2 py-1 rounded-lg">
-                      {format(ev.date, 'yyyy/MM/dd')}
-                    </div>
-                    <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                      {format(ev.date, 'EEEE')}
-                    </div>
-                  </div>
-                  <div className="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition-colors">
-                    {ev.fullLabel}
-                  </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                追蹤行程行事曆 (Follow-up Calendar)
+              </h2>
+              <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                <button 
+                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180" />
+                </button>
+                <div className="text-sm font-black text-slate-700 min-w-[100px] text-center uppercase tracking-widest">
+                  {format(currentMonth, 'yyyy年 M月')}
+                </div>
+                <button 
+                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 border-t border-l border-slate-100 mb-2">
+              {['週日', '週一', '週二', '週三', '週四', '週五', '週六'].map(d => (
+                <div key={d} className="py-2 text-center text-[10px] font-bold text-slate-400 border-r border-b border-slate-100 bg-slate-50/50">
+                  {d}
                 </div>
               ))}
-              {upcomingEvents.length === 0 && (
-                <div className="col-span-full text-center py-12 text-slate-400 italic text-sm bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
-                  目前無待追蹤行程。當您儲存諮詢紀錄時，系統將自動為您生成四次每月追蹤提醒。
-                </div>
-              )}
+              {calendarDays.map((day, i) => {
+                const dayEvents = upcomingEvents.filter(ev => isSameDay(ev.date, day));
+                const isCurrentMonth = isSameMonth(day, currentMonth);
+                const isToday = isSameDay(day, new Date());
+
+                return (
+                  <div 
+                    key={i} 
+                    className={`min-h-[100px] p-1 border-r border-b border-slate-100 transition-colors ${
+                      isCurrentMonth ? 'bg-white' : 'bg-slate-50/30'
+                    } ${isToday ? 'ring-1 ring-blue-500 ring-inset relative z-10' : ''}`}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className={`text-[10px] font-mono font-bold ${
+                        isToday ? 'bg-blue-600 text-white px-1.5 rounded-full' : 
+                        isCurrentMonth ? 'text-slate-500' : 'text-slate-300'
+                      }`}>
+                        {format(day, 'd')}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      {dayEvents.map((ev, idx) => (
+                        <div 
+                          key={idx}
+                          className="text-[9px] p-1 rounded bg-blue-50 text-blue-700 font-bold border border-blue-100 truncate flex items-center gap-1 group cursor-pointer hover:bg-blue-600 hover:text-white transition-colors"
+                          title={ev.fullLabel}
+                        >
+                          <div className="w-1 h-1 rounded-full bg-blue-400 group-hover:bg-white shrink-0" />
+                          {ev.fullLabel}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="mt-4 flex flex-wrap gap-4">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                <span className="text-[10px] text-slate-500 font-medium">預定追蹤</span>
+              </div>
+              <div className="flex items-center gap-1.5 ml-auto text-[10px] text-slate-400 italic">
+                <Info className="w-3 h-3" />
+                點擊病人姓名可快速查看狀態
+              </div>
             </div>
           </div>
         </div>
@@ -3577,6 +3680,76 @@ export default function App() {
                 </div>
               </section>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* History Sidebar */}
+        <AnimatePresence>
+          {isHistoryOpen && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => { setIsHistoryOpen(false); setHistoryFilter(''); }}
+                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50"
+              />
+              <motion.div 
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                className="fixed right-0 top-0 bottom-0 w-80 bg-white shadow-2xl z-[60] flex flex-col"
+              >
+                <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                  <div>
+                    <h2 className="font-black text-slate-800 flex items-center gap-2">
+                      <History className="w-5 h-5 text-blue-600" />
+                      諮詢歷程
+                    </h2>
+                    {historyFilter && (
+                      <p className="text-[10px] text-blue-600 font-bold uppercase mt-0.5">正在檢視: {historyFilter}</p>
+                    )}
+                  </div>
+                  <button onClick={() => { setIsHistoryOpen(false); setHistoryFilter(''); }} className="p-2 hover:bg-slate-200 rounded-lg text-slate-400">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                {historyFilter && (
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <button 
+                      onClick={() => setHistoryFilter('')}
+                      className="text-[10px] text-slate-400 hover:text-blue-600 font-bold flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" /> 清除篩選，顯示全部
+                    </button>
+                  </div>
+                )}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {filteredHistory.map((h: any) => (
+                    <div 
+                      key={h.id}
+                      onClick={() => loadRecord(h)}
+                      className="p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all cursor-pointer group"
+                    >
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-black text-blue-600">{h.consultDate}</span>
+                        <button 
+                          onClick={(e) => deleteRecord(e, h.id)}
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 text-red-400 rounded transition-all"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="font-bold text-slate-800">{h.clientName}</div>
+                      <div className="text-[10px] text-slate-400 mt-1 line-clamp-1">{h.data.goal || '無註記目標'}</div>
+                    </div>
+                  ))}
+                  {filteredHistory.length === 0 && (
+                    <div className="text-center py-10 text-slate-400 italic text-sm">尚無紀錄</div>
+                  )}
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
