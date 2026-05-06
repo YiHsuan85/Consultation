@@ -126,6 +126,7 @@ const INITIAL_STATE: AppState = {
     allergiesOther: '',
     meals: [],
     mealsOther: '',
+    notes: '',
     logs: []
   },
   diagnoses: [],
@@ -1495,7 +1496,7 @@ export default function App() {
                   <div className="pt-4 border-t border-slate-100 space-y-3">
                     <label className="text-sm font-medium text-slate-700 font-bold">腸胃狀況</label>
                     <div className="flex flex-wrap gap-4">
-                      {['無', '吞嚥困難', '厭食', '噁心', '嘔吐', '腹瀉', '便秘', '其他'].map(item => (
+                      {['無', '吞嚥困難', '厭食', '噁心', '嘔吐', '腹瀉', '便秘'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -1511,19 +1512,17 @@ export default function App() {
                           <span className="text-sm text-slate-600 font-medium">{item}</span>
                         </label>
                       ))}
-                    </div>
-                    {state.clinical.giStatus.includes('其他') && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-slate-500">其他狀況說明:</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                        <span className="text-xs text-slate-500">其他:</span>
                         <input 
                           type="text" 
                           placeholder="請輸入其他腸胃狀況..."
                           value={state.clinical.giStatusOther || ''}
                           onChange={e => setState({...state, clinical: {...state.clinical, giStatusOther: e.target.value}})}
-                          className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
+                          className="w-full px-3 py-1 text-sm rounded border border-slate-200"
                         />
                       </div>
-                    )}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">目前服用藥物</label>
@@ -1638,7 +1637,7 @@ export default function App() {
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-slate-700">餐次</label>
                     <div className="flex flex-wrap gap-4">
-                      {['早餐', '早點', '午餐', '午點', '晚餐', '晚點', '大小餐', '其他'].map(item => (
+                      {['早餐', '早點', '午餐', '午點', '晚餐', '晚點', '大小餐'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
@@ -1654,19 +1653,27 @@ export default function App() {
                           <span className="text-sm text-slate-600 font-medium">{item}</span>
                         </label>
                       ))}
-                    </div>
-                    {state.diet.meals?.includes('其他') && (
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-slate-500">其他餐次說明:</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                        <span className="text-xs text-slate-500">其他:</span>
                         <input 
                           type="text" 
                           placeholder="請輸入其他餐次..."
                           value={state.diet.mealsOther || ''}
                           onChange={e => setState({...state, diet: {...state.diet, mealsOther: e.target.value}})}
-                          className="px-2 py-1 text-xs rounded border border-slate-200 w-64"
+                          className="w-full px-3 py-1 text-sm rounded border border-slate-200"
                         />
                       </div>
-                    )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-2">
+                    <label className="text-sm font-medium text-slate-700 font-bold">飲食史備註</label>
+                    <textarea 
+                      value={state.diet.notes || ''}
+                      onChange={e => setState({...state, diet: {...state.diet, notes: e.target.value}})}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 h-24"
+                      placeholder="填寫關於飲食生活習慣、外食頻率等備註..."
+                    ></textarea>
                   </div>
 
                   {/* 便當油脂估計備註 */}
