@@ -4,7 +4,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   // 乳品類
   { name: '全脂牛奶 240 cc', category: '全脂乳品類', carbs: 12, protein: 8, fat: 8, kcal: 150, na: '', k: '', p: '' },
   { name: '統一營養強化高鈣牛乳 400ml', category: '全脂乳品類', carbs: 29.6, protein: 15.2, fat: 13.6, kcal: 301.6, na: 252, k:'', p: ''},
-  { name: '光泉優質蛋白牛乳 (巧克力口味) 400ml', category: '外食類', carbs: 28.4, protein: 20, fat: 2, kcal: 211.6, na: 232, k:'', p: ''},
+  { name: '光泉優質蛋白牛乳 (巧克力口味) 400ml', category: '全脂乳品類', carbs: 28.4, protein: 20, fat: 2, kcal: 211.6, na: 232, k:'', p: ''},
   { name: '福樂超能蛋白營養牛乳(草莓口味) 375g', category: '外食類', carbs: 27.8, protein: 21.8, fat: 1.1, kcal: 208, na: 229.5, k:'', p: ''},
   { name: '林鳳營全脂鮮乳 200ml', category: '全脂乳品類', carbs: 9.6, protein: 6.4, fat: 7.4, kcal: 131, na: 90, k:'', p: ''},
   { name: '低脂起司片 2片', category: '低脂乳品類', carbs: 12, protein: 8, fat: 4, kcal: 120, na: '', k: '', p: '' },
