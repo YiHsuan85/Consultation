@@ -3,10 +3,17 @@ import { DiagnosisData, FoodItem, GuidelineData } from './types';
 export const FOOD_DATABASE: FoodItem[] = [
   // 乳品類
   { name: '全脂牛奶 240 cc', category: '全脂乳品類', carbs: 12, protein: 8, fat: 8, kcal: 150, na: '', k: '', p: '' },
+  { name: '統一營養強化高鈣牛乳 400ml', category: '全脂乳品類', carbs: 29.6, protein: 15.2, fat: 13.6, kcal: 301.6, na: 252, k:'', p: ''},
+  { name: '光泉優質蛋白牛乳 (巧克力口味) 400ml', category: '外食類', carbs: 28.4, protein: 20, fat: 2, kcal: 211.6, na: 232, k:'', p: ''},
+  { name: '福樂超能蛋白營養牛乳(草莓口味) 375g', category: '外食類', carbs: 27.8, protein: 21.8, fat: 1.1, kcal: 208, na: 229.5, k:'', p: ''},
+  { name: '林鳳營全脂鮮乳 200ml', category: '全脂乳品類', carbs: 9.6, protein: 6.4, fat: 7.4, kcal: 131, na: 90, k:'', p: ''},
   { name: '低脂起司片 2片', category: '低脂乳品類', carbs: 12, protein: 8, fat: 4, kcal: 120, na: '', k: '', p: '' },
   { name: '低脂牛奶 240 cc', category: '低脂乳品類', carbs: 12, protein: 8, fat: 4, kcal: 120, na: '', k: '', p: '' },
   { name: '優格 180g', category: '低脂乳品類', carbs: 32, protein: 8, fat: 4, kcal: 200, na: '', k: '', p: '' },
+  { name: '植物の優鮮美橘瓣優格 200g', category: '低脂乳品類', carbs: 28.2, protein: 7, fat: 4.4, kcal: 180, na: 56, k: '', p: '' },
   { name: '無糖優酪乳 200cc', category: '低脂乳品類', carbs: 27, protein: 8, fat: 4, kcal: 180, na: '', k: '', p: '' },
+  { name: '711 AB優洛乳（無加糖） 517ml', category: '低脂乳品類', carbs: 43.4, protein: 16, fat: 6.8, kcal: 298, na: 268, k:'', p: ''},
+  { name: '711 AB優洛乳（原味） 517ml', category: '低脂乳品類', carbs: 54.8, protein: 15.6, fat: 3.2, kcal: 310, na: 268, k:'', p: ''},
   // 低脂豆魚蛋肉類
   { name: '一般魚類 30g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
   { name: '花枝 60g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
@@ -21,6 +28,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '豆包 30g (2/3片）', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
   { name: '無糖豆漿 190cc', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
   { name: '含糖豆漿 190cc', category: '低脂豆魚蛋肉類', carbs: 25, protein: 7, fat: 3, kcal: 155, na: '', k: '', p: '' },
+  { name: '統一陽光 無加糖超優蛋白豆漿 375ml', category: '低脂豆魚蛋肉類', carbs: 12.8, protein: 20.6, fat: 11.6, kcal: 231, na: 38, k:'', p: ''},
+  { name: '光泉燕麥高纖無加糖鮮豆漿 450ml', category: '低脂豆魚蛋肉類', carbs: 72, protein: 57.6, fat: 32.4, kcal: 738, na: 648, k:'', p: ''},
   { name: '魚丸（不包肉）55g', category: '低脂豆魚蛋肉類', carbs: 10, protein: 7, fat: 3, kcal: 95, na: '', k: '', p: '' },
   { name: '牛肉乾 20g', category: '低脂豆魚蛋肉類', carbs: 5, protein: 7, fat: 3, kcal: 75, na: '', k: '', p: '' },
   { name: '火腿 45g', category: '低脂豆魚蛋肉類', carbs: 10, protein: 7, fat: 3, kcal: 95, na: '', k: '', p: '' },
@@ -62,6 +71,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '五穀粉 20g (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '薏仁粉 20g (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '燕麥片 20g (3湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
+  { name: '桂格 即沖即食大燕麥片 37.5g（1湯匙）', category: '全榖雜糧類', carbs: 25.3, protein:4.9 , fat: 3, kcal: 140, na: 2, k:'', p: ''},
   { name: '紅白小湯圓 (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '波霸粉圓 (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   // 蔬菜類
@@ -180,6 +190,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '池上便當 - 台式炕肉飯包', category: '外食類', carbs: 107.4, protein: 33.6, fat: 27.5, kcal: 812, na: 1100, k:'', p: ''},
   { name: '池上便當 - 蒜香雞菲力飯包', category: '外食類', carbs: 116.5, protein: 38.8, fat: 15.5, kcal: 723, na: 690, k:'', p: ''},
   { name: '池上便當 - 薄鹽鯖魚飯包', category: '外食類', carbs: 99.7, protein: 36.4, fat: 16.4, kcal: 692, na: 696, k:'', p: ''},
+  { name: '統一杏仁茶 450ml', category: '外食類', carbs: 37.8, protein: 2.7, fat: 6.3, kcal: 219, na: 68, k:'', p: ''},
   { name: '711阜杭豆漿里肌肉紫米飯糰 207g', category: '外食類', carbs: 65.6, protein: 12.8, fat: 12, kcal: 422, na: 511, k:'', p: ''},
   { name: '711星級饗宴-麻油雞飯糰 207g', category: '外食類', carbs:0 , protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},
   { name: '711新極上飯糰-天使紅蝦 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},
@@ -191,8 +202,6 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '711極饗-沙茶豬肉燴飯 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},  
   { name: '711黑金松露嫩雞胸 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},
   { name: '711香檸優多 椰果晶凍 400g', category: '外食類', carbs: 52, protein: 0.4, fat: 0, kcal: 210, na: 176, k:'', p: ''},
-  { name: '711 AB優洛乳（無加糖） 517ml', category: '外食類', carbs: 43.4, protein: 16, fat: 6.8, kcal: 298, na: 268, k:'', p: ''},
-  { name: '711 AB優洛乳（原味） 517ml', category: '外食類', carbs: 54.8, protein: 15.6, fat: 3.2, kcal: 310, na: 268, k:'', p: ''},
   { name: '711比菲多（寡糖配方）471ml', category: '外食類', carbs: 60.3, protein: 6.2, fat: 0, kcal: 198, na: 89, k:'', p: ''},
   { name: '711比菲多（減醣30%）471ml', category: '外食類', carbs: 67.8, protein: 5.2, fat: 0, kcal: 278, na: 52, k:'', p: ''},
   { name: '711寒天冬瓜檸檬QQ 400g', category: '外食類', carbs: 51, protein: 0.4, fat: 0.4, kcal: 208, na: 73, k:'', p: ''},
@@ -222,7 +231,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: 'Qburger鮪魚玉米可朗芙 123g', category: '外食類', carbs: 25.9, protein: 10.6, fat: 21.4, kcal: 336, na: 376, k:'', p: ''},
   { name: 'Qburger經典可朗芙 55g', category: '外食類', carbs: 21.7, protein: 4.4, fat: 8.8, kcal: 181.8, na: 235, k:'', p: ''},
   { name: 'Qburger花醬可朗芙 72g', category: '外食類', carbs: 26.3, protein: 7.5, fat: 17.1, kcal: 287.5, na: 276, k:'', p: ''},
-  { name: '桂格 即沖即食大燕麥片 37.5g（1湯匙）', category: '外食類', carbs: 25.3, protein:4.9 , fat: 3, kcal: 140, na: 2, k:'', p: ''},
+  { name: '品客起司洋芋片 48g(小罐裝)', category: '外食類', carbs: 28.7, protein: 2.3 , fat: 14.8, kcal: 257, na: 700, k:'', p: ''},
+  { name: '樂天小熊餅乾-草莓 48g(小包裝)', category: '外食類', carbs: 29.9, protein: 2 , fat: 14.1, kcal: 254.5, na: 116, k:'', p: ''},
   
   // 醬料類
   { name: '醬油膏 5g', category: '醬料類', carbs: 1, protein: 0.3, fat: 0, kcal: 5, na: 202.5, k: 16.4, p: 5.5 },
