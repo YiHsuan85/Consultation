@@ -121,6 +121,7 @@ export interface AppState {
     allergiesOther: string;
     meals: string[];
     mealsOther?: string;
+    notes: string;
     logs: (FoodItem & { id: string; qty: number; meal: string })[];
   };
   diagnoses: PES[];
@@ -144,6 +145,7 @@ export interface AppState {
       proteinPercent: number;
       fatPercent: number;
     };
+    portions?: { [category: string]: number };
   };
   monitoring: {
     history: MonitoringRecord[];
