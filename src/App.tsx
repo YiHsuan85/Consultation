@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
   ClipboardList, 
   Stethoscope, 
@@ -476,11 +476,59 @@ const Dashboard = ({
   );
 };
 
+const PORT_VALS: Record<string, { p: number, c: number, f: number, k: number }> = {
+  '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
+  '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
+  '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
+  '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
+  '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
+  '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
+  '水果': { p: 0, c: 15, f: 0, k: 60 },
+  '堅果': { p: 0, c: 0, f: 5, k: 45 },
+  '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
+};
+
 export default function App() {
+  const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const calculateCKDEPI2021 = useCallback(() => {
+    const scr = parseFloat(state.biochemistry.Cr);
+    const age = calculateAge(state.clientHx.birthday);
+    const isFemale = state.clientHx.gender === '女';
+    
+    if (isNaN(scr) || scr <= 0 || !age) return null;
+
+    const k = isFemale ? 0.7 : 0.9;
+    const alpha = isFemale ? -0.241 : -0.302;
+    const genderFactor = isFemale ? 1.012 : 1;
+    
+    // Formula: 142 x min(Scr/k, 1)^alpha x max(Scr/k, 1)^-1.200 x 0.9938^age x 1.012 [if female]
+    const gfr = 142 * 
+      Math.pow(Math.min(scr / k, 1), alpha) * 
+      Math.pow(Math.max(scr / k, 1), -1.2) * 
+      Math.pow(0.9938, age) * 
+      genderFactor;
+    
+    return gfr.toFixed(1);
+  }, [state.biochemistry.Cr, state.clientHx.birthday, state.clientHx.gender]);
+
+  const updateEGFR = () => {
+    const egfr = calculateCKDEPI2021();
+    if (egfr) {
+      setState({
+        ...state,
+        biochemistry: {
+          ...state.biochemistry,
+          eGFR: egfr
+        }
+      });
+    } else {
+      alert('請先輸入 Creatinine (Cr) 及個案生日、性別');
+    }
+  };
+
   const [activePage, setActivePage] = useState<'dashboard' | 'consultation'>('dashboard');
-  const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications'>('assessment');
   const [searchQuery, setSearchQuery] = useState('');
@@ -1398,18 +1446,54 @@ export default function App() {
                   })}
                 </div>
                 <div className="p-6 bg-slate-50/50 space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                      <ClipboardList className="w-4 h-4 text-blue-500" />
-                      數據備註與分析
-                    </label>
-                    <textarea 
-                      value={state.biochemistryNotes || ''} 
-                      onChange={e => setState({...state, biochemistryNotes: e.target.value})}
-                      placeholder="輸入生化數值相關分析或備註..."
-                      rows={3}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                    ></textarea>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 space-y-2">
+                      <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                        <ClipboardList className="w-4 h-4 text-blue-500" />
+                        數據備註與分析
+                      </label>
+                      <textarea 
+                        value={state.biochemistryNotes || ''} 
+                        onChange={e => setState({...state, biochemistryNotes: e.target.value})}
+                        placeholder="輸入生化數值相關分析或備註..."
+                        rows={4}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                      ></textarea>
+                    </div>
+
+                    <div className="w-full md:w-72 p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h4 className="text-xs font-black text-slate-800 flex items-center gap-1">
+                          <Calculator className="w-3.5 h-3.5 text-blue-600" />
+                          CKD-EPI 2021 計算器
+                        </h4>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-slate-500">Creatinine (Cr):</span>
+                          <span className="font-bold text-slate-700">{state.biochemistry.Cr || '--'} mg/dL</span>
+                        </div>
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-slate-500">年齡/性別:</span>
+                          <span className="font-bold text-slate-700">{calculateAge(state.clientHx.birthday)}歲 / {state.clientHx.gender}</span>
+                        </div>
+                        <div className="pt-2 border-t border-slate-50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-[11px] font-bold text-blue-600">預估 GFR:</span>
+                            <span className="text-lg font-black text-blue-700">{calculateCKDEPI2021() || '--'}</span>
+                          </div>
+                          <button 
+                            onClick={updateEGFR}
+                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-lg transition-colors shadow-sm"
+                          >
+                            自動填入 eGFR
+                          </button>
+                        </div>
+                        <p className="text-[9px] text-slate-400 leading-tight">
+                          公式: 142 x min(Scr/κ, 1)ᵅ x max(Scr/κ, 1)⁻¹.²⁰⁰ x 0.9938ᵃᵍᵉ x 1.012 [女]
+                        </p>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2282,24 +2366,13 @@ export default function App() {
                             </tbody>
                             <tfoot className="bg-slate-800 text-white font-bold">
                               {(() => {
-                                const portVals: any = {
-                                  '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
-                                  '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
-                                  '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
-                                  '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
-                                  '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
-                                  '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
-                                  '水果': { p: 0, c: 15, f: 0, k: 60 },
-                                  '堅果': { p: 0, c: 0, f: 5, k: 45 },
-                                  '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
-                                };
                                 let totalP = 0, totalC = 0, totalF = 0, totalK = 0;
                                 Object.entries(state.intervention.portions || {}).forEach(([key, val]) => {
-                                  if (portVals[key]) {
-                                    totalP += val * portVals[key].p;
-                                    totalC += val * portVals[key].c;
-                                    totalF += val * portVals[key].f;
-                                    totalK += val * portVals[key].k;
+                                  if (PORT_VALS[key]) {
+                                    totalP += val * PORT_VALS[key].p;
+                                    totalC += val * PORT_VALS[key].c;
+                                    totalF += val * PORT_VALS[key].f;
+                                    totalK += val * PORT_VALS[key].k;
                                   }
                                 });
                                 return (
@@ -2307,123 +2380,101 @@ export default function App() {
                                     <tr>
                                       <td className="px-3 py-1.5 border-r border-slate-700 text-center text-[10px]" colSpan={2}>總計公克 (g)</td>
                                       <td className="px-3 py-1.5 text-center border-r border-slate-700 text-green-400">{totalP.toFixed(0)}</td>
-                                      <td className="px-3 py-1.5 text-center border-r border-slate-700 text-blue-400">{totalC.toFixed(0)}</td>
-                                      <td className="px-3 py-1.5 text-center border-r border-slate-700 text-orange-400">{totalF.toFixed(0)}</td>
-                                      <td className="px-3 py-1.5 text-center bg-green-700 font-black">{totalK.toFixed(0)}</td>
-                                    </tr>
-                                    <tr className="bg-slate-900 border-t border-slate-700">
-                                      <td className="px-3 py-1.5 border-r border-slate-800 text-center text-[10px]" colSpan={2}>能量佔比 (%)</td>
-                                      <td className="px-3 py-1.5 text-center border-r border-slate-800 text-green-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalP * 4 / totalK) * 100).toFixed(1) : '0.0'}%</td>
-                                      <td className="px-3 py-1.5 text-center border-r border-slate-800 text-blue-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalC * 4 / totalK) * 100).toFixed(1) : '0.0'}%</td>
-                                      <td className="px-3 py-1.5 text-center border-r border-slate-800 text-orange-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalF * 9 / totalK) * 100).toFixed(1) : '0.0'}%</td>
-                                      <td className="px-3 py-1.5 text-center opacity-40 text-[9px] uppercase tracking-tighter italic">Total Kcal</td>
-                                    </tr>
-                                  </>
+                                        <td className="px-3 py-1.5 text-center border-r border-slate-700 text-blue-400">{totalC.toFixed(0)}</td>
+                                        <td className="px-3 py-1.5 text-center border-r border-slate-700 text-orange-400">{totalF.toFixed(0)}</td>
+                                        <td className="px-3 py-1.5 text-center bg-green-700 font-black">{totalK.toFixed(0)}</td>
+                                      </tr>
+                                      <tr className="bg-slate-900 border-t border-slate-700">
+                                        <td className="px-3 py-1.5 border-r border-slate-800 text-center text-[10px]" colSpan={2}>能量佔比 (%)</td>
+                                        <td className="px-3 py-1.5 text-center border-r border-slate-800 text-green-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalP * 4 / totalK) * 100).toFixed(1) : '0.0'}%</td>
+                                        <td className="px-3 py-1.5 text-center border-r border-slate-800 text-blue-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalC * 4 / totalK) * 100).toFixed(1) : '0.0'}%</td>
+                                        <td className="px-3 py-1.5 text-center border-r border-slate-800 text-orange-200 opacity-80 text-[10px]">{totalK > 0 ? ((totalF * 9 / totalK) * 100).toFixed(1) : '0.0'}%</td>
+                                        <td className="px-3 py-1.5 text-center opacity-40 text-[9px] uppercase tracking-tighter italic">Total Kcal</td>
+                                      </tr>
+                                    </>
+                                  );
+                                })()}
+                              </tfoot>
+                            </table>
+                          </div>
+
+                          <div className="xl:col-span-3 space-y-4">
+                            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">智能份數助理</h4>
+                              </div>
+                              {(() => {
+                                const targetC = parseFloat(recommendedMacros?.carbs || '0');
+                                const targetP = parseFloat(recommendedMacros?.protein || '0');
+                                const targetF = parseFloat(recommendedMacros?.fat || '0');
+                                let currentC = 0, currentP = 0, currentF = 0;
+                                Object.entries(state.intervention.portions || {}).forEach(([key, val]) => {
+                                  const v = val || 0;
+                                  currentC += v * (PORT_VALS[key]?.c || 0);
+                                  currentP += v * (PORT_VALS[key]?.p || 0);
+                                  currentF += v * (PORT_VALS[key]?.f || 0);
+                                });
+                                const wgSug = Math.max(0, (targetC - currentC) / 15);
+                                const medSug = Math.max(0, (targetP - currentP) / 7);
+                                const nutsSug = Math.max(0, (targetF - currentF) / 5);
+                                return (
+                                  <div className="space-y-3">
+                                    <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                                      <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[10px] font-bold text-blue-600">全榖根莖 (剩餘)</span>
+                                        <span className="text-sm font-black text-blue-700">{wgSug.toFixed(1)} 份</span>
+                                      </div>
+                                      <button 
+                                        onClick={() => {
+                                          const cur = state.intervention.portions?.['全榖根莖'] || 0;
+                                          setState({ ...state, intervention: { ...state.intervention, portions: { ...state.intervention.portions, '全榖根莖': parseFloat((cur + wgSug).toFixed(1)) } } });
+                                        }}
+                                        className="w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-md shadow-sm"
+                                      >
+                                        增加剩餘
+                                      </button>
+                                    </div>
+                                    <div className="p-3 bg-orange-50/50 rounded-lg border border-orange-100">
+                                      <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[10px] font-bold text-orange-600">中脂肉類 (剩餘)</span>
+                                        <span className="text-sm font-black text-orange-700">{medSug.toFixed(1)} 份</span>
+                                      </div>
+                                      <button 
+                                        onClick={() => {
+                                          const cur = state.intervention.portions?.['中脂豆魚蛋肉'] || 0;
+                                          setState({ ...state, intervention: { ...state.intervention, portions: { ...state.intervention.portions, '中脂豆魚蛋肉': parseFloat((cur + medSug).toFixed(1)) } } });
+                                        }}
+                                        className="w-full py-1.5 bg-orange-600 text-white text-[10px] font-bold rounded-md shadow-sm"
+                                      >
+                                        增加剩餘
+                                      </button>
+                                    </div>
+                                    <div className="p-3 bg-amber-50/50 rounded-lg border border-amber-100">
+                                      <div className="flex justify-between items-center mb-1">
+                                        <span className="text-[10px] font-bold text-amber-600">堅果建議 (剩餘)</span>
+                                        <span className="text-sm font-black text-amber-700">{nutsSug.toFixed(1)} 份</span>
+                                      </div>
+                                      <button 
+                                        onClick={() => {
+                                          const cur = state.intervention.portions?.['堅果'] || 0;
+                                          setState({ ...state, intervention: { ...state.intervention, portions: { ...state.intervention.portions, '堅果': parseFloat((cur + nutsSug).toFixed(1)) } } });
+                                        }}
+                                        className="w-full py-1.5 bg-amber-600 text-white text-[10px] font-bold rounded-md shadow-sm"
+                                      >
+                                        增加剩餘
+                                      </button>
+                                    </div>
+                                    <div className="pt-2 italic text-[9px] text-slate-400 text-right">
+                                      剩餘: 醣 {((targetC - currentC)).toFixed(1)}g | 蛋 {((targetP - currentP)).toFixed(1)}g | 脂 {((targetF - currentF)).toFixed(1)}g
+                                    </div>
+                                  </div>
                                 );
                               })()}
-                            </tfoot>
-                          </table>
-                        </div>
-
-                        {/* Suggestions Column - Spanning 3/12 */}
-                        <div className="xl:col-span-3 space-y-4">
-                          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">智能份數助理</h4>
-                              <div className="flex gap-1">
-                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
-                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse delay-75" />
-                                <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse delay-150" />
-                              </div>
                             </div>
-                            
-                            {(() => {
-                              const portVals: any = {
-                                '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
-                                '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
-                                '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
-                                '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
-                                '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
-                                '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
-                                '水果': { p: 0, c: 15, f: 0, k: 60 },
-                                '堅果': { p: 0, c: 0, f: 5, k: 45 },
-                                '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
-                              };
-                              const targetC = parseFloat(recommendedMacros?.carbs || '0');
-                              const targetP = parseFloat(recommendedMacros?.protein || '0');
-                              
-                              let currentC_others = 0;
-                              let currentP_others = 0;
-
-                              Object.entries(state.intervention.portions || {}).forEach(([key, val]) => {
-                                if (key !== '全榖根莖') currentC_others += (val || 0) * (portVals[key]?.c || 0);
-                                if (key !== '中脂豆魚蛋肉') currentP_others += (val || 0) * (portVals[key]?.p || 0);
-                              });
-
-                              const wholeGrainsSug = Math.max(0, (targetC - currentC_others) / 15);
-                              const medFatMeatSug = Math.max(0, (targetP - currentP_others) / 7);
-
-                              return (
-                                <div className="space-y-3">
-                                  <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                                    <div className="flex justify-between items-center mb-1">
-                                      <span className="text-[10px] font-bold text-blue-600">全榖根莖</span>
-                                      <span className="text-sm font-black text-blue-700">{wholeGrainsSug.toFixed(1)} <span className="text-[10px] font-normal">份</span></span>
-                                    </div>
-                                    <button 
-                                      onClick={() => {
-                                        setState({
-                                          ...state,
-                                          intervention: {
-                                            ...state.intervention,
-                                            portions: {
-                                              ...state.intervention.portions,
-                                              '全榖根莖': parseFloat(wholeGrainsSug.toFixed(1))
-                                            }
-                                          }
-                                        });
-                                      }}
-                                      className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-md shadow-sm transition-all active:scale-95"
-                                    >
-                                      套用建議
-                                    </button>
-                                  </div>
-
-                                  <div className="p-3 bg-orange-50/50 rounded-lg border border-orange-100">
-                                    <div className="flex justify-between items-center mb-1">
-                                      <span className="text-[10px] font-bold text-orange-600">中脂肉類</span>
-                                      <span className="text-sm font-black text-orange-700">{medFatMeatSug.toFixed(1)} <span className="text-[10px] font-normal">份</span></span>
-                                    </div>
-                                    <button 
-                                      onClick={() => {
-                                        setState({
-                                          ...state,
-                                          intervention: {
-                                            ...state.intervention,
-                                            portions: {
-                                              ...state.intervention.portions,
-                                              '中脂豆魚蛋肉': parseFloat(medFatMeatSug.toFixed(1))
-                                            }
-                                          }
-                                        });
-                                      }}
-                                      className="w-full py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-[10px] font-bold rounded-md shadow-sm transition-all active:scale-95"
-                                    >
-                                      套用建議
-                                    </button>
-                                  </div>
-                                  
-                                  <div className="pt-2 italic text-[9px] text-slate-400 space-y-1 border-t border-slate-100">
-                                    <p className="flex items-center gap-1"><Info className="w-2.5 h-2.5" /> 建議先輸入菜、果、乳份數</p>
-                                    <p className="flex items-center gap-1"><Info className="w-2.5 h-2.5" /> 助理會依目標剩餘量回推</p>
-                                  </div>
-                                </div>
-                              );
-                            })()}
                           </div>
                         </div>
                       </div>
-                    </div>
+
 
                     {/* Guideline Reference Tables */}
                     <div className="space-y-6">
