@@ -21,6 +21,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '無糖優酪乳 200cc', category: '低脂乳品類', carbs: 27, protein: 8, fat: 4, kcal: 180, na: '', k: '', p: '' },
   { name: '711 AB優洛乳（無加糖） 517ml', category: '低脂乳品類', carbs: 43.4, protein: 16, fat: 6.8, kcal: 298, na: 268, k:'', p: ''},
   { name: '711 AB優洛乳（原味） 517ml', category: '低脂乳品類', carbs: 54.8, protein: 15.6, fat: 3.2, kcal: 310, na: 268, k:'', p: ''},
+  
   // 低脂豆魚蛋肉類
   { name: '一般魚類 30g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
   { name: '花枝 60g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
@@ -43,6 +44,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '魚丸（不包肉）55g', category: '低脂豆魚蛋肉類', carbs: 10, protein: 7, fat: 3, kcal: 95, na: '', k: '', p: '' },
   { name: '牛肉乾 20g', category: '低脂豆魚蛋肉類', carbs: 5, protein: 7, fat: 3, kcal: 75, na: '', k: '', p: '' },
   { name: '火腿 45g', category: '低脂豆魚蛋肉類', carbs: 10, protein: 7, fat: 3, kcal: 95, na: '', k: '', p: '' },
+  
   // 中脂豆魚蛋肉類
   { name: '方形油豆腐 55g (2/3-1塊）', category: '中脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 5, kcal: 75, na: '', k: '', p: '' },
   { name: '板豆腐 80g (1/2塊）', category: '中脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 5, kcal: 75, na: '', k: '', p: '' },
@@ -56,11 +58,13 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '豆棗 60g', category: '中脂豆魚蛋肉類', carbs: 35, protein: 7, fat: 5, kcal: 215, na: '', k: '', p: '' },
   { name: '滷蛋 55g (1顆）', category: '中脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 5, kcal: 75, na: '', k: '', p: '' },
   { name: '花枝丸、虱目魚丸 50g', category: '中脂豆魚蛋肉類', carbs: 7, protein: 7, fat: 5, kcal: 103, na: '', k: '', p: '' },
+  
   // 高脂豆魚蛋肉類
   { name: '素火腿片 55g (4薄片）', category: '高脂豆魚蛋肉類', carbs: 4, protein: 7, fat: 8.5, kcal: 120, na: '', k: '', p: '' },
   { name: '素火腿丁 55g (4湯匙）', category: '高脂豆魚蛋肉類', carbs: 4, protein: 7, fat: 8.5, kcal: 120, na: '', k: '', p: '' },
   { name: '香腸、臘肉 40g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, na: '', k: '', p: '' },
   { name: '熱狗、五花肉 50g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, na: '', k: '', p: '' },
+  
   // 全榖雜糧類
   { name: '白飯 40g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '稀飯 125g(半碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },  
@@ -83,10 +87,13 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '薏仁粉 20g (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '羅董五穀飲 245ml', category: '全榖雜糧類', carbs: 21.8, protein: 2, fat: 1.47, kcal: 108, na: 0, k: '', p: '' },
   { name: '羅董有機糙米奶 245ml', category: '全榖雜糧類', carbs: 17.2, protein: 1.2, fat: 0, kcal: 73.6, na: 0, k: '', p: '' },
+  { name: 'Costco 愛之味 純濃燕麥 340ml (1瓶) ', category: '油脂與堅果類', carbs: 28.2, protein: 4.8, fat: 3.4, kcal: 153.8, na: 68, k: 105.4, p: '' },
+  { name: 'Costco 桂格 減糖黑十穀 38g (1包) ', category: '油脂與堅果類', carbs: 28, protein: 2.3, fat: 5.5, kcal: 166, na: 45, k:'' , p: '' },
   { name: '燕麥片 20g (3湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '桂格 即沖即食大燕麥片 37.5g（1湯匙）', category: '全榖雜糧類', carbs: 25.3, protein:4.9 , fat: 3, kcal: 140, na: 2, k:'', p: ''},
   { name: '紅白小湯圓 (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '波霸粉圓 (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
+  
   // 蔬菜類
   { name: '蔬菜100g(半碗)', category: '蔬菜類', carbs: 5, protein: 1, fat: 0, kcal: 25, na: '', k: '', p: '' },
   { name: '胡瓜', category: '蔬菜類', carbs: 5, protein: 1, fat: 0, kcal: 25, na: 24.4, k: 838, p: 111.1 },
@@ -136,18 +143,26 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '楊桃170g (3/4顆)', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 0.6, k: 284.6, p: 17.3 },
   { name: '水蜜桃145g (1顆）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 2.9, k: 312.3, p: 32.5 },
   { name: '文旦', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 0.8, k: 250, p: 26.3 },
+  
   // 油脂與堅果類
   { name: '植物油5g(1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '豬油6g(1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '去殼花生15g(1湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
-  { name: '南瓜子 30粒(1+1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: '黑（白）芝麻 10g(2茶匙)', category: '油脂與堅果類', carbs: 0, protein: 1, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: 'Costco 馬玉山 特濃核桃黑芝麻糊 37g (1包) ', category: '油脂與堅果類', carbs: 25.8, protein: 4.6, fat: 4.8, kcal: 158, na: 3, k: 92, p: '' },
+  { name: '南瓜子 30粒(1+1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 2, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '西瓜子 50粒(2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
-  { name: '開心果 11粒(1.5湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
-  { name: '杏仁果 5粒(1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: '開心果 11粒(1.5湯匙)', category: '油脂與堅果類', carbs: 0, protein: 2, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: '杏仁果 5粒(1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 2, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: '腰果 5粒(1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 2, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: 'Costco 科克蘭 無調味綜合堅果 9g (1/3湯匙) ', category: '油脂與堅果類', carbs: 2, protein: 1.6, fat: 5, kcal: 58.2, na: 0.3, k: '', p: '' },
+  { name: 'Costco FRUIT&SEED 果乾葵花籽綜合點心 17g (1-1.5湯匙) ', category: '油脂與堅果類', carbs: 4.5, protein: 1.4, fat: 5, kcal: 68.6, na: 0.5, k: '', p: '' },
   { name: '花生醬9g(1湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '美乃滋10g(2/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '芝麻醬(1/2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '沙茶醬(1/2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
+
+
 // 外食類
   { name: '統一木瓜牛奶 478cc', category: '外食類', carbs: 47.3, protein: 9.1, fat: 8.6, kcal: 303, na: 277, k: '', p: '' },
   { name: '蘿蔔糕(香菇蝦米) (1塊)', category: '外食類', carbs: 18.8, protein: 2.5, fat: 2.8, kcal: 110, na: '', k: '', p: '' },
@@ -195,6 +210,11 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '蚵仔煎', category: '外食類', carbs: 19.7, protein: 4.9, fat: 10.4, kcal: 192, na: 479, k: 91, p: 91 },
   { name: '肉羹', category: '外食類', carbs: 18.9, protein: 9.7, fat: 14.7, kcal: 247, na: 512, k: 102, p: 198 },
   { name: '桂冠黃金起司球 30g', category: '外食類', carbs: 3.7, protein: 3.1, fat: 1.8, kcal: 43, na: 169, k: '', p: '' },
+  { name: 'Costco 韓味不二 鹽烤海苔 5g', category: '外食類', carbs: 1.8, protein: 0.5, fat: 2.3, kcal: 29.9, na: 96, k: '', p: '' },
+  { name: 'Costco Kokiri 哇象海苔捲原味 5g', category: '外食類', carbs: 4, protein: 1, fat: 0, kcal: 20, na: 75, k: '', p: '' },
+  { name: 'Costco 奇多 隨口脆玉米脆 28g(起司)', category: '外食類', carbs: 15.7, protein: 2, fat: 9.8, kcal: 159, na: 206, k: '', p: '' },
+  { name: 'Costco 奇多 隨口脆玉米脆 28g（雞汁）', category: '外食類', carbs: 15.7, protein: 1.5, fat: 9.5, kcal: 155, na: 178, k: '', p: '' },
+  { name: 'Costco 北海 鱈魚香絲 青花椒辣味 30g', category: '外食類', carbs: 16.3, protein: 7.4, fat: 0.3, kcal: 97.8, na: 553.6, k: '', p: '' },
   { name: '好丘-原味小麥貝果 100g (1個)', category: '外食類', carbs: 53.1, protein: 9.6, fat: 5, kcal: 291, na: 498, k: '', p: '' },
   { name: '好丘-芋頭鹹蛋黃貝果 120g (1個)', category: '外食類', carbs: 59.6, protein: 9.6, fat: 6.4, kcal: 334.8, na: 442, k: '', p: '' },
   { name: '好丘-草莓奶香貝果 120g (1個)', category: '外食類', carbs: 64.8, protein: 10, fat: 5.8, kcal: 345.6, na: 508, k: '', p: '' },
