@@ -149,6 +149,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '豬油6g(1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '去殼花生15g(1湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '黑（白）芝麻 10g(2茶匙)', category: '油脂與堅果類', carbs: 0, protein: 1, fat: 5, kcal: 45, na: '', k: '', p: '' },
+  { name: '芝初 純黑芝麻醬 10g', category: '油脂與堅果類', carbs: 1.4, protein: 2.2, fat: 5.9, kcal: 67.5, na: 1, k: '', p: '' },
+  { name: '純黑芝麻醬 20g', category: '油脂與堅果類', carbs: 3.2, protein: 4.3, fat: 11.5, kcal: 131.7, na: 0, k: '', p: '' },
   { name: 'Costco 馬玉山 特濃核桃黑芝麻糊 37g (1包) ', category: '油脂與堅果類', carbs: 25.8, protein: 4.6, fat: 4.8, kcal: 158, na: 3, k: 92, p: '' },
   { name: '南瓜子 30粒(1+1/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 2, fat: 5, kcal: 45, na: '', k: '', p: '' },
   { name: '西瓜子 50粒(2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, na: '', k: '', p: '' },
