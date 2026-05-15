@@ -1496,21 +1496,29 @@ export default function App() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
-                      <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">診斷參考值 (正常 | 糖尿病前期 | 糖尿病)</div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <div><span className="text-slate-500">AC:</span> 100 | 100-125 | ≧126</div>
-                        <div><span className="text-slate-500">PC:</span> 140 | 140-199 | &gt;200</div>
+                      <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">糖尿病參考值 (正常 | 前期 | 確診)</div>
+                      <div className="grid grid-cols-1 gap-y-1">
+                        <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
+                        <div><span className="text-slate-500">PC:</span> &lt;140 | 140-199 | &gt;200</div>
                         <div><span className="text-slate-500">A1c:</span> 4-5.6 | 5.7-6.4 | &gt;6.5%</div>
-                        <div><span className="text-slate-500">FPG:</span> &lt;200 | - | ≧200</div>
                       </div>
                     </div>
                     <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
-                      <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">控制目標</div>
+                      <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">血脂 ASCVD 預防目標 (LDL | Non-HDL)</div>
                       <div className="space-y-1">
-                        <div><span className="text-slate-700 font-medium underline">成人</span> AC 80-130 | PC 80-160 | A1c &lt;7.0 | BP &lt;130/80</div>
-                        <div><span className="text-slate-700 font-medium underline">老年(&gt;65)</span> AC 80-130 | 睡前 80-180 | A1c &lt;7-7.5 | BP &lt;140/90</div>
+                        <div><span className="text-slate-700 font-bold underline">預防:</span> (3–10%): &lt;100 | &lt;130; (≥10%): &lt;70 | &lt;100</div>
+                        <div><span className="text-slate-700 font-bold underline">已病:</span> (非極高): &lt;70 | &lt;100; (極高): &lt;55 | &lt;85</div>
+                        <div className="text-[10px] text-slate-500 pt-1">TG &gt; 400 時 LDL 計算誤差大，建議看 Non-HDL</div>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
+                      <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級與 HDL 標準</div>
+                      <div className="space-y-1">
+                        <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
+                        <div><span className="text-slate-700 font-medium underline">HDL:</span> 男 &gt; 40 | 女 &gt; 50 (mg/dL)</div>
+                        <div><span className="text-slate-700 font-medium underline">TC:</span> &lt; 200 (mg/dL)</div>
                       </div>
                     </div>
                   </div>
