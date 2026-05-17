@@ -306,10 +306,12 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '樂事 奶焗香蔥洋芋片 83g/袋(2袋裝)', category: '外食類', carbs: 48.5, protein: 4.25 , fat: 27.5, kcal: 457.5, na: 442.5, k:'', p: ''},
   { name: '樂事 蜜汁香烤肋排洋芋片 83g/袋(2袋裝)', category: '外食類', carbs: 47.3, protein: 5.25 , fat: 27.3, kcal: 455, na: 477.5, k:'', p: ''},
   { name: '樂事 A5和牛洋芋片 83g/袋(2袋裝)', category: '外食類', carbs: 48.3, protein: 4.5 , fat: 27.3, kcal: 457.5, na: 507.5, k:'', p: ''},
+  { name: '樂事 日式串燒洋芋片 83g/袋(2袋裝)', category: '外食類', carbs: 48.3, protein: 4.5 , fat: 27.3, kcal: 457.5, na: 480, k:'', p: ''},
   { name: '樂事 原味洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 46.2, protein: 6 , fat: 30.6, kcal: 486, na: 498, k:'', p: ''},
   { name: '樂事 九州岩燒海苔洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 46.8, protein: 6 , fat: 29.7, kcal: 480, na: 498, k:'', p: ''},
   { name: '樂事 香濃起司洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 45.9, protein: 5.7 , fat: 30.6, kcal: 480, na: 591, k:'', p: ''},
   { name: '樂事 奶焗香蔥洋芋片 69.9g/袋(袋裝)', category: '外食類', carbs: 37.5, protein: 4.5 , fat: 24.9, kcal: 393, na: 432, k:'', p: ''},
+  { name: '樂事 香酥雞腿洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 47.4, protein: 6 , fat: 29.7, kcal: 480, na: 468, k:'', p: ''},
   { name: '樂天小熊餅乾-草莓 48g(小包裝)', category: '外食類', carbs: 29.9, protein: 2 , fat: 14.1, kcal: 254.5, na: 116, k:'', p: ''},
   
   // 醬料類
