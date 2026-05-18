@@ -214,6 +214,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '桂冠黃金起司球 30g', category: '外食類', carbs: 3.7, protein: 3.1, fat: 1.8, kcal: 43, na: 169, k: '', p: '' },
   { name: 'Costco 韓味不二 鹽烤海苔 5g', category: '外食類', carbs: 1.8, protein: 0.5, fat: 2.3, kcal: 29.9, na: 96, k: '', p: '' },
   { name: 'Costco Kokiri 哇象海苔捲原味 5g', category: '外食類', carbs: 4, protein: 1, fat: 0, kcal: 20, na: 75, k: '', p: '' },
+  { name: '元本山 味付對切海苔 23.7g', category: '外食類', carbs: 10.2, protein: 9.3, fat: 0.9, kcal: 72, na: 318, k: '', p: '' },
   { name: 'Costco 奇多 隨口脆玉米脆 28g(起司)', category: '外食類', carbs: 15.7, protein: 2, fat: 9.8, kcal: 159, na: 206, k: '', p: '' },
   { name: 'Costco 奇多 隨口脆玉米脆 28g（雞汁）', category: '外食類', carbs: 15.7, protein: 1.5, fat: 9.5, kcal: 155, na: 178, k: '', p: '' },
   { name: 'Costco 北海 鱈魚香絲 青花椒辣味 30g', category: '外食類', carbs: 16.3, protein: 7.4, fat: 0.3, kcal: 97.8, na: 553.6, k: '', p: '' },
