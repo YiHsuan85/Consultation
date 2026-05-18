@@ -58,6 +58,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '豆棗 60g', category: '中脂豆魚蛋肉類', carbs: 35, protein: 7, fat: 5, kcal: 215, na: '', k: '', p: '' },
   { name: '滷蛋 55g (1顆）', category: '中脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 5, kcal: 75, na: '', k: '', p: '' },
   { name: '花枝丸、虱目魚丸 50g', category: '中脂豆魚蛋肉類', carbs: 7, protein: 7, fat: 5, kcal: 103, na: '', k: '', p: '' },
+  { name: '21Plus 藜麥毛豆嫩雞丁 100g/包', category: '中脂豆魚蛋肉類', carbs: 10.6, protein: 11.3, fat: 8.2, kcal: 161, na: 464, k: '', p: '' },
   
   // 高脂豆魚蛋肉類
   { name: '素火腿片 55g (4薄片）', category: '高脂豆魚蛋肉類', carbs: 4, protein: 7, fat: 8.5, kcal: 120, na: '', k: '', p: '' },
@@ -324,6 +325,10 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '樂事 香濃起司洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 45.9, protein: 5.7 , fat: 30.6, kcal: 480, na: 591, k:'', p: ''},
   { name: '樂事 奶焗香蔥洋芋片 69.9g/袋(袋裝)', category: '外食類', carbs: 37.5, protein: 4.5 , fat: 24.9, kcal: 393, na: 432, k:'', p: ''},
   { name: '樂事 香酥雞腿洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 47.4, protein: 6 , fat: 29.7, kcal: 480, na: 468, k:'', p: ''},
+  { name: '樂事 自然美味 薄切紫地瓜片 78.9g/袋(袋裝)', category: '外食類', carbs: 48, protein: 2.1, fat: 26.7, kcal: 441, na: 285, k:'', p: ''},
+  { name: '樂事 自然美味 薄切地瓜片 78.9g/袋(袋裝)', category: '外食類', carbs: 49.2, protein: 6 , fat: 26.1, kcal: 441, na: 393, k:'', p: ''},
+  { name: '樂事 自然美味 薄鹽海苔 69.9g/袋(袋裝)', category: '外食類', carbs: 39.6, protein: 4.5 , fat: 23.7, kcal: 390, na: 168, k:'', p: ''},
+  { name: '樂事 自然美味 海鹽 69.9g/袋(袋裝)', category: '外食類', carbs: 37.2, protein: 4.2, fat: 25.8, kcal: 399, na: 372, k:'', p: ''},
   { name: '樂天小熊餅乾-草莓 48g(小包裝)', category: '外食類', carbs: 29.9, protein: 2 , fat: 14.1, kcal: 254.5, na: 116, k:'', p: ''},
   { name: 'Lindt EXCELLENCE 100% 黑巧克力 50g(21塊)', category: '外食類', carbs: 13.5, protein: 6.5, fat: 27, kcal: 310, na: 5, k:'', p: ''},
   { name: 'VANINI 100% 醇黑可可製品 90g(21塊)', category: '外食類', carbs: 24.3, protein: 12.6, fat: 46.8, kcal: 543.6, na: 18, k:'', p: ''},
