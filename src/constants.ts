@@ -314,8 +314,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '樂事 奶焗香蔥洋芋片 69.9g/袋(袋裝)', category: '外食類', carbs: 37.5, protein: 4.5 , fat: 24.9, kcal: 393, na: 432, k:'', p: ''},
   { name: '樂事 香酥雞腿洋芋片 84.9g/袋(袋裝)', category: '外食類', carbs: 47.4, protein: 6 , fat: 29.7, kcal: 480, na: 468, k:'', p: ''},
   { name: '樂天小熊餅乾-草莓 48g(小包裝)', category: '外食類', carbs: 29.9, protein: 2 , fat: 14.1, kcal: 254.5, na: 116, k:'', p: ''},
-  { name: 'Lindt EXCELLENCE 100% 黑巧克力 50g(10g/份)', category: '外食類', carbs: 13.5, protein: 6.5, fat: 27, kcal: 310, na: 5, k:'', p: ''},
-  { name: 'VANINI 100% 醇黑可可製品 90g', category: '外食類', carbs: 24.3, protein: 12.6, fat: 46.8, kcal: 543.6, na: 18, k:'', p: ''},
+  { name: 'Lindt EXCELLENCE 100% 黑巧克力 50g(21塊)', category: '外食類', carbs: 13.5, protein: 6.5, fat: 27, kcal: 310, na: 5, k:'', p: ''},
+  { name: 'VANINI 100% 醇黑可可製品 90g(21塊)', category: '外食類', carbs: 24.3, protein: 12.6, fat: 46.8, kcal: 543.6, na: 18, k:'', p: ''},
   
   // 醬料類
   { name: '醬油膏 5g', category: '醬料類', carbs: 1, protein: 0.3, fat: 0, kcal: 5, na: 202.5, k: 16.4, p: 5.5 },
