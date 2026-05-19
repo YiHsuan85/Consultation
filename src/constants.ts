@@ -284,6 +284,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '711嫩烤里肌多彩便當 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},
   { name: '711極饗-沙茶豬肉燴飯 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},  
   { name: '711黑金松露嫩雞胸 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, na: '', k:'', p: ''},
+  { name: '711糖心蛋紐奧良風味烤雞 三明治 117g', category: '外食類', carbs: 20.7, protein: 15.3, fat: 10.1, kcal: 235, na: 668, k:'', p: ''},
   { name: '711香檸優多 椰果晶凍 400g', category: '外食類', carbs: 52, protein: 0.4, fat: 0, kcal: 210, na: 176, k:'', p: ''},
   { name: '711比菲多（寡糖配方）471ml', category: '外食類', carbs: 60.3, protein: 6.2, fat: 0, kcal: 198, na: 89, k:'', p: ''},
   { name: '711比菲多（減醣30%）471ml', category: '外食類', carbs: 67.8, protein: 5.2, fat: 0, kcal: 278, na: 52, k:'', p: ''},
