@@ -21,6 +21,9 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '無糖優酪乳 200cc', category: '低脂乳品類', carbs: 27, protein: 8, fat: 4, kcal: 180, na: '', k: '', p: '' },
   { name: '711 AB優洛乳（無加糖） 517ml', category: '低脂乳品類', carbs: 43.4, protein: 16, fat: 6.8, kcal: 298, na: 268, k:'', p: ''},
   { name: '711 AB優洛乳（原味） 517ml', category: '低脂乳品類', carbs: 54.8, protein: 15.6, fat: 3.2, kcal: 310, na: 268, k:'', p: ''},
+  { name: '馬修嚴選 綜合莓優格百匯 125g', category: '低脂乳品類', carbs: 26.1, protein: 3.4, fat: 3.5, kcal: 150, na: 70, k:'', p: ''},
+  { name: '鮮乳坊 真優格-豐樂牧場鮮乳優格 450g', category: '低脂乳品類', carbs: 19.8, protein: 15.9, fat: 17.1, kcal: 296.1, na: 170, k:'', p: ''},
+  { name: '鮮乳坊 真優格-每日爽快 300g', category: '低脂乳品類', carbs: 27.7, protein: 9.3, fat: 11.4, kcal: 226.8, na: 120, k:'', p: ''},
   
   // 低脂豆魚蛋肉類
   { name: '一般魚類 30g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, na: '', k: '', p: '' },
@@ -188,7 +191,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '咖啡(三合一)', category: '外食類', carbs: 8.2, protein: 0.9, fat: 0.4, kcal: 40, na: 25.1, k: 75, p: 20.8 },
   { name: '鮮奶茶(無糖)', category: '外食類', carbs: 1.4, protein: 2, fat: 1.4, kcal: 26, na: 11.9, k: 61.6, p: 27.7 },
   { name: '奶茶(三合一)', category: '外食類', carbs: 9.5, protein: 0.5, fat: 0.3, kcal: 43, na: 18, k: 34.7, p: 18.1 },
-  { name: '711聖德科斯芭樂檸檬汁280ml', category: '外食類', carbs: 33.6, protein: 0.6, fat: 0.3, kcal: 137.5, na: 1.1, k: '', p: '' },
+  { name: '新養樂多活菌發酵乳', category: '外食類', carbs: 17, protein: 1.6, fat: 0, kcal: 64.3, na: 18, k: 34.7, p: 18.1 },
+  { name: '711聖德科斯芭樂檸檬汁280ml', category: '外食類', carbs: 33.6, protein: 0.6, fat: 0.3, kcal: 137.5, na: 16, k: '', p: '' },
   { name: '711皇家醇濃伯爵紅茶拿鐵 360ml(中杯)', category: '外食類', carbs: 42.7, protein: 0, fat: 0, kcal: 365.8, na: 0, k: '', p: '' },
   { name: '711皇家醇濃伯爵紅茶拿鐵 480ml(大杯)', category: '外食類', carbs: 44.3, protein: 0, fat: 0, kcal: 435.1, na: 0, k: '', p: '' },
   { name: '711日本靜岡濃抹茶拿鐵 360ml(中杯)', category: '外食類', carbs: 34.8, protein: 0, fat: 0, kcal: 378.2, na: 0, k: '', p: '' },
