@@ -228,6 +228,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '蚵仔煎', category: '外食類', carbs: 19.7, protein: 4.9, fat: 10.4, kcal: 192, na: 479, k: 91, p: 91 },
   { name: '肉羹', category: '外食類', carbs: 18.9, protein: 9.7, fat: 14.7, kcal: 247, na: 512, k: 102, p: 198 },
   { name: '桂冠黃金起司球 30g', category: '外食類', carbs: 3.7, protein: 3.1, fat: 1.8, kcal: 43, na: 169, k: '', p: '' },
+  { name: '沙威瑪 1份', category: '外食類', carbs: 36.6, protein: 18.3, fat: 9.1, kcal: 300, na: 0, k: '', p: '' },
   { name: 'Costco 韓味不二 鹽烤海苔 5g', category: '外食類', carbs: 1.8, protein: 0.5, fat: 2.3, kcal: 29.9, na: 96, k: '', p: '' },
   { name: 'Costco Kokiri 哇象海苔捲原味 5g', category: '外食類', carbs: 4, protein: 1, fat: 0, kcal: 20, na: 75, k: '', p: '' },
   { name: '元本山 味付對切海苔 23.7g', category: '外食類', carbs: 10.2, protein: 9.3, fat: 0.9, kcal: 72, na: 318, k: '', p: '' },
