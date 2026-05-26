@@ -184,6 +184,20 @@ export const generateWordDoc = async (state: AppState) => {
             spacing: { before: 100 }
           });
         })(),
+        state.diet.notes ? new Paragraph({
+          children: [
+            new TextRun({ text: "飲食史備註: ", bold: true }),
+            new TextRun({ text: state.diet.notes }),
+          ],
+          spacing: { before: 100 }
+        }) : new Paragraph({ text: "" }),
+        state.diet.intakeNotes ? new Paragraph({
+          children: [
+            new TextRun({ text: "飲食攝取備註: ", bold: true }),
+            new TextRun({ text: state.diet.intakeNotes }),
+          ],
+          spacing: { before: 100 }
+        }) : new Paragraph({ text: "" }),
 
         new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatus.includes("其他") ? ` (${state.clinical.giStatusOther})` : ""}` }),
