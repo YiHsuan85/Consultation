@@ -127,6 +127,7 @@ const INITIAL_STATE: AppState = {
     meals: [],
     mealsOther: '',
     notes: '',
+    intakeNotes: '',
     logs: []
   },
   diagnoses: [],
@@ -488,6 +489,38 @@ const PORT_VALS: Record<string, { p: number, c: number, f: number, k: number }> 
   '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
 };
 
+const DIET_MATRIX_ROW_CATEGORIES = [
+  '全脂乳品類',
+  '低脂乳品類',
+  '全穀雜糧類',
+  '低脂豆魚蛋肉類',
+  '中脂豆魚蛋肉類',
+  '高脂豆魚蛋肉類',
+  '蔬菜類',
+  '水果類',
+  '油脂與堅果類',
+  '外食類',
+  '醬料類',
+  '保健品'
+];
+
+const getRowCategory = (itemCat: string): string => {
+  const norm = itemCat || '';
+  if (norm.includes('全脂乳品') || norm.includes('全脂奶')) return '全脂乳品類';
+  if (norm.includes('低脂乳品') || norm.includes('低脂奶')) return '低脂乳品類';
+  if (norm.includes('全穀') || norm.includes('全谷')) return '全穀雜糧類';
+  if (norm.includes('低脂豆魚') || norm.includes('低脂肉')) return '低脂豆魚蛋肉類';
+  if (norm.includes('中脂豆魚') || norm.includes('中脂肉')) return '中脂豆魚蛋肉類';
+  if (norm.includes('高脂豆魚') || norm.includes('高脂肉')) return '高脂豆魚蛋肉類';
+  if (norm.includes('蔬菜')) return '蔬菜類';
+  if (norm.includes('水果')) return '水果類';
+  if (norm.includes('油脂') || norm.includes('堅果') || norm.includes('油脂與堅果')) return '油脂與堅果類';
+  if (norm.includes('外食')) return '外食類';
+  if (norm.includes('醬料')) return '醬料類';
+  if (norm.includes('保健')) return '保健品';
+  return '外食類';
+};
+
 export default function App() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -536,6 +569,75 @@ export default function App() {
   const [selectedFoodCategory, setSelectedFoodCategory] = useState<string>('');
   const [selectedFoodItem, setSelectedFoodItem] = useState<string>('');
   const [selectedMeal, setSelectedMeal] = useState('早餐');
+  const [portionInput, setPortionInput] = useState<number>(1);
+  const [editingCell, setEditingCell] = useState<{ category: string; meal: string } | null>(null);
+  const [editingCellItems, setEditingCellItems] = useState<{ id: string; name: string; qty: number; category: string }[]>([]);
+  const [cellNewFoodName, setCellNewFoodName] = useState<string>('');
+  const [cellNewFoodQty, setCellNewFoodQty] = useState<number>(1);
+
+  const handleCellDoubleClick = (category: string, meal: string) => {
+    const cellItems = state.diet.logs.filter(
+      log => getRowCategory(log.category) === category && log.meal === meal
+    ).map(item => ({
+      id: item.id,
+      name: item.name,
+      qty: item.qty,
+      category: item.category
+    }));
+    setEditingCell({ category, meal });
+    setEditingCellItems(cellItems);
+    setCellNewFoodName('');
+    setCellNewFoodQty(1);
+  };
+
+  const handleSaveCellPortions = () => {
+    if (!editingCell) return;
+    const { category, meal } = editingCell;
+
+    const otherLogs = state.diet.logs.filter(
+      log => !(getRowCategory(log.category) === category && log.meal === meal)
+    );
+
+    const updatedLogs = editingCellItems
+      .filter(item => item.qty > 0)
+      .map(item => {
+        const originalLog = state.diet.logs.find(l => l.id === item.id);
+        if (originalLog) {
+          return { ...originalLog, qty: item.qty };
+        }
+        return null;
+      })
+      .filter((log): log is NonNullable<typeof log> => log !== null);
+
+    let addedLog = null;
+    if (cellNewFoodName) {
+      const food = FOOD_DATABASE.find(f => f.name === cellNewFoodName);
+      if (food) {
+        addedLog = {
+          ...food,
+          id: Math.random().toString(36).substr(2, 9),
+          qty: cellNewFoodQty,
+          meal
+        };
+      }
+    }
+
+    const finalLogs = [
+      ...otherLogs,
+      ...updatedLogs,
+      ...(addedLog ? [addedLog] : [])
+    ];
+
+    setState({
+      ...state,
+      diet: {
+        ...state.diet,
+        logs: finalLogs
+      }
+    });
+
+    setEditingCell(null);
+  };
   const [currentDiagnosis, setCurrentDiagnosis] = useState<PES>({ id: '', domain: '', problem: '', etiology: '', symptom: '' });
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -1031,6 +1133,174 @@ export default function App() {
                   <button onClick={() => setIsPatientModalOpen(false)} className="flex-1 py-3 bg-slate-100 rounded-xl">取消</button>
                   <button onClick={() => { handleAddPatient(newPatientData.name, newPatientData.birthday, newPatientData.gender); setIsPatientModalOpen(false); }} className="flex-1 py-3 bg-blue-600 text-white rounded-xl">確認</button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingCell && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col max-h-[90vh]">
+              {/* Modal header */}
+              <div className="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+                <div>
+                  <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-2">
+                    <span className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                      <Utensils className="w-5 h-5" />
+                    </span>
+                    修改飲食份量
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    食物類別：<span className="font-bold text-slate-700">{editingCell.category}</span> &nbsp;|&nbsp;
+                    餐次：<span className="font-bold text-slate-700">{editingCell.meal}</span>
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setEditingCell(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all font-bold text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Items List (using standard scrollbar) */}
+              <div className="flex-1 overflow-y-auto pr-1 space-y-4 py-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">已登錄食物及其份數：</span>
+                
+                {editingCellItems.length === 0 ? (
+                  <div className="text-center py-6 border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50 text-slate-400 text-xs">
+                    目前此類別餐次內沒有任何登錄的食物
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {editingCellItems.map((item, idx) => (
+                      <div key={item.id || idx} className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl hover:bg-slate-100/50 transition-all">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <div className="text-sm font-semibold text-slate-800 truncate" title={item.name}>
+                            {item.name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-medium">
+                            {item.category}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          {/* Portion Edit Stepper */}
+                          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setEditingCellItems(prev => prev.map(p => 
+                                  p.id === item.id ? { ...p, qty: Math.max(0, p.qty - 0.5) } : p
+                                ).filter(p => p.qty > 0)); 
+                              }}
+                              className="w-7 h-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded transition-all font-bold text-xs"
+                            >
+                              -
+                            </button>
+                            <input 
+                              type="number" 
+                              min="0" 
+                              step="0.1" 
+                              value={item.qty} 
+                              onChange={e => {
+                                const val = Math.max(0, parseFloat(e.target.value) || 0);
+                                setEditingCellItems(prev => prev.map(p => p.id === item.id ? { ...p, qty: val } : p));
+                              }}
+                              className="w-12 h-7 text-center bg-white text-xs font-bold text-slate-800 focus:outline-none"
+                            />
+                            <button 
+                              type="button"
+                              onClick={() => {
+                                setEditingCellItems(prev => prev.map(p => 
+                                  p.id === item.id ? { ...p, qty: p.qty + 0.5 } : p
+                                ));
+                              }}
+                              className="w-7 h-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded transition-all font-bold text-xs"
+                            >
+                              +
+                            </button>
+                          </div>
+
+                          {/* Delete from cell button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingCellItems(prev => prev.filter(p => p.id !== item.id));
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all duration-150"
+                            title="刪除"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Additional quick append section in modal */}
+                <div className="border-t border-slate-100 pt-4 mt-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2.5">在此類別快速追加新食物：</span>
+                  <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-100 space-y-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <select 
+                        value={cellNewFoodName}
+                        onChange={e => setCellNewFoodName(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white outline-none focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="">選擇要追加的食物...</option>
+                        {FOOD_DATABASE.filter(f => getRowCategory(f.category) === editingCell.category).map(f => (
+                          <option key={f.name} value={f.name}>{f.name}</option>
+                        ))}
+                      </select>
+
+                      {/* Quantity selector for new appended item */}
+                      <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm max-w-[130px] self-end sm:self-auto">
+                        <button 
+                          type="button"
+                          onClick={() => setCellNewFoodQty(Math.max(0.5, cellNewFoodQty - 0.5))}
+                          className="w-7 h-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-all font-bold text-xs"
+                        >
+                          -
+                        </button>
+                        <input 
+                          type="number" 
+                          min="0.1" 
+                          step="0.1" 
+                          value={cellNewFoodQty} 
+                          onChange={e => setCellNewFoodQty(Math.max(0.1, parseFloat(e.target.value) || 1))}
+                          className="w-10 h-7 text-center bg-white text-xs font-bold text-slate-800 focus:outline-none"
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => setCellNewFoodQty(cellNewFoodQty + 0.5)}
+                          className="w-7 h-7 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-all font-bold text-xs"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex gap-3 border-t border-slate-100 pt-4 mt-4">
+                <button 
+                  type="button"
+                  onClick={() => setEditingCell(null)} 
+                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-sm"
+                >
+                  取消
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleSaveCellPortions} 
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl text-xs sm:text-sm transition-all shadow-md shadow-blue-200"
+                >
+                  儲存修改
+                </button>
               </div>
             </div>
           </div>
@@ -1790,40 +2060,197 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="relative">
-                    <div className="flex flex-col sm:flex-row items-center gap-2 mb-4">
-                      <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                        {MEALS.map(m => (
-                          <button
-                            key={m}
-                            onClick={() => setSelectedMeal(m)}
-                            className={`px-3 py-1 text-xs rounded-md transition-all ${selectedMeal === m ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-700'}`}
-                          >
-                            {m}
-                          </button>
-                        ))}
+                  {/* 飲食攝取營養素統計 (Diet Intake Nutrient Summary) */}
+                  {(() => {
+                    const totalKval = dietTotals.kcal;
+                    const carbsPct = totalKval > 0 ? ((dietTotals.carbs * 4) / totalKval) * 100 : 0;
+                    const proteinPct = totalKval > 0 ? ((dietTotals.protein * 4) / totalKval) * 100 : 0;
+                    const fatPct = totalKval > 0 ? ((dietTotals.fat * 9) / totalKval) * 100 : 0;
+                    return (
+                      <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-5 space-y-4 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-blue-100/80 pb-3">
+                          <span className="text-sm font-black text-blue-800 flex items-center gap-1.5">
+                            <Activity className="w-4 h-4 text-blue-600" />
+                            目前飲食攝取總計
+                          </span>
+                          <span className="text-xs text-slate-500 font-medium">
+                            熱量以三大營養素之加權計算 (4/4/9 kcal/g)
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {/* 總熱量 */}
+                          <div className="bg-white rounded-xl p-3 border border-blue-50 shadow-sm flex flex-col justify-center">
+                            <span className="text-xs font-semibold text-slate-500 mb-1">總熱量</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-lg sm:text-xl font-black text-blue-900">{dietTotals.kcal.toFixed(0)}</span>
+                              <span className="text-xs font-bold text-slate-500">kcal</span>
+                            </div>
+                          </div>
+
+                          {/* 總醣類 */}
+                          <div className="bg-white rounded-xl p-3 border border-blue-50 shadow-sm flex flex-col justify-center">
+                            <span className="text-xs font-semibold text-slate-500 mb-1">總醣類</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-lg sm:text-xl font-black text-blue-900">{dietTotals.carbs.toFixed(1)}</span>
+                              <span className="text-xs font-bold text-slate-500">g</span>
+                            </div>
+                            <span className="text-[10px] text-blue-600 font-medium mt-1">
+                              佔 {carbsPct.toFixed(1)}% 熱量
+                            </span>
+                          </div>
+
+                          {/* 總蛋白質 */}
+                          <div className="bg-white rounded-xl p-3 border border-blue-50 shadow-sm flex flex-col justify-center">
+                            <span className="text-xs font-semibold text-slate-500 mb-1">總蛋白質</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-lg sm:text-xl font-black text-blue-900">{dietTotals.protein.toFixed(1)}</span>
+                              <span className="text-xs font-bold text-slate-500">g</span>
+                            </div>
+                            <span className="text-[10px] text-emerald-600 font-medium mt-1">
+                              佔 {proteinPct.toFixed(1)}% 熱量
+                            </span>
+                          </div>
+
+                          {/* 總脂肪 */}
+                          <div className="bg-white rounded-xl p-3 border border-blue-50 shadow-sm flex flex-col justify-center">
+                            <span className="text-xs font-semibold text-slate-500 mb-1">總脂肪</span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-lg sm:text-xl font-black text-blue-900">{dietTotals.fat.toFixed(1)}</span>
+                              <span className="text-xs font-bold text-slate-500">g</span>
+                            </div>
+                            <span className="text-[10px] text-amber-600 font-medium mt-1">
+                              佔 {fatPct.toFixed(1)}% 熱量
+                            </span>
+                          </div>
+                        </div>
+
+                        {Object.keys(dietTotals.categories).length > 0 && (
+                          <div className="flex flex-wrap gap-x-4 gap-y-2 pt-3 border-t border-blue-100/80">
+                            {Object.entries(dietTotals.categories).map(([category, count]) => (
+                              count > 0 && (
+                                <div key={category} className="flex items-center gap-1.5 text-xs bg-white border border-slate-100 px-2.5 py-1 rounded-lg">
+                                  <span className="text-slate-500 font-medium">{category}:</span>
+                                  <span className="font-bold text-blue-800">{count.toFixed(1)} <span className="text-[10px] font-normal opacity-70">份</span></span>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="relative flex-1 w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input 
-                          type="text" 
-                          placeholder={`手動搜尋食物並加入${selectedMeal}...`}
-                          value={searchQuery}
-                          onChange={e => setSearchQuery(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
+                    );
+                  })()}
+
+                  <div className="relative">
+                    <div className="flex flex-col md:flex-row items-stretch gap-4 mb-4">
+                      {/* Portion specification */}
+                      <div className="flex flex-col justify-between bg-slate-50 border border-slate-200 rounded-lg p-3 w-full md:w-auto shadow-sm">
+                        <span className="text-xs font-semibold text-slate-500 mb-1.5 block">預設新增份數：</span>
+                        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1 max-w-[150px] shadow-sm">
+                          <button 
+                            type="button"
+                            onClick={() => setPortionInput(Math.max(0.5, portionInput - 0.5))}
+                            className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded transition-all font-bold text-sm"
+                          >
+                            -
+                          </button>
+                          <input 
+                            type="number" 
+                            min="0.1" 
+                            step="0.1" 
+                            value={portionInput} 
+                            onChange={e => setPortionInput(Math.max(0.1, parseFloat(e.target.value) || 1))}
+                            className="w-12 h-8 text-center bg-white text-sm font-bold text-slate-800 focus:outline-none"
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => setPortionInput(portionInput + 0.5)}
+                            className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-700 rounded transition-all font-bold text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 w-full space-y-2">
+                        <span className="text-xs font-semibold text-slate-500 block">餐次與食物名稱搜尋：</span>
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                          <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                            {MEALS.map(m => (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => setSelectedMeal(m)}
+                                className={`px-2.5 py-1.5 text-xs rounded-md transition-all ${selectedMeal === m ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-700'}`}
+                              >
+                                {m}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="relative flex-1 w-full">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input 
+                              type="text" 
+                              placeholder={`搜尋食物並加入${selectedMeal} (預設新增 ${portionInput} 份)...`}
+                              value={searchQuery}
+                              onChange={e => setSearchQuery(e.target.value)}
+                              className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm bg-white"
+                            />
+                            {searchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold p-1 text-xs"
+                                title="清除搜尋"
+                              >
+                                ✕
+                              </button>
+                            )}
+
+                            {filteredFood.length > 0 && (
+                              <div className="absolute left-0 right-0 z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-2xl max-h-64 overflow-y-auto">
+                                {filteredFood.map((food, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setState({
+                                        ...state,
+                                        diet: {
+                                          ...state.diet,
+                                          logs: [...state.diet.logs, { ...food, id: Math.random().toString(36).substr(2, 9), qty: portionInput, meal: selectedMeal }]
+                                        }
+                                      });
+                                      setSearchQuery('');
+                                    }}
+                                    className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-slate-100 last:border-0 flex justify-between items-center transition-all"
+                                  >
+                                    <div>
+                                      <div className="font-semibold text-slate-800 text-xs sm:text-sm">{food.name}</div>
+                                      <div className="text-[10px] sm:text-xs text-slate-500">{food.category}</div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <span className="text-[9px] sm:text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">{selectedMeal} ({portionInput} 份)</span>
+                                      <Plus className="w-3.5 h-3.5 text-blue-500" />
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-2 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                      <span className="text-sm font-medium text-slate-700 whitespace-nowrap">分類新增：</span>
+                    <div className="flex flex-col sm:flex-row items-center gap-2 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm">
+                      <span className="text-sm font-medium text-slate-700 whitespace-nowrap">分類新增飲食：</span>
                       <select 
                         value={selectedFoodCategory}
                         onChange={e => {
                           setSelectedFoodCategory(e.target.value);
                           setSelectedFoodItem('');
                         }}
-                        className="w-full sm:w-48 px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                        className="w-full sm:w-48 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:ring-1 focus:ring-blue-500"
                       >
                         <option value="">選擇食物類別...</option>
                         {Array.from(new Set(FOOD_DATABASE.map(f => f.category))).map(cat => (
@@ -1843,7 +2270,7 @@ export default function App() {
                                 ...state,
                                 diet: {
                                   ...state.diet,
-                                  logs: [...state.diet.logs, { ...food, id: Math.random().toString(36).substr(2, 9), qty: 1, meal: selectedMeal }]
+                                  logs: [...state.diet.logs, { ...food, id: Math.random().toString(36).substr(2, 9), qty: portionInput, meal: selectedMeal }]
                                 }
                               });
                               setSelectedFoodItem('');
@@ -1851,7 +2278,7 @@ export default function App() {
                           }
                         }}
                         disabled={!selectedFoodCategory}
-                        className="w-full flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm disabled:bg-slate-100 disabled:text-slate-400"
+                        className="w-full flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-400"
                       >
                         <option value="">選擇食物...</option>
                         {selectedFoodCategory && FOOD_DATABASE.filter(f => f.category === selectedFoodCategory).map(f => (
@@ -1859,60 +2286,135 @@ export default function App() {
                         ))}
                       </select>
                     </div>
-                    
-                    {filteredFood.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
-                        {filteredFood.map((food, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              setState({
-                                ...state,
-                                diet: {
-                                  ...state.diet,
-                                  logs: [...state.diet.logs, { ...food, id: Math.random().toString(36).substr(2, 9), qty: 1, meal: selectedMeal }]
-                                }
-                              });
-                              setSearchQuery('');
-                            }}
-                            className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-slate-100 last:border-0 flex justify-between items-center"
-                          >
-                            <div>
-                              <div className="font-medium text-slate-800">{food.name}</div>
-                              <div className="text-xs text-slate-500">{food.category}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{selectedMeal}</span>
-                              <Plus className="w-4 h-4 text-blue-500" />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
 
-                  <div className="flex flex-col gap-4 bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm font-bold text-blue-800">目前飲食攝取總計</div>
-                      <div className="flex gap-6 text-sm">
-                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總熱量</span><span className="font-bold text-blue-900">{dietTotals.kcal.toFixed(0)} kcal</span></div>
-                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總醣類</span><span className="font-bold text-blue-900">{dietTotals.carbs.toFixed(1)} g</span></div>
-                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總蛋白質</span><span className="font-bold text-blue-900">{dietTotals.protein.toFixed(1)} g</span></div>
-                        <div className="flex flex-col items-center"><span className="text-blue-600/80 text-xs font-medium mb-1">總脂肪</span><span className="font-bold text-blue-900">{dietTotals.fat.toFixed(1)} g</span></div>
-                      </div>
+                  {/* 飲食份數矩陣表格 (Diet Portions Matrix) */}
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5">
+                      <span className="text-xs sm:text-sm font-bold text-slate-700 flex items-center gap-1.5 flex-wrap">
+                        <Utensils className="w-4 h-4 text-blue-600" />
+                        飲食史份數矩陣 (橫軸：餐次 | 縱軸：主要食物類別)
+                        <span className="text-[10px] text-blue-600 font-normal bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100 flex items-center gap-1">
+                          💡 雙擊儲存格可快速 修改/追加食物
+                        </span>
+                      </span>
+                      <span className="text-xs text-slate-500 font-medium">
+                        單位：份量數值 (依輸入顯示)
+                      </span>
                     </div>
-                    {Object.keys(dietTotals.categories).length > 0 && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-2 pt-3 border-t border-blue-200">
-                        {Object.entries(dietTotals.categories).map(([category, count]) => (
-                          count > 0 && (
-                            <div key={category} className="flex items-center gap-1.5">
-                              <span className="text-xs text-blue-700/70 font-medium">{category}:</span>
-                              <span className="text-sm font-bold text-blue-800">{count.toFixed(1)} <span className="text-[10px] font-normal opacity-70">份</span></span>
-                            </div>
-                          )
-                        ))}
-                      </div>
-                    )}
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-center border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-semibold">
+                            <th className="px-3 py-2.5 text-left font-bold text-slate-700 bg-slate-50 border-r border-slate-200 min-w-[120px]">食物類別</th>
+                            {MEALS.map(meal => (
+                              <th key={meal} className="px-2 py-2.5 min-w-[95px] border-r border-slate-200 last:border-r-0">
+                                {meal}
+                              </th>
+                            ))}
+                            <th className="px-3 py-2.5 font-bold text-slate-700 bg-slate-50 border-l border-slate-200">類別總計</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {DIET_MATRIX_ROW_CATEGORIES.map(category => {
+                            let rowSum = 0;
+                            return (
+                              <tr key={category} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="px-3 py-2 text-left font-medium text-slate-700 bg-slate-50/50 border-r border-slate-200">
+                                  {category}
+                                </td>
+                                {MEALS.map(meal => {
+                                  // Find items for this cell
+                                  const cellItems = state.diet.logs.filter(
+                                    log => getRowCategory(log.category) === category && log.meal === meal
+                                  );
+                                  const cellSum = cellItems.reduce((sum, log) => sum + (log.qty || 0), 0);
+                                  rowSum += cellSum;
+                                  
+                                  const foodNamesStr = cellItems.map(item => `${item.name} (${item.qty}份)`).join(', ');
+
+                                  return (
+                                    <td 
+                                      key={meal} 
+                                      className="px-1 py-1.5 border-r border-slate-100 last:border-r-0 relative group cursor-pointer hover:bg-slate-50/80 transition-colors"
+                                      onDoubleClick={() => handleCellDoubleClick(category, meal)}
+                                      title={cellSum > 0 ? `${foodNamesStr}\n(雙擊可編輯/修改份數)` : `(雙擊可直接新增此欄食物)`}
+                                    >
+                                      {cellSum > 0 ? (
+                                        <div 
+                                          className="mx-1 p-1 bg-blue-50 border border-blue-100 rounded-lg flex flex-col items-center justify-center transition-all hover:bg-blue-100 hover:border-blue-200 shadow-sm relative group"
+                                        >
+                                          <div className="absolute right-1 top-0.5 text-[8px] text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            ✎
+                                          </div>
+                                          <span className="text-xs font-black text-blue-750">{cellSum}</span>
+                                          <div className="text-[9px] text-slate-500 truncate max-w-[85px] mt-0.5 scale-90">
+                                            {cellItems.map(item => item.name.split(' ')[0]).join(',')}
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="h-8 flex items-center justify-center text-slate-300 hover:text-blue-500 hover:bg-blue-50/40 rounded-md transition-all text-xs font-light">
+                                          <span className="group-hover:inline hidden font-bold text-xs text-blue-500">+</span>
+                                          <span className="group-hover:hidden">-</span>
+                                        </div>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                                <td className="px-3 py-2 font-bold text-slate-800 bg-slate-50/30 border-l border-slate-200 text-center">
+                                  {rowSum > 0 ? (
+                                    <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
+                                      {rowSum}
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-300 font-light">-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                        <tfoot>
+                          <tr className="bg-slate-100 text-slate-700 font-bold border-t border-slate-300">
+                            <td className="px-3 py-2.5 text-left border-r border-slate-300">餐次總計</td>
+                            {MEALS.map(meal => {
+                              const mealSum = state.diet.logs
+                                .filter(log => log.meal === meal)
+                                .reduce((sum, log) => sum + (log.qty || 0), 0);
+                              return (
+                                <td key={meal} className="px-2 py-2.5 border-r border-slate-200 last:border-r-0 text-center">
+                                  {mealSum > 0 ? (
+                                    <span className="text-xs font-black text-blue-800">{mealSum} <span className="text-[9px] font-normal">份</span></span>
+                                  ) : (
+                                    <span className="text-slate-400 font-light">-</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                            <td className="px-3 py-2.5 bg-slate-200 font-black text-slate-800 border-l border-slate-300 text-center">
+                              {(() => {
+                                const total = state.diet.logs.reduce((sum, log) => sum + (log.qty || 0), 0);
+                                return total > 0 ? `${total} 份` : '-';
+                              })()}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* 飲食攝取備註 */}
+                  <div className="space-y-1.5 mb-6 bg-slate-50 border border-slate-200 p-4 rounded-xl shadow-sm">
+                    <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      飲食攝取備註
+                    </label>
+                    <textarea 
+                      value={state.diet.intakeNotes || ''}
+                      onChange={e => setState({...state, diet: {...state.diet, intakeNotes: e.target.value}})}
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 h-20 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      placeholder="填寫關於此次飲食攝取、餐次熱量調配或飲食評估細節的備註..."
+                    ></textarea>
                   </div>
 
                   <div className="overflow-x-auto rounded-lg border border-slate-200">
