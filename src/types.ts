@@ -122,6 +122,7 @@ export interface AppState {
     meals: string[];
     mealsOther?: string;
     notes: string;
+    intakeNotes?: string;
     logs: (FoodItem & { id: string; qty: number; meal: string })[];
   };
   diagnoses: PES[];
