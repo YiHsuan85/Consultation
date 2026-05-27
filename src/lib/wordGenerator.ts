@@ -199,6 +199,49 @@ export const generateWordDoc = async (state: AppState) => {
           spacing: { before: 100 }
         }) : new Paragraph({ text: "" }),
 
+        // Detailed food log table
+        new Paragraph({ 
+          text: "飲食史詳細登錄明細 (Dietary Food Logs Detail)", 
+          heading: HeadingLevel.HEADING_3, 
+          spacing: { before: 200, after: 100 } 
+        }),
+        state.diet.logs.length === 0 ? new Paragraph({ text: "目前無詳細登錄之食物記錄" }) : new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({
+              children: [
+                createHeaderCell("餐次"), 
+                createHeaderCell("食物名稱"), 
+                createHeaderCell("主要類別"), 
+                createHeaderCell("份數"),
+                createHeaderCell("熱量 (kcal)"),
+                createHeaderCell("醣類 (g)"),
+                createHeaderCell("蛋白質 (g)"),
+                createHeaderCell("脂肪 (g)")
+              ]
+            }),
+            ...[...state.diet.logs]
+              .sort((a, b) => {
+                const order = ["早餐", "早點", "午餐", "午點", "晚餐", "晚點"];
+                const idxA = order.indexOf(a.meal);
+                const idxB = order.indexOf(b.meal);
+                return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+              })
+              .map(item => new TableRow({
+                children: [
+                  createValueCell(item.meal),
+                  createValueCell(item.name),
+                  createValueCell(item.category || "N/A"),
+                  createValueCell(`${item.qty} 份`),
+                  createValueCell(`${Math.round((item.carbs * 4 + item.protein * 4 + item.fat * 9) * item.qty)}`),
+                  createValueCell(`${(item.carbs * item.qty).toFixed(1)}`),
+                  createValueCell(`${(item.protein * item.qty).toFixed(1)}`),
+                  createValueCell(`${(item.fat * item.qty).toFixed(1)}`),
+                ]
+              }))
+          ]
+        }),
+
         new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatus.includes("其他") ? ` (${state.clinical.giStatusOther})` : ""}` }),
         new Paragraph({ text: `目前服用藥物: ${state.clinical.medications || "無"}` }),
