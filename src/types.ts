@@ -121,6 +121,7 @@ export interface AppState {
     targetProtein: string;
     targetWater: string;
     currentWater: string;
+    currentWaterNotes?: string;
     supplements: string;
     allergies: string[];
     allergiesOther: string;
