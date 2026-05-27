@@ -30,6 +30,40 @@ const createValueCell = (text: string) => new TableCell({
   verticalAlign: VerticalAlign.CENTER,
 });
 
+const formatExercises = (state: AppState, includeFactor = false) => {
+  const list = state.clientHx.exerciseList || [];
+  let result = "無";
+  if (list.length > 0) {
+    const formatted = list
+      .map(ex => {
+        const parts: string[] = [];
+        if (ex.frequency) parts.push(ex.frequency);
+        if (ex.type) parts.push(ex.type);
+        if (ex.name) parts.push(`(${ex.name})`);
+        return parts.join(' ').trim();
+      })
+      .filter(Boolean);
+    if (formatted.length > 0) {
+      result = formatted.join('、');
+    }
+  } else {
+    const single = state.clientHx.exercise;
+    const parts: string[] = [];
+    if (single.frequency) parts.push(single.frequency);
+    if (single.type) parts.push(single.type);
+    if (single.name) parts.push(`(${single.name})`);
+    const str = parts.join(' ').trim();
+    if (str) {
+      result = str;
+    }
+  }
+
+  if (includeFactor) {
+    return `${result} [因子: ${state.clientHx.exercise.activityFactor || 'N/A'}]`;
+  }
+  return result;
+};
+
 export const generateWordDoc = async (state: AppState) => {
   // ... (existing code remains same)
   const doc = new Document({
@@ -95,7 +129,7 @@ export const generateWordDoc = async (state: AppState) => {
             }),
             new TableRow({
               children: [
-                createHeaderCell("運動習慣"), createValueCell(`${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''} [因子: ${state.clientHx.exercise.activityFactor || 'N/A'}]`),
+                createHeaderCell("運動習慣"), createValueCell(formatExercises(state, true)),
                 createHeaderCell(""), createValueCell(""),
               ],
             }),
@@ -156,7 +190,7 @@ export const generateWordDoc = async (state: AppState) => {
         new Paragraph({ text: "4. 飲食史 (Diet Hx)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `飲食型態: ${state.diet.type} / 傾向: ${state.diet.preference}` }),
         new Paragraph({ text: `餐次: ${state.diet.meals.join(", ") || "未填寫"}${state.diet.meals.includes("其他") ? ` (${state.diet.mealsOther})` : ""}` }),
-        new Paragraph({ text: `飲水量: ${state.diet.currentWater} ml/d` }),
+        new Paragraph({ text: `飲水量: ${state.diet.currentWater || "0"} ml/d${state.diet.currentWaterNotes ? ` (${state.diet.currentWaterNotes})` : ""}` }),
         new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || (state.diet.allergiesOther ? "" : "無")}${state.diet.allergiesOther ? (state.diet.allergies.length > 0 ? "、" : "") + state.diet.allergiesOther : ""}` }),
         new Paragraph({ text: `保健品: ${state.diet.supplements || "無"}` }),
         (() => {
@@ -422,7 +456,7 @@ export const generateReminderWordDoc = async (state: AppState) => {
                 createHeaderCell("運動習慣"), 
                 new TableCell({
                   columnSpan: 3,
-                  children: [new Paragraph({ text: `${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''}` || "無" })],
+                  children: [new Paragraph({ text: formatExercises(state, false) })],
                   verticalAlign: VerticalAlign.CENTER,
                 })
               ],
