@@ -85,7 +85,10 @@ const INITIAL_STATE: AppState = {
     socialHx: '',
     region: '',
     habits: { smoke: false, drink: false },
-    exercise: { frequency: '', name: '', type: '', activityFactor: '' }
+    exercise: { frequency: '', name: '', type: '', activityFactor: '' },
+    exerciseList: [
+      { frequency: '', name: '', type: '' }
+    ]
   },
   anthropometry: {
     height: '',
@@ -818,19 +821,31 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
         // Merge saved state with INITIAL_STATE to ensure all fields exist
-        setState(prev => ({
-          ...INITIAL_STATE,
-          ...parsed,
-          id: parsed.id, // Explicitly restore ID
-          diagnoses: parsed.diagnoses || [],
-          clientHx: { ...INITIAL_STATE.clientHx, ...(parsed.clientHx || {}) },
-          anthropometry: { ...INITIAL_STATE.anthropometry, ...(parsed.anthropometry || {}) },
-          biochemistry: { ...INITIAL_STATE.biochemistry, ...(parsed.biochemistry || {}) },
-          clinical: { ...INITIAL_STATE.clinical, ...(parsed.clinical || {}) },
-          diet: { ...INITIAL_STATE.diet, ...(parsed.diet || {}) },
-          intervention: { ...INITIAL_STATE.intervention, ...(parsed.intervention || {}) },
-          monitoring: { ...INITIAL_STATE.monitoring, ...(parsed.monitoring || {}) }
-        }));
+        setState(prev => {
+          const clientHxMerged = { ...INITIAL_STATE.clientHx, ...(parsed.clientHx || {}) };
+          if (!clientHxMerged.exerciseList || clientHxMerged.exerciseList.length === 0) {
+            clientHxMerged.exerciseList = [
+              {
+                frequency: clientHxMerged.exercise?.frequency || '',
+                name: clientHxMerged.exercise?.name || '',
+                type: clientHxMerged.exercise?.type || ''
+              }
+            ];
+          }
+          return {
+            ...INITIAL_STATE,
+            ...parsed,
+            id: parsed.id, // Explicitly restore ID
+            diagnoses: parsed.diagnoses || [],
+            clientHx: clientHxMerged,
+            anthropometry: { ...INITIAL_STATE.anthropometry, ...(parsed.anthropometry || {}) },
+            biochemistry: { ...INITIAL_STATE.biochemistry, ...(parsed.biochemistry || {}) },
+            clinical: { ...INITIAL_STATE.clinical, ...(parsed.clinical || {}) },
+            diet: { ...INITIAL_STATE.diet, ...(parsed.diet || {}) },
+            intervention: { ...INITIAL_STATE.intervention, ...(parsed.intervention || {}) },
+            monitoring: { ...INITIAL_STATE.monitoring, ...(parsed.monitoring || {}) }
+          };
+        });
       } catch (e) {
         console.error('Failed to load saved state', e);
       }
@@ -932,13 +947,23 @@ export default function App() {
   };
 
   const loadRecord = (record: any) => {
+    const clientHxMerged = { ...INITIAL_STATE.clientHx, ...(record.data.clientHx || {}) };
+    if (!clientHxMerged.exerciseList || clientHxMerged.exerciseList.length === 0) {
+      clientHxMerged.exerciseList = [
+        {
+          frequency: clientHxMerged.exercise?.frequency || '',
+          name: clientHxMerged.exercise?.name || '',
+          type: clientHxMerged.exercise?.type || ''
+        }
+      ];
+    }
     // Deep merge with INITIAL_STATE to ensure compatibility with new fields
     setState({
       ...INITIAL_STATE,
       ...record.data,
       id: record.id,
       // Ensure nested objects are handled
-      clientHx: { ...INITIAL_STATE.clientHx, ...(record.data.clientHx || {}) },
+      clientHx: clientHxMerged,
       anthropometry: { ...INITIAL_STATE.anthropometry, ...(record.data.anthropometry || {}) },
       biochemistry: { ...INITIAL_STATE.biochemistry, ...(record.data.biochemistry || {}) },
       clinical: { ...INITIAL_STATE.clinical, ...(record.data.clinical || {}) },
@@ -4358,6 +4383,9 @@ export default function App() {
             <div><span className="font-bold">IBW:</span> {state.anthropometry.ibw} kg</div>
             <div><span className="font-bold">ABW:</span> {state.anthropometry.abw} kg</div>
             <div><span className="font-bold">體脂率:</span> {state.anthropometry.bodyFat} %</div>
+            <div><span className="font-bold">運動習慣:</span> {`${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type || ''}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''}` || '無'}</div>
+            <div><span className="font-bold">活動因子:</span> {state.clientHx.exercise.activityFactor || '無'}</div>
+            <div><span className="font-bold">生活習慣:</span> {`${state.clientHx.habits.smoke ? "抽菸 " : ""}${state.clientHx.habits.drink ? "喝酒" : ""}` || "無"}</div>
           </div>
           <div className="mt-4">
             <h3 className="font-bold text-sm mb-2">生化數值:</h3>
