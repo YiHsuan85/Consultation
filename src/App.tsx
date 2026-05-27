@@ -1000,6 +1000,61 @@ export default function App() {
     });
   };
 
+  const updateExerciseItem = (idx: number, field: 'frequency' | 'name' | 'type', value: string) => {
+    const newList = [...(state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }])];
+    if (!newList[idx]) {
+      newList[idx] = { frequency: '', name: '', type: '' };
+    }
+    newList[idx] = { ...newList[idx], [field]: value };
+    
+    // Keep first item synced with legacy model
+    const firstItem = newList[0] || { frequency: '', name: '', type: '' };
+    setState(prev => ({
+      ...prev,
+      clientHx: {
+        ...prev.clientHx,
+        exerciseList: newList,
+        exercise: {
+          ...prev.clientHx.exercise,
+          frequency: firstItem.frequency,
+          name: firstItem.name,
+          type: firstItem.type
+        }
+      }
+    }));
+  };
+
+  const addExerciseItem = () => {
+    const newList = [...(state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }]), { frequency: '', name: '', type: '' }];
+    setState(prev => ({
+      ...prev,
+      clientHx: {
+        ...prev.clientHx,
+        exerciseList: newList
+      }
+    }));
+  };
+
+  const removeExerciseItem = (idx: number) => {
+    const list = state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }];
+    const newList = list.filter((_, i) => i !== idx);
+    const finalList = newList.length === 0 ? [{ frequency: '', name: '', type: '' }] : newList;
+    const firstItem = finalList[0] || { frequency: '', name: '', type: '' };
+    setState(prev => ({
+      ...prev,
+      clientHx: {
+        ...prev.clientHx,
+        exerciseList: finalList,
+        exercise: {
+          ...prev.clientHx.exercise,
+          frequency: firstItem.frequency,
+          name: firstItem.name,
+          type: firstItem.type
+        }
+      }
+    }));
+  };
+
   const renderGuidelineSpecifics = () => {
     return null;
   };
@@ -1505,14 +1560,13 @@ export default function App() {
                       <option>退休</option>
                     </select>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 md:col-span-4 mt-2">
                     <label className="text-sm font-medium text-slate-700">工作說明</label>
-                    <input 
-                      type="text" 
+                    <textarea 
                       value={state.clientHx.jobDescription || ''} 
                       onChange={e => setState({...state, clientHx: {...state.clientHx, jobDescription: e.target.value}})} 
-                      placeholder="簡述工作內容..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200" 
+                      placeholder="請詳述工作/生活作息等內容..."
+                      className="w-full px-3 py-2 rounded-lg border border-slate-200 min-h-[100px] focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all" 
                     />
                   </div>
 
@@ -1545,33 +1599,66 @@ export default function App() {
                         </label>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">運動習慣</label>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex gap-2">
-                          <input 
-                            type="text" 
-                            placeholder="頻率 (次/週)" 
-                            value={state.clientHx.exercise.frequency || ''} 
-                            onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, frequency: e.target.value}}})} 
-                            className="w-1/2 px-3 py-2 rounded-lg border border-slate-200" 
-                          />
-                          <select value={state.clientHx.exercise.type || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, type: e.target.value}}})} className="w-1/2 px-3 py-2 rounded-lg border border-slate-200">
-                            <option value="">選擇類型</option>
-                            {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </div>
-                        <input 
-                          type="text" 
-                          placeholder="具體運動 (例如: 游泳、慢跑...)" 
-                          value={state.clientHx.exercise.name || ''} 
-                          onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, name: e.target.value}}})} 
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200" 
-                        />
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold text-slate-800 flex items-center justify-between">
+                        <span>運動習慣</span>
+                        <button 
+                          type="button" 
+                          onClick={addExerciseItem}
+                          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-all focus:outline-none"
+                        >
+                          <Plus className="w-3 h-3" />
+                          新增
+                        </button>
+                      </label>
+                      <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
+                        {(state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }]).map((exerciseItem, idx) => (
+                          <div key={idx} className="relative p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-2 group">
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => removeExerciseItem(idx)}
+                                className="absolute top-2 right-2 text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-lg transition-all focus:outline-none"
+                                title="刪除運動習慣"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <div className="text-[10px] font-bold text-slate-400">項目 {idx + 1}</div>
+                            <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                placeholder="頻率 (次/週)" 
+                                value={exerciseItem.frequency || ''} 
+                                onChange={e => updateExerciseItem(idx, 'frequency', e.target.value)} 
+                                className="w-1/2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white" 
+                              />
+                              <select 
+                                value={exerciseItem.type || ''} 
+                                onChange={e => updateExerciseItem(idx, 'type', e.target.value)} 
+                                className="w-1/2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white"
+                              >
+                                <option value="">選擇類型</option>
+                                {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                            </div>
+                            <input 
+                              type="text" 
+                              placeholder="具體運動 (例如: 游泳、慢跑...)" 
+                              value={exerciseItem.name || ''} 
+                              onChange={e => updateExerciseItem(idx, 'name', e.target.value)} 
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white" 
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100">
+                        <label className="text-xs font-semibold text-slate-500 block mb-1">活動強度評估 (計算用)</label>
                         <select 
                           value={state.clientHx.exercise.activityFactor || ''} 
                           onChange={e => setState({...state, clientHx: {...state.clientHx, exercise: {...state.clientHx.exercise, activityFactor: e.target.value as any}}})} 
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
                         >
                           <option value="">活動因子</option>
                           {ACTIVITY_FACTORS.map(f => <option key={f} value={f}>{f}</option>)}
@@ -4383,7 +4470,25 @@ export default function App() {
             <div><span className="font-bold">IBW:</span> {state.anthropometry.ibw} kg</div>
             <div><span className="font-bold">ABW:</span> {state.anthropometry.abw} kg</div>
             <div><span className="font-bold">體脂率:</span> {state.anthropometry.bodyFat} %</div>
-            <div><span className="font-bold">運動習慣:</span> {`${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type || ''}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''}` || '無'}</div>
+            <div>
+              <span className="font-bold">運動習慣:</span> {(() => {
+                const list = state.clientHx.exerciseList || [];
+                if (list.length > 0) {
+                  const formatted = list
+                    .map(ex => {
+                      const parts: string[] = [];
+                      if (ex.frequency) parts.push(ex.frequency);
+                      if (ex.type) parts.push(ex.type);
+                      if (ex.name) parts.push(`(${ex.name})`);
+                      return parts.join(' ').trim();
+                    })
+                    .filter(Boolean);
+                  if (formatted.length > 0) return formatted.join('、');
+                }
+                const single = `${state.clientHx.exercise.frequency ? state.clientHx.exercise.frequency + ' ' : ''}${state.clientHx.exercise.type || ''}${state.clientHx.exercise.name ? ' (' + state.clientHx.exercise.name + ')' : ''}`.trim();
+                return single || '無';
+              })()}
+            </div>
             <div><span className="font-bold">活動因子:</span> {state.clientHx.exercise.activityFactor || '無'}</div>
             <div><span className="font-bold">生活習慣:</span> {`${state.clientHx.habits.smoke ? "抽菸 " : ""}${state.clientHx.habits.drink ? "喝酒" : ""}` || "無"}</div>
           </div>
