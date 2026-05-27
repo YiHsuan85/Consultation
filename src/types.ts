@@ -83,6 +83,11 @@ export interface AppState {
       type: string;
       activityFactor: '無' | '輕度' | '中度' | '重度' | '';
     };
+    exerciseList?: {
+      frequency: string;
+      name: string;
+      type: string;
+    }[];
   };
   anthropometry: {
     height: string;
