@@ -2020,7 +2020,7 @@ export default function App() {
                   </h2>
                 </div>
                 <div className="p-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">飲食型態</label>
                       <select value={state.diet.type || ''} onChange={e => setState({...state, diet: {...state.diet, type: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
@@ -2038,36 +2038,12 @@ export default function App() {
                         <option>蛋奶素</option>
                       </select>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-slate-700">目前飲水量 (ml/d)</label>
-                        <input 
-                          type="number" 
-                          value={state.diet.currentWater || ''} 
-                          onChange={e => setState({...state, diet: {...state.diet, currentWater: e.target.value}})} 
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200" 
-                          placeholder="例如：1500"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-slate-700">飲水量描述 (選填)</label>
-                        <textarea 
-                          value={state.diet.currentWaterNotes || ''} 
-                          onChange={e => setState({...state, diet: {...state.diet, currentWaterNotes: e.target.value}})} 
-                          className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 min-h-[60px] focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all" 
-                          placeholder="請詳述飲水習慣（如：大多喝溫開水、偶爾喝無糖茶等）..."
-                        />
-                      </div>
-                    </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">建議熱量需求 (僅供參考)</label>
-                      <div className="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-100">
-                        <div className="text-sm font-bold">{recommendedKcal} kcal/d</div>
+                      <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-[42px] flex flex-col justify-center">
+                        <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
                         {recommendedMacros && (
-                          <div className="flex gap-3 mt-1 text-[10px] font-medium text-blue-600/80">
+                          <div className="flex gap-2.5 mt-1 text-[10px] font-medium text-blue-600/80 leading-none">
                             <span>醣: {recommendedMacros.carbs}g</span>
                             <span>蛋: {recommendedMacros.protein}g</span>
                             <span>脂: {recommendedMacros.fat}g</span>
@@ -2077,15 +2053,37 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">非處方中藥或保健品</label>
-                    <input 
-                      type="text" 
-                      value={state.diet.supplements || ''} 
-                      onChange={e => setState({...state, diet: {...state.diet, supplements: e.target.value}})} 
-                      placeholder="例如：魚油、葉黃素、中藥粉..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200" 
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">目前飲水量 (ml/d)</label>
+                      <input 
+                        type="number" 
+                        value={state.diet.currentWater || ''} 
+                        onChange={e => setState({...state, diet: {...state.diet, currentWater: e.target.value}})} 
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200" 
+                        placeholder="例如：1500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">飲水量描述 (選填)</label>
+                      <input 
+                        type="text" 
+                        value={state.diet.currentWaterNotes || ''} 
+                        onChange={e => setState({...state, diet: {...state.diet, currentWaterNotes: e.target.value}})} 
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all" 
+                        placeholder="請詳述飲水習慣（如：溫開水）..."
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">非處方中藥或保健品</label>
+                      <input 
+                        type="text" 
+                        value={state.diet.supplements || ''} 
+                        onChange={e => setState({...state, diet: {...state.diet, supplements: e.target.value}})} 
+                        placeholder="例如：魚油、葉黃素、中藥粉..."
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200" 
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-3">
