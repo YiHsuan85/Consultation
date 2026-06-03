@@ -129,7 +129,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '香菇', category: '蔬菜類', carbs: 5, protein: 1, fat: 0, kcal: 25, na: 3.8, k: 719.5, p: 218.2 },
   { name: '海帶', category: '蔬菜類', carbs: 5, protein: 1, fat: 0, kcal: 25, na: 1133.4, k: 33.7, p: 56.2 },
   { name: '木耳', category: '蔬菜類', carbs: 5, protein: 1, fat: 0, kcal: 25, na: 32.1, k: 147.4, p: 60 },
-  // 水果類
+  
+ // 水果類
   { name: '紅西瓜（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 2.6, k: 223.3, p: 21.5 },
   { name: '黃西瓜（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 3.3, k: 203.9, p: 20.2 },
   { name: '木瓜（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 5.3, k: 292.7, p: 17 },
@@ -254,6 +255,12 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '八方雲集-玉米水餃 28g (1顆)', category: '外食類', carbs: 5.9, protein: 1.7, fat: 1.8, kcal: 46.64, na: 88.93, k: '', p: '' },
   { name: '八方雲集-新蔬食水餃 28g (1顆)', category: '外食類', carbs: 6.66, protein: 2.32, fat: 1.96, kcal: 53.59, na: 98.31, k: '', p: '' },
   { name: '八方雲集-鮮蝦水餃 28g (1顆)', category: '外食類', carbs: 5.12, protein: 2.07, fat: 2.55, kcal: 51.72, na: 109.17, k: '', p: '' },
+  { name: '八方雲集-招牌鍋貼 27g (1顆)', category: '外食類', carbs: 6.1, protein: 1.94, fat: 4, kcal: 68, na: 200, k: '', p: '' },
+  { name: '八方雲集-韭菜鍋貼 27g (1顆)', category: '外食類', carbs: 6.31, protein: 2.16, fat: 4.4, kcal: 73, na: 200, k: '', p: '' },
+  { name: '八方雲集-韓式辣味鍋貼 27g (1顆)', category: '外食類', carbs: 6.7, protein: 2.4, fat: 3.5, kcal: 67.9, na: 200, k: '', p: '' },
+  { name: '八方雲集-咖哩鍋貼 27g (1顆)', category: '外食類', carbs: 6.47, protein: 2.2, fat: 3.6, kcal: 67, na: 200, k: '', p: '' },
+  { name: '八方雲集-玉米鍋貼 27g (1顆)', category: '外食類', carbs: 7, protein: 2.24, fat: 2.98, kcal: 63.8, na: 200, k: '', p: '' },
+  { name: '八方雲集-田園蔬菜鍋貼 27g (1顆)', category: '外食類', carbs: 7, protein: 0.8, fat: 1.5, kcal: 45, na: 200, k: '', p: '' },
   { name: '池上便當 - 蒜蒜紅石班飯包', category: '外食類', carbs: 95, protein: 30.2, fat: 12.4, kcal: 613, na: 952, k:'', p: ''},
   { name: '池上便當 - 鹽的花魚飯包', category: '外食類', carbs: 96.7, protein: 37.6, fat: 16.3, kcal: 691, na: 463, k:'', p: ''},
   { name: '池上便當 - 油上油雞飯包', category: '外食類', carbs: 97.6, protein: 31.9, fat: 13.9, kcal: 643, na: 933, k:'', p: ''},
