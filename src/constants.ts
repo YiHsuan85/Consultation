@@ -75,7 +75,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   // 全榖雜糧類
   { name: '白飯 40g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '稀飯 125g(半碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },  
-  { name: '熟麵條 60g(1/2碗)', category: '全榖雜糧類', carbs: 75, protein: 11.3, fat: 1.9, kcal: 362.3, na: 488.3, k: '', p: '' },
+  { name: '熟麵條 60g(1/2碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: 0, k: '', p: '' },
   { name: '鮮味關廟麵 100g (1捆/份)', category: '全榖雜糧類', carbs: 33.6, protein: 6.8, fat: 11.3, kcal: 262.9, na: 1210, k: '', p: '' },
   { name: '米粉 30-50g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: '', k: '', p: '' },
   { name: '冬粉 1/4碗', category: '全榖雜糧類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: '', k: '', p: '' },
