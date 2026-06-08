@@ -131,6 +131,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '木耳', category: '蔬菜類', carbs: 5, protein: 1, fat: 0, kcal: 25, na: 32.1, k: 147.4, p: 60 },
   
  // 水果類
+  { name: '水果一份', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 0, k: 0, p: 0 },
   { name: '紅西瓜（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 2.6, k: 223.3, p: 21.5 },
   { name: '黃西瓜（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 3.3, k: 203.9, p: 20.2 },
   { name: '木瓜（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: 5.3, k: 292.7, p: 17 },
