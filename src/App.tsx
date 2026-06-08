@@ -71,6 +71,21 @@ import {
 } from './constants';
 import { MEDICATIONS } from './constants/medications';
 
+const DIAG_PROBLEM_INFO: { [key: string]: { definition: string; notes?: string } } = {
+  "熱量消耗增加 (NI-1.1)": {
+    definition: "由於體組成的改變，藥物治療，或內分泌、神經的、基因的改變而使休息代謝率 (RMR) 比預測的需要量多",
+    notes: "RMR是指身體休息狀態下， 體內活性高的細胞為維持基本生理機能與調節 平衡 功能的代謝過程 ，其所需的能量總和"
+  },
+  "體重過輕": {
+    definition: "體重低於正常健康標準值，成人 BMI < 18.5 kg/m²",
+    notes: "伴隨肌肉變少、長期饑餓或新陳代謝率過高、吸收不良等。"
+  },
+  "體重過重/肥胖": {
+    definition: "體內脂肪累積過多，導致體重超出理想範圍（成人 BMI ≥ 24 kg/m²）",
+    notes: "建議控制熱量攝取，建立良好運動習慣，並評估是否有代謝症候群風險。"
+  }
+};
+
 const INITIAL_STATE: AppState = {
   consultDate: new Date().toISOString().split('T')[0],
   goal: '',
@@ -84,7 +99,7 @@ const INITIAL_STATE: AppState = {
     familyHx: '',
     socialHx: '',
     region: '',
-    habits: { smoke: false, drink: false },
+    habits: { smoke: false, drink: false, none: true, smokeFrequency: '', drinkFrequency: '' },
     exercise: { frequency: '', name: '', type: '', activityFactor: '' },
     exerciseList: [
       { frequency: '', name: '', type: '' }
@@ -823,7 +838,14 @@ export default function App() {
         const parsed = JSON.parse(saved);
         // Merge saved state with INITIAL_STATE to ensure all fields exist
         setState(prev => {
-          const clientHxMerged = { ...INITIAL_STATE.clientHx, ...(parsed.clientHx || {}) };
+          const clientHxMerged = { 
+            ...INITIAL_STATE.clientHx, 
+            ...(parsed.clientHx || {}),
+            habits: {
+              ...INITIAL_STATE.clientHx.habits,
+              ...(parsed.clientHx?.habits || {})
+            }
+          };
           if (!clientHxMerged.exerciseList || clientHxMerged.exerciseList.length === 0) {
             clientHxMerged.exerciseList = [
               {
@@ -948,7 +970,14 @@ export default function App() {
   };
 
   const loadRecord = (record: any) => {
-    const clientHxMerged = { ...INITIAL_STATE.clientHx, ...(record.data.clientHx || {}) };
+    const clientHxMerged = { 
+      ...INITIAL_STATE.clientHx, 
+      ...(record.data.clientHx || {}),
+      habits: {
+        ...INITIAL_STATE.clientHx.habits,
+        ...(record.data.clientHx?.habits || {})
+      }
+    };
     if (!clientHxMerged.exerciseList || clientHxMerged.exerciseList.length === 0) {
       clientHxMerged.exerciseList = [
         {
@@ -1589,15 +1618,125 @@ export default function App() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700">生活習慣</label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={state.clientHx.habits.smoke} onChange={e => setState({...state, clientHx: {...state.clientHx, habits: {...state.clientHx.habits, smoke: e.target.checked}}})} className="w-4 h-4 text-blue-600 rounded" />
-                          <span className="text-sm text-slate-600">抽菸</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={state.clientHx.habits.drink} onChange={e => setState({...state, clientHx: {...state.clientHx, habits: {...state.clientHx.habits, drink: e.target.checked}}})} className="w-4 h-4 text-blue-600 rounded" />
-                          <span className="text-sm text-slate-600">喝酒</span>
-                        </label>
+                      <div className="space-y-2">
+                        <div className="flex gap-3">
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={!!state.clientHx.habits.none} 
+                              onChange={e => {
+                                const checked = e.target.checked;
+                                setState({
+                                  ...state, 
+                                  clientHx: {
+                                    ...state.clientHx, 
+                                    habits: {
+                                      ...state.clientHx.habits, 
+                                      none: checked,
+                                      smoke: checked ? false : state.clientHx.habits.smoke,
+                                      drink: checked ? false : state.clientHx.habits.drink,
+                                      smokeFrequency: checked ? '' : state.clientHx.habits.smokeFrequency,
+                                      drinkFrequency: checked ? '' : state.clientHx.habits.drinkFrequency,
+                                    }
+                                  }
+                                });
+                              }} 
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
+                            />
+                            <span className="text-sm text-slate-600">無</span>
+                          </label>
+
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={state.clientHx.habits.smoke} 
+                              onChange={e => {
+                                const checked = e.target.checked;
+                                setState({
+                                  ...state, 
+                                  clientHx: {
+                                    ...state.clientHx, 
+                                    habits: {
+                                      ...state.clientHx.habits, 
+                                      smoke: checked,
+                                      none: checked ? false : (!state.clientHx.habits.drink),
+                                    }
+                                  }
+                                });
+                              }} 
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
+                            />
+                            <span className="text-sm text-slate-600">抽菸</span>
+                          </label>
+
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={state.clientHx.habits.drink} 
+                              onChange={e => {
+                                const checked = e.target.checked;
+                                setState({
+                                  ...state, 
+                                  clientHx: {
+                                    ...state.clientHx, 
+                                    habits: {
+                                      ...state.clientHx.habits, 
+                                      drink: checked,
+                                      none: checked ? false : (!state.clientHx.habits.smoke),
+                                    }
+                                  }
+                                });
+                              }} 
+                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
+                            />
+                            <span className="text-sm text-slate-600">喝酒</span>
+                          </label>
+                        </div>
+
+                        {/* Frequency Inputs */}
+                        {state.clientHx.habits.smoke && (
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-500 block">抽菸頻率</label>
+                            <input
+                              type="text"
+                              value={state.clientHx.habits.smokeFrequency || ''}
+                              onChange={e => setState({
+                                ...state,
+                                clientHx: {
+                                  ...state.clientHx,
+                                  habits: {
+                                    ...state.clientHx.habits,
+                                    smokeFrequency: e.target.value
+                                  }
+                                }
+                              })}
+                              placeholder="例如：半包/天"
+                              className="w-full text-xs px-2.5 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white/70"
+                            />
+                          </div>
+                        )}
+
+                        {state.clientHx.habits.drink && (
+                          <div className="space-y-1">
+                            <label className="text-[11px] font-semibold text-slate-500 block">喝酒頻率</label>
+                            <input
+                              type="text"
+                              value={state.clientHx.habits.drinkFrequency || ''}
+                              onChange={e => setState({
+                                ...state,
+                                clientHx: {
+                                  ...state.clientHx,
+                                  habits: {
+                                    ...state.clientHx.habits,
+                                    drinkFrequency: e.target.value
+                                  }
+                                }
+                              })}
+                              placeholder="例如：1罐啤酒/週"
+                              className="w-full text-xs px-2.5 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white/70"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-3">
@@ -2664,6 +2803,100 @@ export default function App() {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-8"
             >
+              {/* CURRENT INTAKE VS SUGGESTED TARGETS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 1. 目前飲食攝取總計 */}
+                <div className="bg-slate-50 rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                      目前飲食攝取總計 (評估連動)
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="bg-white border border-slate-200 rounded-lg p-2.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">熱量</div>
+                      <div className="text-sm font-black text-blue-600">{dietTotals.kcal.toFixed(0)} <span className="text-[9px] font-normal">kcal</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-lg p-2.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">醣類</div>
+                      <div className="text-sm font-black text-slate-700">{dietTotals.carbs.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-lg p-2.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">蛋白質</div>
+                      <div className="text-sm font-black text-slate-700">{dietTotals.protein.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-lg p-2.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">脂肪</div>
+                      <div className="text-sm font-black text-slate-700">{dietTotals.fat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 border-t border-dashed border-slate-200 pt-3 text-[11px] text-slate-605">
+                    <div className="flex justify-between px-1">
+                      <span>鈉 (Na):</span> 
+                      <span className="font-bold text-slate-800">{dietTotals.na.toFixed(0)} mg</span>
+                    </div>
+                    <div className="flex justify-between px-1 border-l border-slate-200">
+                      <span>鉀 (K):</span> 
+                      <span className="font-bold text-slate-800">{dietTotals.k.toFixed(0)} mg</span>
+                    </div>
+                    <div className="flex justify-between px-1 border-l border-slate-200">
+                      <span>磷 (P):</span> 
+                      <span className="font-bold text-slate-800">{dietTotals.p.toFixed(0)} mg</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. 建議熱量需求與三大營養素比例 */}
+                <div className="bg-emerald-50/20 rounded-xl shadow-sm border border-emerald-200/60 p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
+                    <h3 className="font-bold text-emerald-800 text-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      建議熱量需求與分配 (計畫連動)
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="bg-emerald-50/50 border border-emerald-100 rounded-lg p-2.5 text-center">
+                      <div className="text-[10px] text-emerald-600 font-semibold mb-0.5">建議熱量</div>
+                      <div className="text-sm font-black text-emerald-700">
+                        {state.diet.targetKcal || recommendedKcal || '--'} <span className="text-[9px] font-normal">kcal</span>
+                      </div>
+                    </div>
+                    {(() => {
+                      const kcal = parseFloat(state.diet.targetKcal) || recommendedKcal;
+                      const config = state.intervention.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
+                      const carbsG = kcal ? ((kcal * (config.carbsPercent / 100)) / 4).toFixed(1) : '--';
+                      const proteinG = kcal ? ((kcal * (config.proteinPercent / 100)) / 4).toFixed(1) : '--';
+                      const fatG = kcal ? ((kcal * (config.fatPercent / 100)) / 9).toFixed(1) : '--';
+                      return (
+                        <>
+                          <div className="bg-white border border-slate-100 rounded-lg p-2.5 text-center shadow-xs">
+                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">醣 ({config.carbsPercent}%)</div>
+                            <div className="text-sm font-black text-slate-700">{carbsG}<span className="text-[9px] font-normal">g</span></div>
+                          </div>
+                          <div className="bg-white border border-slate-100 rounded-lg p-2.5 text-center shadow-xs">
+                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">蛋白 ({config.proteinPercent}%)</div>
+                            <div className="text-sm font-black text-rose-700">{proteinG}<span className="text-[9px] font-normal">g</span></div>
+                          </div>
+                          <div className="bg-white border border-slate-100 rounded-lg p-2.5 text-center shadow-xs">
+                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">脂肪 ({config.fatPercent}%)</div>
+                            <div className="text-sm font-black text-slate-700">{fatG}<span className="text-[9px] font-normal">g</span></div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                  <div className="flex items-center justify-between border-t border-dashed border-emerald-100 pt-3 text-[11px] text-emerald-800 bg-emerald-50/40 px-2 py-1 rounded">
+                    <span>
+                      飲水目標: <span className="font-extrabold">{state.diet.targetWater || recommendedWater || '--'} ml/d</span>
+                    </span>
+                    <span className="text-[10px] text-emerald-600/80 italic">
+                      基準：體重 × 30 ml
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -2707,6 +2940,20 @@ export default function App() {
                               onChange={e => setCurrentDiagnosis({...currentDiagnosis, problemOther: e.target.value})}
                               className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
                             />
+                          )}
+                          {currentDiagnosis.problem && DIAG_PROBLEM_INFO[currentDiagnosis.problem] && (
+                            <div className="mt-2 bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-slate-700 space-y-1.5 shadow-xs">
+                              <div>
+                                <span className="font-bold text-blue-800">【定義】</span>
+                                {DIAG_PROBLEM_INFO[currentDiagnosis.problem].definition}
+                              </div>
+                              {DIAG_PROBLEM_INFO[currentDiagnosis.problem].notes && (
+                                <div className="border-t border-blue-100 pt-1.5 mt-1.5">
+                                  <span className="font-bold text-amber-800">【注意】</span>
+                                  {DIAG_PROBLEM_INFO[currentDiagnosis.problem].notes}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -4516,7 +4763,19 @@ export default function App() {
               })()}
             </div>
             <div><span className="font-bold">活動因子:</span> {state.clientHx.exercise.activityFactor || '無'}</div>
-            <div><span className="font-bold">生活習慣:</span> {`${state.clientHx.habits.smoke ? "抽菸 " : ""}${state.clientHx.habits.drink ? "喝酒" : ""}` || "無"}</div>
+            <div><span className="font-bold">生活習慣:</span> {(() => {
+              const parts: string[] = [];
+              if (state.clientHx.habits.smoke) {
+                parts.push(`抽菸${state.clientHx.habits.smokeFrequency ? ` (${state.clientHx.habits.smokeFrequency})` : ''}`);
+              }
+              if (state.clientHx.habits.drink) {
+                parts.push(`喝酒${state.clientHx.habits.drinkFrequency ? ` (${state.clientHx.habits.drinkFrequency})` : ''}`);
+              }
+              if (state.clientHx.habits.none || parts.length === 0) {
+                return '無';
+              }
+              return parts.join('、');
+            })()}</div>
           </div>
           <div className="mt-4">
             <h3 className="font-bold text-sm mb-2">生化數值:</h3>
