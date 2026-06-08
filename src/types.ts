@@ -76,6 +76,9 @@ export interface AppState {
     habits: {
       smoke: boolean;
       drink: boolean;
+      none?: boolean;
+      smokeFrequency?: string;
+      drinkFrequency?: string;
     };
     exercise: {
       frequency: string;
