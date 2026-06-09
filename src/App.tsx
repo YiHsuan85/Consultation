@@ -72,136 +72,50 @@ import {
 import { MEDICATIONS } from './constants/medications';
 
 const DIAG_PROBLEM_INFO: { [key: string]: { definition: string; notes?: string } } = {
-  "熱量消耗增加(NI1.1)": {
+  "熱量消耗增加 (NI-1.1)": {
     definition: "由於體組成的改變，藥物治療，或內分泌、神經的、基因的改變而使休息代謝率 (RMR) 比預測的需要量多",
-    notes: "RMR是指身體休息狀態下， 體內活性高的細胞為維持基本生理機能與調節平衡功能的代謝過程，其所需的能量總和"
+    notes: "RMR是指身體休息狀態下， 體內活性高的細胞為維持基本生理機能與調節 平衡 功能的代謝過程 ，其所需的能量總和"
   },
-  "熱量攝取不足(NI1.2)": {
-    definition: "熱量攝取低於其個人生理需求的能量消耗、既定的參考標準或建議量",
-    notes: "較不適用於減重期、安寧照護階段、初期給予腸道或靜脈營養時、或處在急性壓力時 (如：手術、器官衰竭)"
+  "體重過輕": {
+    definition: "體重低於正常健康標準值，成人 BMI < 18.5 kg/m²",
+    notes: "伴隨肌肉變少、長期饑餓或新陳代謝率過高、吸收不良等。"
   },
-  "熱量攝取過多(NI1.3)": {
-    definition: "熱量攝取超過能量消耗既定的參考標準，或依個人生理需求之建議量",
-    notes: "可能不適用於體重需要增加者"
-  },
-  "預期熱量攝取不足(NI1.4)": {
-    definition: "基於觀察、經驗、或科學的理由，預期未來熱量攝取將少於所估計的熱量消耗既定的參考標準，或個人生理需求之建議量",
-    notes: "可能不適用於體重減輕者 。當現階段熱量攝取低於消耗量時，使用「熱量攝取不足」 (NI-1.2)的營養診斷"
-  },
-  "預期熱量攝取過多(NI1.5)": {
-    definition: "基於觀察、經驗、或科學的理由，預期熱量攝取會超過所估計的熱量消耗既定參考標準，或其個人生理需求之建議量",
-    notes: "可能不適用於體重需要增加者；若現階段攝取量多於消耗量，使用「熱量攝取過多」 (NI-1.3)的營養診斷"
-  },
-  "經口攝取不足(NI2.1)": {
-    definition: "經口攝取的食物/飲品低於既定參考標準或個人生理需求之建議量",
-    notes: "不包含造口或管灌攝食。可能不適用於減重期、安寧照護時、初期餵食、或合併由口進食/EN/PN治療時的診斷。"
-  },
-  "經口攝取過多(NI2.2)": {
-    definition: "經口攝取的食物/飲品超過估計的熱量需求、既定的參考標準，或個人生理需求之建議量",
-    notes: "不包含造口或管灌攝食。可能不適用於體重需要增加者"
-  },
-  "腸道營養灌食不足(NI2.3)": {
-    definition: "由腸道灌食之熱量或營養素低於既定參考標準或個人生理需求之建議量",
-    notes: "較不適用於減重期、安寧照護時、初期給予腸道或靜脈營養或急性壓力狀態時"
-  },
-  "腸道營養灌食過多(NI2.4)": {
-    definition: "由腸道灌食之熱量或營養素高於既定參考標準或個人生理需求之建議量",
-  },
-  "腸道營養組成與需求不一致(NI2.5)": {
-    definition: "腸道營養的配方不符合既定參考標準或個人生理需求之建議量",
-  },
-  "腸道營養的施予與需求不一致(NI2.6)": {
-    definition: "腸道營養的供應不符合既定參考標準或個人生理需求之建議量",
-  },
-  "靜脈營養不足(NI2.7)": {
-    definition: "經靜脈輸入的熱量或營養素低於既定參考標準或個人生理需求之建議量",
-    notes: "較不適用於減重期、安寧照護、靜脈營養初期或急性壓力狀態 (如：手術、器官衰竭)時"
-  },
-  "靜脈營養過多(NI2.8)": {
-    definition: "經靜脈輸入的熱量或營養素高於既定參考標準或個人生理需求之建議量",
-  },
-  "靜脈營養組成與需求不一致(NI2.9)": {
-    definition: "靜脈營養輸液配方不符合既定參考標準或個人生理需求之建議量",
-  },
-  "靜脈營養的施予與需求不一致(NI2.10)": {
-    definition: "靜脈營養的供應不符合既定參考標準或個人生理需求之建議量",
-  },
-  "可接受的食物受限(NI2.11)": {
-    definition: "由口進食的食物/飲品，在種類、多樣性及品質上，與參考標準值不一致",
-    notes: "可能較不適用於厭食症、暴食症、狂飲攝食異常，或其他未指明的攝食異常(EDNOS)，「攝食異常」(NB-1.5)的診斷，可考慮使用於這些狀況。"
-  },
-  "水分攝取不足(NI3.1)": {
-    definition: "含水分的食物或其他來源攝取量，低於既定參考標準或個人生理需求之建議量"
-  },
-  "水分攝取過量(NI3.2)": {
-    definition: "水分的攝取量大於既定參考標準或個人生理需求之建議量",
-  },
-  "生物活性成份攝取不足(NI4.1)": {
-    definition: "生物活性物質攝取低於既定參考標準或個人生理需求之建議量",
-    notes: "DRIs並未將生物活性物質列入，因此並沒有建立最低需要量或上限攝取量。不過，營養師們可以就個案個別的目標，或其營養處方予以評估、比較其攝取量是否足夠或過量"
-  },
-  "生物活性成份攝取不足(NI4.2)": {
-    definition: "生物活性物質攝取高於既定參考標準或個人生理需求之建議量",
-    notes: "DRIs並未將生物活性物質列入，因此並沒有建立最低需要量或上限攝取量。不過，營養師們可以就個案個別的目標，或其營養處方予以評估、比較其攝取量是否足夠或過量"
-  },
-  "酒精攝取過多(NI4.3)": {
-    definition: "酒精攝取多於建議的限量"
-  },
-  "營養素需求增加(NI5.1)": {
-    definition: "依據既定參考標準或個人生理需求之建議量，某些特定的營養素需求增加"
-  },
-  "蛋白質-熱量攝取不足(NI5.2)": {
-    definition: "蛋白質及/或熱量攝取低於既定參考標準或個人近期生理需求之建議量",
-  },
-  "營養素需求減少（NI5.3）": {
-    definition: "某種特定營養素需求低於既定參考標準或依個人生理需求之建議量",
-  },
-  "營養素不均衡（NI5.4）": {
-    definition: "營養素組成不理想，如某一營養素的攝取量干擾或改變其他營養素的吸收或利用",
-  },
-  "脂肪攝取不足（NI5.5.1）": {
-    definition: "脂肪攝取低於既定參考標準或個人生理需求之建議量",
-    notes: "不適用於減重或安寧照護"
-  },
-  "脂肪攝取過多（NI5.5.2）": {
-    definition: "脂肪攝取高於既定參考標準或個人生理需求之建議量",
-  },
-  "脂肪型態攝取不符合需求（NI5.5.3）": {
-    definition: "與既定參考標準或個人生理需求之建議比較，所攝取之脂肪型態錯誤或品質不佳",
-  },
-  "蛋白質攝取不足（NI5.6.1）": {
-    definition: "攝取的蛋白質低於既定參考標準或個人生理需求之建議量。",
-  },
-  "蛋白質攝取過多（NI5.6.2）": {
-    definition: "攝取的蛋白質高於既定參考標準或個人生理需求之建議量。",
-  },
-  "蛋白質類別攝取不符合所需（NI5.6.3）": {
-    definition: "某特定類別蛋白質的攝取，與既定參考標準或個人生理需求之建議量比較",
-  },
-  "胺基酸攝取類別不符合需求（NI5.7.1）": {
-    definition: "某特定胺基酸的攝取，與既定參考標準或個人生理需求之建議量比較",
-  },
-  "醣類攝取不足（NI5.8.1）": {
-    definition: "醣類攝取低於既定參考標準或個人生理需求之建議量",
-  },
-  "醣類攝取過多（NI5.8.2）": {
-    definition: "醣類攝取高於既定參考標準或個人生理需求之建議量",
-  },
-  "醣類攝取型態不符合需要（NI5.8.3）": {
-    definition: "某特定形式醣類的攝取量，與既定參考標準或個人生理需求之建議量比較",
-    notes: "對穀類的蛋白質(如榖蛋白：gluten)不耐受，應使用「蛋白質攝取類別不符合需求」 (NI-5.6.3) 參考表單記錄"
-  },
-  "醣類攝取不一致（NI5.8.4）": {
-    definition: "每天或每餐醣類攝取時間不一致，或醣類攝取的型態與生理或醫療需求所建議的不一致",
-  },
-  "纖維質攝取不足（NI5.8.5）": {
-    definition: "纖維質攝取低於既定參考標準或個人生理需求之建議量",
-  },
-  "纖維質攝取過多（NI5.8.6）": {
-    definition: "醣類攝取高於既定參考標準或個人生理需求之建議量",
+  "體重過重/肥胖": {
+    definition: "體內脂肪累積過多，導致體重超出理想範圍（成人 BMI ≥ 24 kg/m²）",
+    notes: "建議控制熱量攝取，建立良好運動習慣，並評估是否有代謝症候群風險。"
   }
 };
 
+const HB_ACTIVITY_OPTIONS = [
+  { label: '輕度活動 (1.3)', value: 1.3 },
+  { label: '臥床 (1.2)', value: 1.2 },
+  { label: '中度活動 (1.4)', value: 1.4 }
+];
+
+const HB_STRESS_OPTIONS = [
+  { label: '正常無疾病 (1.0)', value: 1.0 },
+  { label: '懷孕 (1.1)', value: 1.1 },
+  { label: '生長期 (1.4)', value: 1.4 },
+  { label: '哺乳 (1.4)', value: 1.4 },
+  { label: '敗血症 (1.4)', value: 1.4 },
+  { label: '敗血症 (1.5)', value: 1.5 },
+  { label: '敗血症 (1.6)', value: 1.6 },
+  { label: '敗血症 (1.7)', value: 1.7 },
+  { label: '敗血症 (1.8)', value: 1.8 },
+  { label: '發燒 (1.13)', value: 1.13 },
+  { label: '燒傷 (1.7)', value: 1.7 },
+  { label: '燒傷 (1.8)', value: 1.8 },
+  { label: '燒傷 (1.9)', value: 1.9 },
+  { label: '燒傷 (2.0)', value: 2.0 },
+  { label: '燒傷 (2.1)', value: 2.1 },
+  { label: '燒傷 (2.2)', value: 2.2 },
+  { label: '住院患者 (1.2)', value: 1.2 },
+  { label: '用呼吸器 (1.2)', value: 1.2 },
+  { label: '用呼吸器 (1.3)', value: 1.3 },
+  { label: '用呼吸器 (1.4)', value: 1.4 },
+  { label: '用呼吸器 (1.5)', value: 1.5 },
+  { label: '小手術 (1.3)', value: 1.3 }
+];
 
 const DIAGNOSTIC_TERMINOLOGIES = {
   NI: {
@@ -293,7 +207,15 @@ const DIAGNOSTIC_TERMINOLOGIES = {
       },
       {
         name: "3. 體重",
-        items: [ "體重過輕", "非計劃性體重減輕", "體重過重/肥胖", "體重過重，成人或兒童", "非計劃性體重增加", "生長速度低於預期", "生長速度過快"]
+        items: [
+          "體重過輕",
+          "非計劃性體重減輕",
+          "體重過重/肥胖",
+          "體重過重，成人或兒童",
+          "非計劃性體重增加",
+          "生長速度低於預期",
+          "生長速度過快"
+        ]
       },
       {
         name: "4. 營養不良疾病",
@@ -313,11 +235,26 @@ const DIAGNOSTIC_TERMINOLOGIES = {
     sections: [
       {
         name: "1. 知識與信念",
-        items: [ "食物與營養相關知識不足", "對於食物或營養相關議題的信念/態度不具科學證據", "尚未準備好飲食/生活型態的改變", "自我監測不足", "攝食異常", "營養相關建議遵從性差", "食物選擇不理想" ]
+        items: [
+          "食物與營養相關知識不足",
+          "對於食物或營養相關議題的信念/態度不具科學證據",
+          "尚未準備好飲食/生活型態的改變",
+          "自我監測不足",
+          "攝食異常",
+          "營養相關建議遵從性差",
+          "食物選擇不理想"
+        ]
       },
       {
         name: "2. 身體活動與功能",
-        items: [ "體能活動不足", "體能活動過多", "沒有能力自我照顧", "製備食物/餐點的能力不足", "生活營養品質 (NQOL)差", "自我攝食困難" ]
+        items: [
+          "體能活動不足",
+          "體能活動過多",
+          "沒有能力自我照顧",
+          "製備食物/餐點的能力不足",
+          "生活營養品質 (NQOL)差",
+          "自我攝食困難"
+        ]
       },
       {
         name: "3. 食物安全與獲取管道",
@@ -326,8 +263,6 @@ const DIAGNOSTIC_TERMINOLOGIES = {
     ]
   }
 };
-
-
 
 const INITIAL_STATE: AppState = {
   consultDate: new Date().toISOString().split('T')[0],
@@ -826,6 +761,8 @@ export default function App() {
   const [activePage, setActivePage] = useState<'dashboard' | 'consultation'>('dashboard');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications'>('assessment');
+  const [showDiagTerminology, setShowDiagTerminology] = useState(true);
+  const [diagTerminologyActiveTab, setDiagTerminologyActiveTab] = useState<'NI' | 'NC' | 'NB'>('NI');
   const [searchQuery, setSearchQuery] = useState('');
   const [medicationSearchQuery, setMedicationSearchQuery] = useState('');
   const [selectedFoodCategory, setSelectedFoodCategory] = useState<string>('');
@@ -1049,15 +986,47 @@ export default function App() {
     return Math.round(baseWeight * multiplier);
   }, [state.anthropometry.bmi, state.anthropometry.weight, state.anthropometry.abw, state.clientHx.exercise.activityFactor]);
 
+  // Recommended Harris Benedict Calorie requirement calculation
+  const recommendedHBKcal = useMemo(() => {
+    const gender = state.clientHx.gender;
+    const weight = parseFloat(state.anthropometry.weight);
+    const height = parseFloat(state.anthropometry.height);
+    const age = calculateAge(state.clientHx.birthday);
+
+    if (isNaN(weight) || isNaN(height) || age <= 0) {
+      return { err: '請填寫基本資料 (性別, 生日, 身高, 體重)', bee: 0, total: 0 };
+    }
+
+    let bee = 0;
+    if (gender === '男') {
+      bee = 66 + 13.7 * weight + 5 * height - 6.8 * age;
+    } else {
+      bee = 655 + 9.6 * weight + 1.8 * height - 4.7 * age;
+    }
+
+    const valueActivity = state.guidelineSelections.hbActivity !== undefined ? parseFloat(state.guidelineSelections.hbActivity) : 1.3;
+    const valueStress = state.guidelineSelections.hbStress !== undefined ? parseFloat(state.guidelineSelections.hbStress) : 1.0;
+
+    const total = bee * valueActivity * valueStress;
+    return {
+      err: null,
+      bee: parseFloat(bee.toFixed(1)),
+      total: Math.round(total)
+    };
+  }, [state.clientHx.gender, state.anthropometry.weight, state.anthropometry.height, state.clientHx.birthday, state.guidelineSelections.hbActivity, state.guidelineSelections.hbStress]);
+
   // Recommended Macros Breakdown
   const recommendedMacros = useMemo(() => {
     const kcal = parseFloat(state.diet.targetKcal) || recommendedKcal;
     if (!kcal) return null;
     const config = state.intervention.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
+    const cp = parseFloat(config.carbsPercent as any) || 0;
+    const pp = parseFloat(config.proteinPercent as any) || 0;
+    const fp = parseFloat(config.fatPercent as any) || 0;
     return {
-      carbs: ((kcal * (config.carbsPercent / 100)) / 4).toFixed(1),
-      protein: ((kcal * (config.proteinPercent / 100)) / 4).toFixed(1),
-      fat: ((kcal * (config.fatPercent / 100)) / 9).toFixed(1)
+      carbs: ((kcal * (cp / 100)) / 4).toFixed(1),
+      protein: ((kcal * (pp / 100)) / 4).toFixed(1),
+      fat: ((kcal * (fp / 100)) / 9).toFixed(1)
     };
   }, [recommendedKcal, state.diet.targetKcal, state.intervention.macroConfig]);
 
@@ -2341,7 +2310,6 @@ export default function App() {
                           placeholder="其他病史內容..." 
                           value={state.clinical.medicalHxOther || ''}
                           onChange={e => {
-                            // If it's a manual entry, we don't necessarily update the medicalHx array unless needed
                             setState({...state, clinical: {...state.clinical, medicalHxOther: e.target.value}});
                           }}
                           className="w-full px-3 py-1 text-sm rounded border border-slate-200"
@@ -2402,7 +2370,7 @@ export default function App() {
                   </h2>
                 </div>
                 <div className="p-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">飲食型態</label>
                       <select value={state.diet.type || ''} onChange={e => setState({...state, diet: {...state.diet, type: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
@@ -2422,7 +2390,7 @@ export default function App() {
                     </div>
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700">建議熱量需求 (僅供參考)</label>
-                      <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-[42px] flex flex-col justify-center">
+                      <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-full min-h-[42px] flex flex-col justify-center py-2">
                         <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
                         {recommendedMacros && (
                           <div className="flex gap-2.5 mt-1 text-[10px] font-medium text-blue-600/80 leading-none">
@@ -2431,6 +2399,57 @@ export default function App() {
                             <span>脂: {recommendedMacros.fat}g</span>
                           </div>
                         )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">建議熱量需求 (Harris Benedict)</label>
+                      <div className="px-3 py-2 bg-indigo-50/70 text-indigo-900 rounded-lg border border-indigo-100 h-full min-h-[42px] flex flex-col justify-center gap-1.5 shadow-xs">
+                        {recommendedHBKcal.err ? (
+                          <div className="text-[10px] text-slate-500 font-medium leading-tight">{recommendedHBKcal.err}</div>
+                        ) : (
+                          <div className="flex justify-between items-baseline leading-none">
+                            <span className="text-[10px] text-indigo-600 font-mono">BEE: {recommendedHBKcal.bee} kcal</span>
+                            <span className="text-sm font-black text-indigo-700">{recommendedHBKcal.total} <span className="text-[10px] font-bold">kcal/d</span></span>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-indigo-100/50">
+                          <div className="space-y-0.5">
+                            <span className="text-[9px] text-slate-400 font-bold block">活動因子</span>
+                            <select 
+                              value={state.guidelineSelections.hbActivity !== undefined ? state.guidelineSelections.hbActivity : 1.3} 
+                              onChange={e => setState({
+                                ...state, 
+                                guidelineSelections: {
+                                  ...state.guidelineSelections,
+                                  hbActivity: parseFloat(e.target.value)
+                                }
+                              })}
+                              className="w-full text-[10px] px-1 py-0.5 rounded border border-slate-200 bg-white"
+                            >
+                              {HB_ACTIVITY_OPTIONS.map(opt => (
+                                <option key={opt.label} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-[9px] text-slate-400 font-bold block">壓力因子</span>
+                            <select 
+                              value={state.guidelineSelections.hbStress !== undefined ? state.guidelineSelections.hbStress : 1.0} 
+                              onChange={e => setState({
+                                ...state, 
+                                guidelineSelections: {
+                                  ...state.guidelineSelections,
+                                  hbStress: parseFloat(e.target.value)
+                                }
+                              })}
+                              className="w-full text-[10px] px-1 py-0.5 rounded border border-slate-200 bg-white"
+                            >
+                              {HB_STRESS_OPTIONS.map(opt => (
+                                <option key={opt.label} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -3108,21 +3127,24 @@ export default function App() {
                     {(() => {
                       const kcal = parseFloat(state.diet.targetKcal) || recommendedKcal;
                       const config = state.intervention.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
-                      const carbsG = kcal ? ((kcal * (config.carbsPercent / 100)) / 4).toFixed(1) : '--';
-                      const proteinG = kcal ? ((kcal * (config.proteinPercent / 100)) / 4).toFixed(1) : '--';
-                      const fatG = kcal ? ((kcal * (config.fatPercent / 100)) / 9).toFixed(1) : '--';
+                      const cp = parseFloat(config.carbsPercent as any) || 0;
+                      const pp = parseFloat(config.proteinPercent as any) || 0;
+                      const fp = parseFloat(config.fatPercent as any) || 0;
+                      const carbsG = kcal ? ((kcal * (cp / 100)) / 4).toFixed(1) : '--';
+                      const proteinG = kcal ? ((kcal * (pp / 100)) / 4).toFixed(1) : '--';
+                      const fatG = kcal ? ((kcal * (fp / 100)) / 9).toFixed(1) : '--';
                       return (
                         <>
                           <div className="bg-white border border-slate-100 rounded-lg p-2.5 text-center shadow-xs">
-                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">醣 ({config.carbsPercent}%)</div>
+                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">醣 ({cp}%)</div>
                             <div className="text-sm font-black text-slate-700">{carbsG}<span className="text-[9px] font-normal">g</span></div>
                           </div>
                           <div className="bg-white border border-slate-100 rounded-lg p-2.5 text-center shadow-xs">
-                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">蛋白 ({config.proteinPercent}%)</div>
+                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">蛋白 ({pp}%)</div>
                             <div className="text-sm font-black text-rose-700">{proteinG}<span className="text-[9px] font-normal">g</span></div>
                           </div>
                           <div className="bg-white border border-slate-100 rounded-lg p-2.5 text-center shadow-xs">
-                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">脂肪 ({config.fatPercent}%)</div>
+                            <div className="text-[10px] text-slate-500 font-semibold mb-0.5">脂肪 ({fp}%)</div>
                             <div className="text-sm font-black text-slate-700">{fatG}<span className="text-[9px] font-normal">g</span></div>
                           </div>
                         </>
@@ -3314,6 +3336,78 @@ export default function App() {
                   </div>
                 </div>
               </section>
+
+              {/* 營養診斷術語 備註指引 card */}
+              <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div 
+                  className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center cursor-pointer select-none hover:bg-slate-100/70 transition-colors"
+                  onClick={() => setShowDiagTerminology(!showDiagTerminology)}
+                >
+                  <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-indigo-600" />
+                    備註「營養診斷術語」
+                  </h2>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                    <span>{showDiagTerminology ? "收合" : "展開"}</span>
+                    <svg className={`w-4 h-4 transform transition-transform duration-200 ${showDiagTerminology ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {showDiagTerminology && (
+                  <div className="p-6 space-y-6">
+                    {/* Diagnosis Terminology Tab buttons */}
+                    <div className="flex border-b border-slate-200">
+                      {(Object.keys(DIAGNOSTIC_TERMINOLOGIES) as Array<keyof typeof DIAGNOSTIC_TERMINOLOGIES>).map((key) => {
+                        const active = diagTerminologyActiveTab === key;
+                        const data = DIAGNOSTIC_TERMINOLOGIES[key as keyof typeof DIAGNOSTIC_TERMINOLOGIES];
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => setDiagTerminologyActiveTab(key as any)}
+                            className={`px-5 py-2.5 font-bold text-sm transition-all border-b-2 -mb-px ${
+                              active 
+                                ? "border-indigo-600 text-indigo-600 font-black" 
+                                : "border-transparent text-slate-500 hover:text-slate-800"
+                            }`}
+                          >
+                            {data.title}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Active Tab contents */}
+                    {(() => {
+                      const activeData = DIAGNOSTIC_TERMINOLOGIES[diagTerminologyActiveTab];
+                      return (
+                        <div className={`p-5 rounded-xl border ${activeData.color.border} ${activeData.color.bg} space-y-5`}>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {activeData.sections.map((section, sidx) => (
+                              <div key={sidx} className="bg-white rounded-lg border border-slate-200 shadow-xs flex flex-col overflow-hidden">
+                                <div className={`px-4 py-2 text-xs font-bold border-b ${activeData.color.headerBg}`}>
+                                  {section.name}
+                                </div>
+                                <div className="p-4 flex-1">
+                                  <ul className="space-y-2">
+                                    {section.items.map((item, iidx) => (
+                                      <li key={iidx} className="text-xs text-slate-705 flex items-start gap-1.5 leading-relaxed">
+                                        <span className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 bg-slate-400`} />
+                                        <span>{item}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </section>
             </motion.div>
           )}
 
@@ -3358,52 +3452,115 @@ export default function App() {
                       </div>
 
                       {/* Macronutrient Proportion Block */}
-                      <div className="space-y-3 p-4 bg-white rounded-xl border border-slate-200">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs font-bold text-slate-400 tracking-tight">2. 三大營養素分配 (%)</label>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0) === 100 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                             總計: {(state.intervention.macroConfig?.carbsPercent || 0) + (state.intervention.macroConfig?.proteinPercent || 0) + (state.intervention.macroConfig?.fatPercent || 0)}%
-                          </span>
-                        </div>
-                        <div className="flex gap-4 items-center">
-                          <div className="flex flex-col flex-1 items-center">
-                            <span className="text-[10px] text-slate-400 font-bold mb-1">醣類</span>
-                            <div className="relative w-full">
-                              <input 
-                                type="number" 
-                                value={state.intervention.macroConfig?.carbsPercent || 0} 
-                                onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, carbsPercent: parseInt(e.target.value) || 0}}})}
-                                className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
-                              />
-                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
+                      {(() => {
+                        const cpInput = parseFloat(state.intervention.macroConfig?.carbsPercent as any) || 0;
+                        const ppInput = parseFloat(state.intervention.macroConfig?.proteinPercent as any) || 0;
+                        const fpInput = parseFloat(state.intervention.macroConfig?.fatPercent as any) || 0;
+                        const totalPercent = parseFloat((cpInput + ppInput + fpInput).toFixed(1));
+                        return (
+                          <div className="space-y-3 p-4 bg-white rounded-xl border border-slate-200">
+                            <div className="flex justify-between items-center">
+                              <label className="text-xs font-bold text-slate-400 tracking-tight">2. 三大營養素分配 (%)</label>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${totalPercent === 100 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                 總計: {totalPercent}%
+                              </span>
+                            </div>
+                            <div className="flex gap-4 items-center">
+                              <div className="flex flex-col flex-1 items-center">
+                                <span className="text-[10px] text-slate-400 font-bold mb-1">醣類</span>
+                                <div className="relative w-full">
+                                  <input 
+                                    type="text" 
+                                    value={state.intervention.macroConfig?.carbsPercent ?? ''} 
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                        setState({
+                                          ...state,
+                                          intervention: {
+                                            ...state.intervention,
+                                            macroConfig: {
+                                              ...state.intervention.macroConfig!,
+                                              carbsPercent: val as any
+                                            }
+                                          }
+                                        });
+                                      }
+                                    }}
+                                    className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
+                                  />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col flex-1 items-center">
+                                <span className="text-[10px] text-slate-400 font-bold mb-1">蛋白質</span>
+                                <div className="relative w-full">
+                                  <input 
+                                    type="text" 
+                                    value={state.intervention.macroConfig?.proteinPercent ?? ''} 
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                        setState({
+                                          ...state,
+                                          intervention: {
+                                            ...state.intervention,
+                                            macroConfig: {
+                                              ...state.intervention.macroConfig!,
+                                              proteinPercent: val as any
+                                            }
+                                          }
+                                        });
+                                      }
+                                    }}
+                                    className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
+                                  />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col flex-1 items-center">
+                                <span className="text-[10px] text-slate-400 font-bold mb-1">脂肪</span>
+                                <div className="relative w-full">
+                                  <input 
+                                    type="text" 
+                                    value={state.intervention.macroConfig?.fatPercent ?? ''} 
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                        setState({
+                                          ...state,
+                                          intervention: {
+                                            ...state.intervention,
+                                            macroConfig: {
+                                              ...state.intervention.macroConfig!,
+                                              fatPercent: val as any
+                                            }
+                                          }
+                                        });
+                                      }
+                                    }}
+                                    className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
+                                  />
+                                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 備註指引 */}
+                            <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-500 space-y-1 bg-slate-50/50 p-2.5 rounded-lg text-left">
+                              <div className="font-bold text-slate-600 flex items-center gap-1.5 mb-1">
+                                <Info className="w-3.5 h-3.5 text-slate-400" />
+                                配比參考備註：
+                              </div>
+                              <ol className="list-decimal pl-4.5 space-y-1 leading-relaxed">
+                                <li>蛋白質：一般12%、DM15-20%、CKD kg*0.6-0.8、DKD kg*0.8</li>
+                                <li>CKD/DKD 開低氮澱粉的執行率不高</li>
+                                <li>油脂的份量約6-9份（9份很少）</li>
+                              </ol>
                             </div>
                           </div>
-                          <div className="flex flex-col flex-1 items-center">
-                            <span className="text-[10px] text-slate-400 font-bold mb-1">蛋白質</span>
-                            <div className="relative w-full">
-                              <input 
-                                type="number" 
-                                value={state.intervention.macroConfig?.proteinPercent || 0} 
-                                onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, proteinPercent: parseInt(e.target.value) || 0}}})}
-                                className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
-                              />
-                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col flex-1 items-center">
-                            <span className="text-[10px] text-slate-400 font-bold mb-1">脂肪</span>
-                            <div className="relative w-full">
-                              <input 
-                                type="number" 
-                                value={state.intervention.macroConfig?.fatPercent || 0} 
-                                onChange={e => setState({...state, intervention: {...state.intervention, macroConfig: {...state.intervention.macroConfig!, fatPercent: parseInt(e.target.value) || 0}}})}
-                                className="w-full pl-2 pr-6 py-2 text-sm border rounded-lg text-center font-bold text-slate-700"
-                              />
-                              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">%</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Result Summary Block */}
@@ -3418,17 +3575,17 @@ export default function App() {
                           <div className="text-center group">
                             <div className="text-[10px] font-bold opacity-80 mb-1">醣類 (g)</div>
                             <div className="text-xl font-black">{recommendedMacros.carbs}</div>
-                            <div className="text-[10px] opacity-60">({state.intervention.macroConfig?.carbsPercent}%)</div>
+                            <div className="text-[10px] opacity-60">({parseFloat(state.intervention.macroConfig?.carbsPercent as any) || 0}%)</div>
                           </div>
                           <div className="text-center border-x border-white/10">
                             <div className="text-[10px] font-bold opacity-80 mb-1">蛋白質 (g)</div>
                             <div className="text-xl font-black">{recommendedMacros.protein}</div>
-                            <div className="text-[10px] opacity-60">({state.intervention.macroConfig?.proteinPercent}%)</div>
+                            <div className="text-[10px] opacity-60">({parseFloat(state.intervention.macroConfig?.proteinPercent as any) || 0}%)</div>
                           </div>
                           <div className="text-center">
                             <div className="text-[10px] font-bold opacity-80 mb-1">脂肪 (g)</div>
                             <div className="text-xl font-black">{recommendedMacros.fat}</div>
-                            <div className="text-[10px] opacity-60">({state.intervention.macroConfig?.fatPercent}%)</div>
+                            <div className="text-[10px] opacity-60">({parseFloat(state.intervention.macroConfig?.fatPercent as any) || 0}%)</div>
                           </div>
                         </div>
                       </div>
@@ -5054,13 +5211,13 @@ export default function App() {
               {recommendedMacros && (
                 <>
                   <div className="border p-2">
-                    <span className="font-bold">醣類 (g):</span> {recommendedMacros.carbs} ({state.intervention.macroConfig?.carbsPercent}%)
+                    <span className="font-bold">醣類 (g):</span> {recommendedMacros.carbs} ({parseFloat(state.intervention.macroConfig?.carbsPercent as any) || 0}%)
                   </div>
                   <div className="border p-2">
-                    <span className="font-bold">蛋白質 (g):</span> {recommendedMacros.protein} ({state.intervention.macroConfig?.proteinPercent}%)
+                    <span className="font-bold">蛋白質 (g):</span> {recommendedMacros.protein} ({parseFloat(state.intervention.macroConfig?.proteinPercent as any) || 0}%)
                   </div>
                   <div className="border p-2">
-                    <span className="font-bold">脂肪 (g):</span> {recommendedMacros.fat} ({state.intervention.macroConfig?.fatPercent}%)
+                    <span className="font-bold">脂肪 (g):</span> {recommendedMacros.fat} ({parseFloat(state.intervention.macroConfig?.fatPercent as any) || 0}%)
                   </div>
                 </>
               )}
