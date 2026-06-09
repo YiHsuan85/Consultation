@@ -72,17 +72,133 @@ import {
 import { MEDICATIONS } from './constants/medications';
 
 const DIAG_PROBLEM_INFO: { [key: string]: { definition: string; notes?: string } } = {
-  "熱量消耗增加 (NI-1.1)": {
+    "熱量消耗增加(NI1.1)": {
     definition: "由於體組成的改變，藥物治療，或內分泌、神經的、基因的改變而使休息代謝率 (RMR) 比預測的需要量多",
-    notes: "RMR是指身體休息狀態下， 體內活性高的細胞為維持基本生理機能與調節 平衡 功能的代謝過程 ，其所需的能量總和"
+    notes: "RMR是指身體休息狀態下， 體內活性高的細胞為維持基本生理機能與調節平衡功能的代謝過程，其所需的能量總和"
   },
-  "體重過輕": {
-    definition: "體重低於正常健康標準值，成人 BMI < 18.5 kg/m²",
-    notes: "伴隨肌肉變少、長期饑餓或新陳代謝率過高、吸收不良等。"
+  "熱量攝取不足(NI1.2)": {
+    definition: "熱量攝取低於其個人生理需求的能量消耗、既定的參考標準或建議量",
+    notes: "較不適用於減重期、安寧照護階段、初期給予腸道或靜脈營養時、或處在急性壓力時 (如：手術、器官衰竭)"
   },
-  "體重過重/肥胖": {
-    definition: "體內脂肪累積過多，導致體重超出理想範圍（成人 BMI ≥ 24 kg/m²）",
-    notes: "建議控制熱量攝取，建立良好運動習慣，並評估是否有代謝症候群風險。"
+  "熱量攝取過多(NI1.3)": {
+    definition: "熱量攝取超過能量消耗既定的參考標準，或依個人生理需求之建議量",
+    notes: "可能不適用於體重需要增加者"
+  },
+  "預期熱量攝取不足(NI1.4)": {
+    definition: "基於觀察、經驗、或科學的理由，預期未來熱量攝取將少於所估計的熱量消耗既定的參考標準，或個人生理需求之建議量",
+    notes: "可能不適用於體重減輕者 。當現階段熱量攝取低於消耗量時，使用「熱量攝取不足」 (NI-1.2)的營養診斷"
+  },
+  "預期熱量攝取過多(NI1.5)": {
+    definition: "基於觀察、經驗、或科學的理由，預期熱量攝取會超過所估計的熱量消耗既定參考標準，或其個人生理需求之建議量",
+    notes: "可能不適用於體重需要增加者；若現階段攝取量多於消耗量，使用「熱量攝取過多」 (NI-1.3)的營養診斷"
+  },
+  "經口攝取不足(NI2.1)": {
+    definition: "經口攝取的食物/飲品低於既定參考標準或個人生理需求之建議量",
+    notes: "不包含造口或管灌攝食。可能不適用於減重期、安寧照護時、初期餵食、或合併由口進食/EN/PN治療時的診斷。"
+  },
+  "經口攝取過多(NI2.2)": {
+    definition: "經口攝取的食物/飲品超過估計的熱量需求、既定的參考標準，或個人生理需求之建議量",
+    notes: "不包含造口或管灌攝食。可能不適用於體重需要增加者"
+  },
+  "腸道營養灌食不足(NI2.3)": {
+    definition: "由腸道灌食之熱量或營養素低於既定參考標準或個人生理需求之建議量",
+    notes: "較不適用於減重期、安寧照護時、初期給予腸道或靜脈營養或急性壓力狀態時"
+  },
+  "腸道營養灌食過多(NI2.4)": {
+    definition: "由腸道灌食之熱量或營養素高於既定參考標準或個人生理需求之建議量",
+  },
+  "腸道營養組成與需求不一致(NI2.5)": {
+    definition: "腸道營養的配方不符合既定參考標準或個人生理需求之建議量",
+  },
+  "腸道營養的施予與需求不一致(NI2.6)": {
+    definition: "腸道營養的供應不符合既定參考標準或個人生理需求之建議量",
+  },
+  "靜脈營養不足(NI2.7)": {
+    definition: "經靜脈輸入的熱量或營養素低於既定參考標準或個人生理需求之建議量",
+    notes: "較不適用於減重期、安寧照護、靜脈營養初期或急性壓力狀態 (如：手術、器官衰竭)時"
+  },
+  "靜脈營養過多(NI2.8)": {
+    definition: "經靜脈輸入的熱量或營養素高於既定參考標準或個人生理需求之建議量",
+  },
+  "靜脈營養組成與需求不一致(NI2.9)": {
+    definition: "靜脈營養輸液配方不符合既定參考標準或個人生理需求之建議量",
+  },
+  "靜脈營養的施予與需求不一致(NI2.10)": {
+    definition: "靜脈營養的供應不符合既定參考標準或個人生理需求之建議量",
+  },
+  "可接受的食物受限(NI2.11)": {
+    definition: "由口進食的食物/飲品，在種類、多樣性及品質上，與參考標準值不一致",
+    notes: "可能較不適用於厭食症、暴食症、狂飲攝食異常，或其他未指明的攝食異常(EDNOS)，「攝食異常」(NB-1.5)的診斷，可考慮使用於這些狀況。"
+  },
+  "水分攝取不足(NI3.1)": {
+    definition: "含水分的食物或其他來源攝取量，低於既定參考標準或個人生理需求之建議量"
+  },
+  "水分攝取過量(NI3.2)": {
+    definition: "水分的攝取量大於既定參考標準或個人生理需求之建議量",
+  },
+  "生物活性成份攝取不足(NI4.1)": {
+    definition: "生物活性物質攝取低於既定參考標準或個人生理需求之建議量",
+    notes: "DRIs並未將生物活性物質列入，因此並沒有建立最低需要量或上限攝取量。不過，營養師們可以就個案個別的目標，或其營養處方予以評估、比較其攝取量是否足夠或過量"
+  },
+  "生物活性成份攝取不足(NI4.2)": {
+    definition: "生物活性物質攝取高於既定參考標準或個人生理需求之建議量",
+    notes: "DRIs並未將生物活性物質列入，因此並沒有建立最低需要量或上限攝取量。不過，營養師們可以就個案個別的目標，或其營養處方予以評估、比較其攝取量是否足夠或過量"
+  },
+  "酒精攝取過多(NI4.3)": {
+    definition: "酒精攝取多於建議的限量"
+  },
+  "營養素需求增加(NI5.1)": {
+    definition: "依據既定參考標準或個人生理需求之建議量，某些特定的營養素需求增加"
+  },
+  "蛋白質-熱量攝取不足(NI5.2)": {
+    definition: "蛋白質及/或熱量攝取低於既定參考標準或個人近期生理需求之建議量",
+  },
+  "營養素需求減少（NI5.3）": {
+    definition: "某種特定營養素需求低於既定參考標準或依個人生理需求之建議量",
+  },
+  "營養素不均衡（NI5.4）": {
+    definition: "營養素組成不理想，如某一營養素的攝取量干擾或改變其他營養素的吸收或利用",
+  },
+  "脂肪攝取不足（NI5.5.1）": {
+    definition: "脂肪攝取低於既定參考標準或個人生理需求之建議量",
+    notes: "不適用於減重或安寧照護"
+  },
+  "脂肪攝取過多（NI5.5.2）": {
+    definition: "脂肪攝取高於既定參考標準或個人生理需求之建議量",
+  },
+  "脂肪型態攝取不符合需求（NI5.5.3）": {
+    definition: "與既定參考標準或個人生理需求之建議比較，所攝取之脂肪型態錯誤或品質不佳",
+  },
+  "蛋白質攝取不足（NI5.6.1）": {
+    definition: "攝取的蛋白質低於既定參考標準或個人生理需求之建議量。",
+  },
+  "蛋白質攝取過多（NI5.6.2）": {
+    definition: "攝取的蛋白質高於既定參考標準或個人生理需求之建議量。",
+  },
+  "蛋白質類別攝取不符合所需（NI5.6.3）": {
+    definition: "某特定類別蛋白質的攝取，與既定參考標準或個人生理需求之建議量比較",
+  },
+  "胺基酸攝取類別不符合需求（NI5.7.1）": {
+    definition: "某特定胺基酸的攝取，與既定參考標準或個人生理需求之建議量比較",
+  },
+  "醣類攝取不足（NI5.8.1）": {
+    definition: "醣類攝取低於既定參考標準或個人生理需求之建議量",
+  },
+  "醣類攝取過多（NI5.8.2）": {
+    definition: "醣類攝取高於既定參考標準或個人生理需求之建議量",
+  },
+  "醣類攝取型態不符合需要（NI5.8.3）": {
+    definition: "某特定形式醣類的攝取量，與既定參考標準或個人生理需求之建議量比較",
+    notes: "對穀類的蛋白質(如榖蛋白：gluten)不耐受，應使用「蛋白質攝取類別不符合需求」 (NI-5.6.3) 參考表單記錄"
+  },
+  "醣類攝取不一致（NI5.8.4）": {
+    definition: "每天或每餐醣類攝取時間不一致，或醣類攝取的型態與生理或醫療需求所建議的不一致",
+  },
+  "纖維質攝取不足（NI5.8.5）": {
+    definition: "纖維質攝取低於既定參考標準或個人生理需求之建議量",
+  },
+  "纖維質攝取過多（NI5.8.6）": {
+    definition: "醣類攝取高於既定參考標準或個人生理需求之建議量",
   }
 };
 
@@ -373,6 +489,16 @@ const calculateAge = (birthday: string) => {
     age--;
   }
   return age;
+};
+
+const parseCalorie = (val: string | number | undefined | null): number => {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const str = val.toString().trim();
+  if (!str) return 0;
+  const parts = str.split(/[~-]/).map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
+  if (parts.length === 0) return 0;
+  return parts[parts.length - 1]; // Return the last element (upper bound)
 };
 
 const GuidelineCheckbox = ({ label, id, state, setState }: { label: string, id: string, state: AppState, setState: any }) => (
@@ -971,19 +1097,24 @@ export default function App() {
     const abw = parseFloat(state.anthropometry.abw);
     const factor = state.clientHx.exercise.activityFactor;
 
-    if (!bmi || !weight || !factor) return 0;
+    if (!bmi || !weight || !factor) return '';
 
     let baseWeight = weight;
     if (bmi < 18.5 || bmi >= 24) {
       baseWeight = abw;
     }
 
-    let multiplier = 0;
-    if (factor === '無' || factor === '輕度') multiplier = 30;
-    else if (factor === '中度') multiplier = 35;
-    else if (factor === '重度') multiplier = 40;
+    if (factor === '無' || factor === '輕度') {
+      const minVal = Math.round(baseWeight * 20);
+      const maxVal = Math.round(baseWeight * 25);
+      return `${minVal} ~ ${maxVal}`;
+    } else if (factor === '中度') {
+      return `${Math.round(baseWeight * 30)}`;
+    } else if (factor === '重度') {
+      return `${Math.round(baseWeight * 35)}`;
+    }
 
-    return Math.round(baseWeight * multiplier);
+    return '';
   }, [state.anthropometry.bmi, state.anthropometry.weight, state.anthropometry.abw, state.clientHx.exercise.activityFactor]);
 
   // Recommended Harris Benedict Calorie requirement calculation
@@ -1017,7 +1148,7 @@ export default function App() {
 
   // Recommended Macros Breakdown
   const recommendedMacros = useMemo(() => {
-    const kcal = parseFloat(state.diet.targetKcal) || recommendedKcal;
+    const kcal = parseCalorie(state.diet.targetKcal) || parseCalorie(recommendedKcal);
     if (!kcal) return null;
     const config = state.intervention.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
     const cp = parseFloat(config.carbsPercent as any) || 0;
@@ -3125,7 +3256,7 @@ export default function App() {
                       </div>
                     </div>
                     {(() => {
-                      const kcal = parseFloat(state.diet.targetKcal) || recommendedKcal;
+                      const kcal = parseCalorie(state.diet.targetKcal) || parseCalorie(recommendedKcal);
                       const config = state.intervention.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
                       const cp = parseFloat(config.carbsPercent as any) || 0;
                       const pp = parseFloat(config.proteinPercent as any) || 0;
@@ -3436,7 +3567,7 @@ export default function App() {
                         <label className="text-xs font-bold text-slate-400 block tracking-tight">1. 建議熱量需求 (kcal/d)</label>
                         <div className="flex gap-2">
                           <input 
-                            type="number" 
+                            type="text" 
                             value={state.diet.targetKcal || ''}
                             onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
                             placeholder="例如：1800"
@@ -3795,7 +3926,7 @@ export default function App() {
                               </thead>
                               <tbody className="divide-y divide-slate-100">
                                 {Object.entries(DIET_GUIDELINES['DM']).map(([kcal, plan]) => {
-                                  const isMatched = Math.abs(parseInt(kcal) - (parseInt(state.diet.targetKcal) || recommendedKcal)) < 50;
+                                  const isMatched = Math.abs(parseInt(kcal) - (parseCalorie(state.diet.targetKcal) || parseCalorie(recommendedKcal))) < 50;
                                   return (
                                     <tr key={kcal} className={`hover:bg-blue-50/30 transition-colors ${isMatched ? 'bg-blue-50/50 font-bold text-blue-700' : 'text-slate-500'}`}>
                                       <td className="px-2 py-1.5 font-mono border-r border-slate-100 bg-slate-50/30">{kcal}</td>
@@ -3827,7 +3958,7 @@ export default function App() {
                               </thead>
                               <tbody className="divide-y divide-slate-100">
                                 {Object.entries(DIET_GUIDELINES['CKD']).map(([kcal, plan]) => {
-                                  const isMatched = Math.abs(parseInt(kcal) - (parseInt(state.diet.targetKcal) || recommendedKcal)) < 50;
+                                  const isMatched = Math.abs(parseInt(kcal) - (parseCalorie(state.diet.targetKcal) || parseCalorie(recommendedKcal))) < 50;
                                   return (
                                     <tr key={kcal} className={`hover:bg-orange-50/30 transition-colors ${isMatched ? 'bg-orange-50/50 font-bold text-orange-700' : 'text-slate-500'}`}>
                                       <td className="px-2 py-1.5 font-mono border-r border-slate-100 bg-slate-50/30">{kcal}</td>
@@ -4541,7 +4672,7 @@ export default function App() {
                       <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                         <div className="text-xs text-blue-600 font-bold uppercase mb-1">熱量 (kcal/天)</div>
                         <input 
-                          type="number" 
+                          type="text" 
                           value={state.diet.targetKcal || ''} 
                           onChange={e => setState({...state, diet: {...state.diet, targetKcal: e.target.value}})}
                           className="text-2xl font-bold text-blue-700 bg-transparent border-none focus:ring-0 w-full"
