@@ -64,6 +64,120 @@ const formatExercises = (state: AppState, includeFactor = false) => {
   return result;
 };
 
+const calculateAge = (birthday: string) => {
+  if (!birthday) return 0;
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
+const calcRecommendedKcalStr = (state: AppState): string => {
+  const bmi = parseFloat(state.anthropometry.bmi);
+  const weight = parseFloat(state.anthropometry.weight);
+  const abw = parseFloat(state.anthropometry.abw);
+  const factor = state.clientHx.exercise?.activityFactor;
+
+  if (!bmi || !weight || !factor) return '';
+
+  let baseWeight = weight;
+  if (bmi < 18.5 || bmi >= 24) {
+    baseWeight = abw;
+  }
+
+  if (factor === '無' || factor === '輕度') {
+    const minVal = Math.round(baseWeight * 20);
+    const maxVal = Math.round(baseWeight * 25);
+    return `${minVal} ~ ${maxVal}`;
+  } else if (factor === '中度') {
+    return `${Math.round(baseWeight * 30)}`;
+  } else if (factor === '重度') {
+    return `${Math.round(baseWeight * 35)}`;
+  }
+
+  return '';
+};
+
+const parseCalorie = (val: string | number | undefined | null): number => {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const str = val.toString().trim();
+  if (!str) return 0;
+  const parts = str.split(/[~-]/).map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
+  if (parts.length === 0) return 0;
+  return parts[parts.length - 1]; // Return the last element (upper bound)
+};
+
+const getRecommendedHBKcal = (state: AppState) => {
+  const gender = state.clientHx.gender;
+  const weight = parseFloat(state.anthropometry.weight);
+  const height = parseFloat(state.anthropometry.height);
+  const age = calculateAge(state.clientHx.birthday);
+
+  if (isNaN(weight) || isNaN(height) || age <= 0) {
+    return { err: '數據不足', bee: 0, total: 0 };
+  }
+
+  let bee = 0;
+  if (gender === '男') {
+    bee = 66 + 13.7 * weight + 5 * height - 6.8 * age;
+  } else {
+    bee = 655 + 9.6 * weight + 1.8 * height - 4.7 * age;
+  }
+  bee = Math.round(bee);
+  const act = (state.guidelineSelections as any)?.hbActivity !== undefined ? parseFloat((state.guidelineSelections as any).hbActivity) : 1.3;
+  const total = Math.round(bee * act);
+  return { err: '', bee, total };
+};
+
+const getMacroDistribution = (state: AppState) => {
+  const recommendedKcalStr = calcRecommendedKcalStr(state);
+  const recKcalVal = parseCalorie(recommendedKcalStr);
+  const kcal = parseCalorie(state.diet.targetKcal) || recKcalVal;
+  const config = state.intervention?.macroConfig || { carbsPercent: 55, proteinPercent: 15, fatPercent: 30 };
+  const cp = parseFloat(config.carbsPercent as any) || 0;
+  const pp = parseFloat(config.proteinPercent as any) || 0;
+  const fp = parseFloat(config.fatPercent as any) || 0;
+  
+  if (!kcal) {
+    return {
+      kcal: 0,
+      carbsPer: cp,
+      proteinPer: pp,
+      fatPer: fp,
+      carbsG: '0.0',
+      proteinG: '0.0',
+      fatG: '0.0'
+    };
+  }
+
+  return {
+    kcal,
+    carbsPer: cp,
+    proteinPer: pp,
+    fatPer: fp,
+    carbsG: ((kcal * (cp / 100)) / 4).toFixed(1),
+    proteinG: ((kcal * (pp / 100)) / 4).toFixed(1),
+    fatG: ((kcal * (fp / 100)) / 9).toFixed(1)
+  };
+};
+
+const PORT_VALS: Record<string, { p: number, c: number, f: number, k: number }> = {
+  '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
+  '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
+  '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
+  '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
+  '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
+  '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
+  '水果': { p: 0, c: 15, f: 0, k: 60 },
+  '堅果': { p: 0, c: 0, f: 5, k: 45 },
+  '低氮澱粉': { p: 1, c: 15, f: 0, k: 64 }
+};
+
 export const generateWordDoc = async (state: AppState) => {
   // ... (existing code remains same)
   const doc = new Document({
@@ -124,7 +238,19 @@ export const generateWordDoc = async (state: AppState) => {
             new TableRow({
               children: [
                 createHeaderCell("社會史"), createValueCell(state.clientHx.socialHx),
-                createHeaderCell("生活習慣"), createValueCell(`${state.clientHx.habits.smoke ? "抽菸 " : ""}${state.clientHx.habits.drink ? "喝酒" : ""}` || "無"),
+                createHeaderCell("生活習慣"), createValueCell((() => {
+                  const parts: string[] = [];
+                  if (state.clientHx.habits.smoke) {
+                    parts.push(`抽菸${state.clientHx.habits.smokeFrequency ? ` (${state.clientHx.habits.smokeFrequency})` : ''}`);
+                  }
+                  if (state.clientHx.habits.drink) {
+                    parts.push(`喝酒${state.clientHx.habits.drinkFrequency ? ` (${state.clientHx.habits.drinkFrequency})` : ''}`);
+                  }
+                  if (state.clientHx.habits.none || parts.length === 0) {
+                    return '無';
+                  }
+                  return parts.join('、');
+                })()),
               ],
             }),
             new TableRow({
@@ -306,8 +432,140 @@ export const generateWordDoc = async (state: AppState) => {
         new Paragraph({ text: `飲食計畫類型: ${state.intervention.dietType}` }),
         new Paragraph({ text: `衛教重點: ${state.intervention.educationTopics.join(", ") || "無"}` }),
         new Paragraph({ text: `轉介建議: ${state.intervention.referral || "無"}` }),
-        
-        new Paragraph({ text: "飲食計畫 (Meal Plan)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
+
+        // 新增/加強：建議熱量需求與三大營養素比例
+        new Paragraph({ 
+          text: "1. 建議熱量需求與三大營養素比例 (Recommended Caloric & Macronutrients Targets)", 
+          heading: HeadingLevel.HEADING_3, 
+          spacing: { before: 200, after: 100 } 
+        }),
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: (() => {
+            const recommendedKcalStr = calcRecommendedKcalStr(state);
+            const hb = getRecommendedHBKcal(state);
+            const macros = getMacroDistribution(state);
+            const targetKcalStr = state.diet.targetKcal ? `${state.diet.targetKcal} kcal/d` : (recommendedKcalStr ? `${recommendedKcalStr} kcal/d` : "未填寫");
+            return [
+              new TableRow({
+                children: [
+                  createHeaderCell("項目"),
+                  createHeaderCell("設計與建議數值"),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("建議熱量需求 (僅供參考)"),
+                  createValueCell(recommendedKcalStr ? `${recommendedKcalStr} kcal/d` : "未定"),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("建議熱量需求 (Harris Benedict)"),
+                  createValueCell(hb.err ? "資料不足" : `BEE: ${hb.bee} kcal / 總計: ${hb.total} kcal/d`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("設定介入熱量目標"),
+                  createValueCell(targetKcalStr),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("醣類 (Carbohydrates)"),
+                  createValueCell(`${macros.carbsG} g (${macros.carbsPer}%)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("蛋白質 (Protein)"),
+                  createValueCell(`${macros.proteinG} g (${macros.proteinPer}%)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("脂肪 (Fat / Lipids)"),
+                  createValueCell(`${macros.fatG} g (${macros.fatPer}%)`),
+                ]
+              }),
+            ];
+          })()
+        }),
+
+        // 新增/加強：六大類食物份數計算與建議份量
+        new Paragraph({ 
+          text: "2. 六大類食物份數計算與建議份量 (Food Portions Calculator & Plan)", 
+          heading: HeadingLevel.HEADING_3, 
+          spacing: { before: 200, after: 100 } 
+        }),
+        (() => {
+          let totalP = 0, totalC = 0, totalF = 0, totalK = 0;
+          const rows = [
+            '低脂乳品',
+            '全脂乳品',
+            '全榖根莖',
+            '低脂豆魚蛋肉',
+            '中脂豆魚蛋肉',
+            '蔬菜',
+            '水果',
+            '堅果',
+            '低氮澱粉'
+          ].map(key => {
+            const val = state.intervention.portions?.[key] || 0;
+            const rowInfo = PORT_VALS[key];
+            const p = val * rowInfo.p;
+            const c = val * rowInfo.c;
+            const f = val * rowInfo.f;
+            const k = val * rowInfo.k;
+            totalP += p;
+            totalC += c;
+            totalF += f;
+            totalK += k;
+            
+            return new TableRow({
+              children: [
+                createHeaderCell(key),
+                createValueCell(`${val} 份`),
+                createValueCell(`${p.toFixed(1)} g`),
+                createValueCell(`${c.toFixed(1)} g`),
+                createValueCell(`${f.toFixed(1)} g`),
+                createValueCell(`${Math.round(k)} kcal`),
+              ]
+            });
+          });
+
+          // Add Total row
+          rows.push(new TableRow({
+            children: [
+              createHeaderCell("份數計算總計", "E2E8F0"),
+              createHeaderCell("", "E2E8F0"),
+              createHeaderCell(`${totalP.toFixed(1)} g`, "E2E8F0"),
+              createHeaderCell(`${totalC.toFixed(1)} g`, "E2E8F0"),
+              createHeaderCell(`${totalF.toFixed(1)} g`, "E2E8F0"),
+              createHeaderCell(`${Math.round(totalK)} kcal`, "E2E8F0"),
+            ]
+          }));
+
+          return new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  createHeaderCell("食物類別"),
+                  createHeaderCell("設計份數"),
+                  createHeaderCell("蛋白質 (g)"),
+                  createHeaderCell("醣類 (g)"),
+                  createHeaderCell("脂肪 (g)"),
+                  createHeaderCell("熱量 (kcal)"),
+                ]
+              }),
+              ...rows
+            ]
+          });
+        })(),
+
+        new Paragraph({ text: "3. 飲食計畫 (Meal Plan)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
           rows: [
@@ -492,24 +750,152 @@ export const generateReminderWordDoc = async (state: AppState) => {
         }) : new Paragraph({ text: "" }),
 
         // 營養控制目標
-        new Paragraph({ text: "三、營養控制目標", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
+        new Paragraph({ text: "三、營養控制目標 (Nutrition Control Targets)", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
+        new Paragraph({
+          text: "1. 建議熱量需求與三大營養素比例 (Recommended Caloric & Macronutrients Targets)",
+          heading: HeadingLevel.HEADING_3,
+          spacing: { before: 100, after: 100 }
+        }),
         new Table({
           width: { size: 100, type: WidthType.PERCENTAGE },
-          rows: [
-            new TableRow({
-              children: [
-                createHeaderCell("熱量 (kcal/d)"), createValueCell(state.guidelineSelections.target_kcal),
-                createHeaderCell("蛋白質 (g/d)"), createValueCell(state.guidelineSelections.target_protein),
-              ],
-            }),
-            new TableRow({
-              children: [
-                createHeaderCell("醣類 (g/d)"), createValueCell(state.guidelineSelections.target_carbs),
-                createHeaderCell("脂肪 (g/d)"), createValueCell(state.guidelineSelections.target_fat),
-              ],
-            }),
-          ],
+          rows: (() => {
+            const recommendedKcalStr = calcRecommendedKcalStr(state);
+            const hb = getRecommendedHBKcal(state);
+            const macros = getMacroDistribution(state);
+            const targetKcalStr = state.diet.targetKcal ? `${state.diet.targetKcal} kcal/d` : (recommendedKcalStr ? `${recommendedKcalStr} kcal/d` : "未填寫");
+            return [
+              new TableRow({
+                children: [
+                  createHeaderCell("項目"),
+                  createHeaderCell("建議與設定目標"),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("建議熱量需求 (僅供參考)"),
+                  createValueCell(recommendedKcalStr ? `${recommendedKcalStr} kcal/d` : "未定"),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("建議熱量需求 (Harris Benedict)"),
+                  createValueCell(hb.err ? "資料不足" : `BEE: ${hb.bee} kcal / 總計: ${hb.total} kcal/d`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("設定介入熱量目標"),
+                  createValueCell(targetKcalStr),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("醣類 (Carbohydrates)"),
+                  createValueCell(`${macros.carbsG} g (${macros.carbsPer}%)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("蛋白質 (Protein)"),
+                  createValueCell(`${macros.proteinG} g (${macros.proteinPer}%)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("脂肪 (Fat / Lipids)"),
+                  createValueCell(`${macros.fatG} g (${macros.fatPer}%)`),
+                ]
+              }),
+              ...(state.guidelineSelections.target_kcal || state.guidelineSelections.target_protein || state.guidelineSelections.target_carbs || state.guidelineSelections.target_fat ? [
+                new TableRow({
+                  children: [
+                    createHeaderCell("自訂亮點目標 (勾選)"),
+                    createValueCell(
+                      [
+                        state.guidelineSelections.target_kcal ? `熱量: ${state.guidelineSelections.target_kcal}` : '',
+                        state.guidelineSelections.target_protein ? `蛋白: ${state.guidelineSelections.target_protein}` : '',
+                        state.guidelineSelections.target_carbs ? `醣類: ${state.guidelineSelections.target_carbs}` : '',
+                        state.guidelineSelections.target_fat ? `脂肪: ${state.guidelineSelections.target_fat}` : '',
+                      ].filter(Boolean).join("、 ")
+                    ),
+                  ]
+                })
+              ] : [])
+            ];
+          })()
         }),
+
+        // 六大類食物份數計算與建議份量
+        new Paragraph({ 
+          text: "2. 六大類食物份數計算與建議份量 (Food Portions Calculator & Plan)", 
+          heading: HeadingLevel.HEADING_3, 
+          spacing: { before: 200, after: 100 } 
+        }),
+        (() => {
+          let totalP = 0, totalC = 0, totalF = 0, totalK = 0;
+          const rows = [
+            '低脂乳品',
+            '全脂乳品',
+            '全榖根莖',
+            '低脂豆魚蛋肉',
+            '中脂豆魚蛋肉',
+            '蔬菜',
+            '水果',
+            '堅果',
+            '低氮澱粉'
+          ].map(key => {
+            const val = state.intervention.portions?.[key] || 0;
+            const rowInfo = PORT_VALS[key];
+            const p = val * rowInfo.p;
+            const c = val * rowInfo.c;
+            const f = val * rowInfo.f;
+            const k = val * rowInfo.k;
+            totalP += p;
+            totalC += c;
+            totalF += f;
+            totalK += k;
+            
+            return new TableRow({
+              children: [
+                createHeaderCell(key, "F0F9FF"),
+                createValueCell(`${val} 份`),
+                createValueCell(`${p.toFixed(1)} g`),
+                createValueCell(`${c.toFixed(1)} g`),
+                createValueCell(`${f.toFixed(1)} g`),
+                createValueCell(`${Math.round(k)} kcal`),
+              ]
+            });
+          });
+
+          // Add Total row
+          rows.push(new TableRow({
+            children: [
+              createHeaderCell("份數計算總計", "EFF6FF"),
+              createHeaderCell("", "EFF6FF"),
+              createHeaderCell(`${totalP.toFixed(1)} g`, "EFF6FF"),
+              createHeaderCell(`${totalC.toFixed(1)} g`, "EFF6FF"),
+              createHeaderCell(`${totalF.toFixed(1)} g`, "EFF6FF"),
+              createHeaderCell(`${Math.round(totalK)} kcal`, "EFF6FF"),
+            ]
+          }));
+
+          return new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  createHeaderCell("食物類別", "DBEAFE"),
+                  createHeaderCell("設計份數", "DBEAFE"),
+                  createHeaderCell("蛋白質 (g)", "DBEAFE"),
+                  createHeaderCell("醣類 (g)", "DBEAFE"),
+                  createHeaderCell("脂肪 (g)", "DBEAFE"),
+                  createHeaderCell("熱量 (kcal)", "DBEAFE"),
+                ]
+              }),
+              ...rows
+            ]
+          });
+        })(),
 
         // 備註與注意事項
         new Paragraph({ text: "四、備註與注意事項", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
