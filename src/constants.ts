@@ -88,7 +88,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '帶殼栗子 50g (4顆)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '薄片吐司 1片', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '厚片吐司 1片', category: '全榖雜糧類', carbs: 30, protein: 4, fat: 0, kcal: 140, na: '', k: '', p: '' },
-  { name: '市售饅頭 1顆', category: '全榖雜糧類', carbs: 60, protein: 8, fat: 0, kcal: 280, na: '', k: '', p: '' },
+  { name: '市售饅頭 1顆', category: '全榖雜糧類', carbs: 15, protein: 8, fat: 0, kcal: 280, na: '', k: '', p: '' },
   { name: '蓮藕粉 20g (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 0, fat: 0, kcal: 60, na: '', k: '', p: '' },
   { name: '五穀粉 20g (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
   { name: '薏仁粉 20g (2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, na: '', k: '', p: '' },
