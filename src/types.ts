@@ -8,6 +8,10 @@ export interface FoodItem {
   na?: number | string;
   k?: number | string;
   p?: number | string;
+  saturatedFat?: number | string;
+  transFat?: number | string;
+  cholesterol?: number | string;
+  fiber?: number | string;
   portions?: number;
   meal?: string;
 }
