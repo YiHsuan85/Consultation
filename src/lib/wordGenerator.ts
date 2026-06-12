@@ -284,6 +284,51 @@ export const generateWordDoc = async (state: AppState) => {
                 createHeaderCell("水腫狀況"), createValueCell(state.anthropometry.edema),
               ],
             }),
+            new TableRow({
+              children: [
+                createHeaderCell("右手 / 左手肌肉量 (kg)"), createValueCell(`${state.anthropometry.rightArmMuscle || '--'} / ${state.anthropometry.leftArmMuscle || '--'}`),
+                createHeaderCell("右腳 / 左腳肌肉量 (kg)"), createValueCell(`${state.anthropometry.rightLegMuscle || '--'} / ${state.anthropometry.leftLegMuscle || '--'}`),
+              ],
+            }),
+            new TableRow({
+              children: [
+                createHeaderCell("手握力 (kg)"), createValueCell(state.anthropometry.gripStrength || '--'),
+                createHeaderCell("ASM 肌肉量 (ASMI)"), createValueCell((() => {
+                  const h = parseFloat(state.anthropometry.height);
+                  const r = parseFloat(state.anthropometry.rightArmMuscle || '');
+                  const l = parseFloat(state.anthropometry.leftArmMuscle || '');
+                  const rl = parseFloat(state.anthropometry.rightLegMuscle || '');
+                  const ll = parseFloat(state.anthropometry.leftLegMuscle || '');
+                  if (!isNaN(h) && h > 0 && !isNaN(r) && !isNaN(l) && !isNaN(rl) && !isNaN(ll)) {
+                    return `${((10000 * (r + l + rl + ll)) / (h * h)).toFixed(2)} kg/m²`;
+                  }
+                  return '--';
+                })()),
+              ],
+            }),
+            new TableRow({
+              children: [
+                createHeaderCell("校正型 (ASM/BMI)"), createValueCell((() => {
+                  const weight = parseFloat(state.anthropometry.weight);
+                  const h = parseFloat(state.anthropometry.height);
+                  const r = parseFloat(state.anthropometry.rightArmMuscle || '');
+                  const l = parseFloat(state.anthropometry.leftArmMuscle || '');
+                  const rl = parseFloat(state.anthropometry.rightLegMuscle || '');
+                  const ll = parseFloat(state.anthropometry.leftLegMuscle || '');
+                  if (!isNaN(r) && !isNaN(l) && !isNaN(rl) && !isNaN(ll)) {
+                    const sum = r + l + rl + ll;
+                    const h_m = h / 100;
+                    const computedBmi = (!isNaN(weight) && h_m > 0) ? (weight / (h_m * h_m)) : 0;
+                    const bmiVal = parseFloat(state.anthropometry.bmi) || computedBmi;
+                    if (bmiVal > 0) {
+                      return `${(sum / bmiVal).toFixed(3)} m²`;
+                    }
+                  }
+                  return '--';
+                })()),
+                createHeaderCell("肌少症評估 (AWGS 2025)"), createValueCell(state.anthropometry.sarcopeniaResult || '資料不足'),
+              ],
+            }),
           ],
         }),
 
