@@ -419,10 +419,17 @@ export const generateWordDoc = async (state: AppState) => {
                 createHeaderCell("食物名稱"), 
                 createHeaderCell("主要類別"), 
                 createHeaderCell("份數"),
-                createHeaderCell("熱量 (kcal)"),
                 createHeaderCell("醣類 (g)"),
                 createHeaderCell("蛋白質 (g)"),
-                createHeaderCell("脂肪 (g)")
+                createHeaderCell("脂肪 (g)"),
+                createHeaderCell("熱量 (kcal)"),
+                createHeaderCell("膳食纖維 (g)"),
+                createHeaderCell("飽和脂肪 (g)"),
+                createHeaderCell("反式脂肪 (g)"),
+                createHeaderCell("膽固醇 (mg)"),
+                createHeaderCell("鈉 Na (mg)"),
+                createHeaderCell("鉀 K (mg)"),
+                createHeaderCell("磷 P (mg)")
               ]
             }),
             ...[...state.diet.logs]
@@ -432,18 +439,35 @@ export const generateWordDoc = async (state: AppState) => {
                 const idxB = order.indexOf(b.meal);
                 return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
               })
-              .map(item => new TableRow({
-                children: [
-                  createValueCell(item.meal),
-                  createValueCell(item.name),
-                  createValueCell(item.category || "N/A"),
-                  createValueCell(`${item.qty} 份`),
-                  createValueCell(`${Math.round((item.carbs * 4 + item.protein * 4 + item.fat * 9) * item.qty)}`),
-                  createValueCell(`${(item.carbs * item.qty).toFixed(1)}`),
-                  createValueCell(`${(item.protein * item.qty).toFixed(1)}`),
-                  createValueCell(`${(item.fat * item.qty).toFixed(1)}`),
-                ]
-              }))
+              .map(item => {
+                const na = typeof item.na === 'number' ? item.na : parseFloat(item.na || '0') || 0;
+                const k = typeof item.k === 'number' ? item.k : parseFloat(item.k || '0') || 0;
+                const p = typeof item.p === 'number' ? item.p : parseFloat(item.p || '0') || 0;
+                const fiber = typeof item.fiber === 'number' ? item.fiber : parseFloat(item.fiber as string || '0') || 0;
+                const satFat = typeof item.saturatedFat === 'number' ? item.saturatedFat : parseFloat(item.saturatedFat as string || '0') || 0;
+                const transFat = typeof item.transFat === 'number' ? item.transFat : parseFloat(item.transFat as string || '0') || 0;
+                const cholesterol = typeof item.cholesterol === 'number' ? item.cholesterol : parseFloat(item.cholesterol as string || '0') || 0;
+                
+                return new TableRow({
+                  children: [
+                    createValueCell(item.meal),
+                    createValueCell(item.name),
+                    createValueCell(item.category || "N/A"),
+                    createValueCell(`${item.qty} 份`),
+                    createValueCell(`${(item.carbs * item.qty).toFixed(1)}`),
+                    createValueCell(`${(item.protein * item.qty).toFixed(1)}`),
+                    createValueCell(`${(item.fat * item.qty).toFixed(1)}`),
+                    createValueCell(`${Math.round((item.carbs * 4 + item.protein * 4 + item.fat * 9) * item.qty)}`),
+                    createValueCell(`${(fiber * item.qty).toFixed(1)}`),
+                    createValueCell(`${(satFat * item.qty).toFixed(1)}`),
+                    createValueCell(`${(transFat * item.qty).toFixed(transFat === 0 ? 0 : 2)}`),
+                    createValueCell(`${(cholesterol * item.qty).toFixed(0)}`),
+                    createValueCell(`${(na * item.qty).toFixed(0)}`),
+                    createValueCell(`${(k * item.qty).toFixed(0)}`),
+                    createValueCell(`${(p * item.qty).toFixed(0)}`),
+                  ]
+                });
+              })
           ]
         }),
 
