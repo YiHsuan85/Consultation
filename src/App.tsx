@@ -72,7 +72,7 @@ import {
 import { MEDICATIONS } from './constants/medications';
 
 const DIAG_PROBLEM_INFO: { [key: string]: { definition: string; notes?: string } } = {
-    "熱量消耗增加(NI1.1)": {
+"熱量消耗增加(NI1.1)": {
     definition: "由於體組成的改變，藥物治療，或內分泌、神經的、基因的改變而使休息代謝率 (RMR) 比預測的需要量多",
     notes: "RMR是指身體休息狀態下， 體內活性高的細胞為維持基本生理機能與調節平衡功能的代謝過程，其所需的能量總和"
   },
@@ -201,6 +201,7 @@ const DIAG_PROBLEM_INFO: { [key: string]: { definition: string; notes?: string }
     definition: "醣類攝取高於既定參考標準或個人生理需求之建議量",
   }
 };
+
 
 const HB_ACTIVITY_OPTIONS = [
   { label: '輕度活動 (1.3)', value: 1.3 },
@@ -409,7 +410,13 @@ const INITIAL_STATE: AppState = {
     abw: '',
     bodyFat: '',
     edema: '無',
-    notes: ''
+    notes: '',
+    rightArmMuscle: '',
+    leftArmMuscle: '',
+    rightLegMuscle: '',
+    leftLegMuscle: '',
+    gripStrength: '',
+    sarcopeniaResult: ''
   },
   biochemistry: {
     BP: '', AC: '', PC: '', FPG: '', HbA1c: '', BUN: '', Cr: '', eGFR: '', UPCR: '', 
@@ -1167,6 +1174,113 @@ export default function App() {
     if (!weight) return 0;
     return Math.round(weight * 30);
   }, [state.anthropometry.weight]);
+
+  // Sarcopenia Analysis and Dynamic Diagnosis (AWGS 2025)
+  const sarcopeniaAnalysis = useMemo(() => {
+    const h = parseFloat(state.anthropometry.height);
+    const weight = parseFloat(state.anthropometry.weight);
+    const rArm = parseFloat(state.anthropometry.rightArmMuscle || '');
+    const lArm = parseFloat(state.anthropometry.leftArmMuscle || '');
+    const rLeg = parseFloat(state.anthropometry.rightLegMuscle || '');
+    const lLeg = parseFloat(state.anthropometry.leftLegMuscle || '');
+    const grip = parseFloat(state.anthropometry.gripStrength || '');
+    const gender = state.clientHx.gender;
+    const age = calculateAge(state.clientHx.birthday);
+
+    if (isNaN(h) || h <= 0 || isNaN(rArm) || isNaN(lArm) || isNaN(rLeg) || isNaN(lLeg) || isNaN(grip) || !gender || age <= 0) {
+      return {
+        asmi: null,
+        asmOverBmi: null,
+        result: '資料不足 (請輸入性別、生日、身高、體重、右手/左手/右腳/左腳肌肉量及手握力)',
+        isSarcopenia: false,
+        applicable: false,
+        age
+      };
+    }
+
+    const sumMuscle = rArm + lArm + rLeg + lLeg;
+    // ASM 肌肉量 (ASMI) = 10000*(右手肌肉量+左手肌肉量+右腳肌肉量+左腳肌肉量)/身高/身高
+    const asmiVal = (10000 * sumMuscle) / (h * h);
+    const asmi = asmiVal.toFixed(2);
+
+    // BMI calculation
+    const h_m = h / 100;
+    const computedBmi = (!isNaN(weight) && h_m > 0) ? (weight / (h_m * h_m)) : 0;
+    const bmiVal = parseFloat(state.anthropometry.bmi) || computedBmi;
+
+    // 校正型：ASM肌肉量/BMI = (右手+左手+右腳+左腳) / BMI
+    const asmOverBmiVal = bmiVal > 0 ? (sumMuscle / bmiVal) : 0;
+    const asmOverBmi = asmOverBmiVal.toFixed(3);
+
+    let isSarcopenia = false;
+    let applicable = true;
+
+    // Sarcopenia criteria based on AWGS 2025:
+    // ≥65 歲者，當男性手握力 (kg)<28.0 且 校正型 < 0.83
+    // ≥65 歲者，當女性手握力 (kg)<18.0 且 校正型 < 0.57
+    // 50–64 歲者，當男性手握力 (kg)<34.0 且 校正型 < 0.9
+    // 50–64 歲者，當女性手握力 (kg)<20.0 且 校正型 < 0.63
+    if (age >= 65) {
+      if (gender === '男') {
+        if (grip < 28.0 && asmOverBmiVal < 0.83) isSarcopenia = true;
+      } else if (gender === '女') {
+        if (grip < 18.0 && asmOverBmiVal < 0.57) isSarcopenia = true;
+      }
+    } else if (age >= 50 && age <= 64) {
+      if (gender === '男') {
+        if (grip < 34.0 && asmOverBmiVal < 0.9) isSarcopenia = true;
+      } else if (gender === '女') {
+        if (grip < 20.0 && asmOverBmiVal < 0.63) isSarcopenia = true;
+      }
+    } else {
+      applicable = false;
+    }
+
+    let result = '';
+    if (!applicable) {
+      result = `未達診斷年齡 (目前年齡: ${age} 歲，診斷標準僅適用於 50 歲以上者)`;
+    } else {
+      result = isSarcopenia ? '是 (符合肌少症判斷標準)' : '否 (未符合肌少症判斷標準)';
+    }
+
+    return {
+      asmi,
+      asmOverBmi,
+      result,
+      isSarcopenia,
+      applicable,
+      age
+    };
+  }, [
+    state.anthropometry.height,
+    state.anthropometry.weight,
+    state.anthropometry.bmi,
+    state.anthropometry.rightArmMuscle,
+    state.anthropometry.leftArmMuscle,
+    state.anthropometry.rightLegMuscle,
+    state.anthropometry.leftLegMuscle,
+    state.anthropometry.gripStrength,
+    state.clientHx.gender,
+    state.clientHx.birthday
+  ]);
+
+  // Sync sarcopenia result to state for saving/persistence
+  useEffect(() => {
+    if (state.anthropometry.sarcopeniaResult !== sarcopeniaAnalysis.result) {
+      setState(prev => ({
+        ...prev,
+        anthropometry: {
+          ...prev.anthropometry,
+          sarcopeniaResult: sarcopeniaAnalysis.result
+        }
+      }));
+    }
+  }, [sarcopeniaAnalysis.result, state.anthropometry.sarcopeniaResult]);
+
+  const sortedBioHistory = useMemo(() => {
+    if (!state.monitoring?.history) return [];
+    return [...state.monitoring.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [state.monitoring?.history]);
 
   // Persistence: Save to local storage whenever state changes
   useEffect(() => {
@@ -2224,6 +2338,144 @@ export default function App() {
                       className="w-full px-3 py-2 rounded-lg border border-slate-200" 
                     />
                   </div>
+
+                  {/* Muscle Mass & Sarcopenia Subsection */}
+                  <div className="md:col-span-4 border-t border-slate-100 pt-5 mt-2">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-1 h-5 bg-indigo-600 rounded"></div>
+                      <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                        肌力與肌肉量篩檢評估 (Muscle Mass & Sarcopenia Screening)
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-600">1. 右手肌肉量 (kg)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={state.anthropometry.rightArmMuscle || ''}
+                          onChange={e => setState({
+                            ...state,
+                            anthropometry: { ...state.anthropometry, rightArmMuscle: e.target.value }
+                          })}
+                          placeholder="例如: 2.1"
+                          className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-600">2. 左手肌肉量 (kg)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={state.anthropometry.leftArmMuscle || ''}
+                          onChange={e => setState({
+                            ...state,
+                            anthropometry: { ...state.anthropometry, leftArmMuscle: e.target.value }
+                          })}
+                          placeholder="例如: 2.0"
+                          className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-600">3. 右腳肌肉量 (kg)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={state.anthropometry.rightLegMuscle || ''}
+                          onChange={e => setState({
+                            ...state,
+                            anthropometry: { ...state.anthropometry, rightLegMuscle: e.target.value }
+                          })}
+                          placeholder="例如: 6.5"
+                          className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-600">4. 左腳肌肉量 (kg)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={state.anthropometry.leftLegMuscle || ''}
+                          onChange={e => setState({
+                            ...state,
+                            anthropometry: { ...state.anthropometry, leftLegMuscle: e.target.value }
+                          })}
+                          placeholder="例如: 6.3"
+                          className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white font-medium"
+                        />
+                      </div>
+                      <div className="space-y-1 col-span-2 md:col-span-1">
+                        <label className="text-xs font-semibold text-slate-600">5. 手握力 (kg)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={state.anthropometry.gripStrength || ''}
+                          onChange={e => setState({
+                            ...state,
+                            anthropometry: { ...state.anthropometry, gripStrength: e.target.value }
+                          })}
+                          placeholder="例如: 32.5"
+                          className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none bg-white font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-2xs">
+                      <div className="space-y-2.5 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs text-indigo-700 font-bold bg-indigo-100 px-2 py-0.5 rounded-md">
+                            6. 自動評估 (AWGS 2025)
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-3 rounded-lg border border-indigo-100/60 shadow-2xs">
+                          {sarcopeniaAnalysis.asmi && (
+                            <div className="text-xs text-slate-600">
+                              <span className="font-semibold block text-slate-500 mb-0.5">ASM 肌肉量 (ASMI):</span>
+                              <strong className="text-indigo-950 font-black text-sm bg-indigo-50/40 px-2 py-0.5 rounded border border-indigo-100">{sarcopeniaAnalysis.asmi}</strong> kg/m²
+                              <span className="text-[10px] text-slate-400 block mt-0.5">(公式：10000 * 四肢肌肉量 / 身高²)</span>
+                            </div>
+                          )}
+                          {sarcopeniaAnalysis.asmOverBmi && (
+                            <div className="text-xs text-slate-600">
+                              <span className="font-semibold block text-slate-500 mb-0.5">校正型 (ASM/BMI):</span>
+                              <strong className="text-indigo-950 font-black text-sm bg-indigo-50/40 px-2 py-0.5 rounded border border-indigo-100">{sarcopeniaAnalysis.asmOverBmi}</strong> m²
+                              <span className="text-[10px] text-slate-400 block mt-0.5">(公式：四肢肌肉量 / BMI)</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-sm font-bold text-slate-800 flex items-center gap-1.5 flex-wrap pt-1">
+                          <span>是否符合肌少症判斷：</span>
+                          <span className={`px-3 py-1 rounded-lg text-sm font-black ${sarcopeniaAnalysis.isSarcopenia ? 'bg-amber-105 text-amber-900 border border-amber-250 animate-pulse' : sarcopeniaAnalysis.applicable ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                            {sarcopeniaAnalysis.result}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-[11px] text-slate-500 space-y-1.5 bg-white p-3 rounded-lg border border-slate-200 xl:max-w-md">
+                        <p className="font-bold text-slate-700 flex items-center gap-1">🔍 AWGS 2025 診斷標準 (手握力 &amp; 校正型)：</p>
+                        <div className="grid grid-cols-2 gap-3 pl-1 text-[10px]">
+                          <div>
+                            <p className="font-bold text-slate-600 border-b border-slate-100 pb-0.5">≥ 65 歲</p>
+                            <p>● 男 <span className="font-semibold text-slate-700">&lt; 28.0kg</span> 且 校正型 <span className="font-semibold text-slate-700">&lt; 0.83</span></p>
+                            <p>● 女 <span className="font-semibold text-slate-700">&lt; 18.0kg</span> 且 校正型 <span className="font-semibold text-slate-700">&lt; 0.57</span></p>
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-600 border-b border-slate-100 pb-0.5">50 至 64 歲</p>
+                            <p>● 男 <span className="font-semibold text-slate-700">&lt; 34.0kg</span> 且 校正型 <span className="font-semibold text-slate-700">&lt; 0.90</span></p>
+                            <p>● 女 <span className="font-semibold text-slate-700">&lt; 20.0kg</span> 且 校正型 <span className="font-semibold text-slate-700">&lt; 0.63</span></p>
+                          </div>
+                        </div>
+                        <p className="mt-1 text-[10px] text-slate-400 pt-1 border-t border-slate-50 pb-0.5">
+                          目前設定：性別 [<span className="font-bold text-indigo-600">{state.clientHx.gender || '未填'}</span>] ｜ 
+                          年齡 [<span className="font-bold text-indigo-600">{sarcopeniaAnalysis.age ? `${sarcopeniaAnalysis.age} 歲` : '未填'}</span>] ｜ 
+                          BMI [<span className="font-bold text-indigo-600">{state.anthropometry.bmi || '未計'}</span>]
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
 
@@ -2311,6 +2563,117 @@ export default function App() {
                   })}
                 </div>
                 <div className="p-6 bg-slate-50/50 space-y-4">
+                  {/* Historical Biochemistry Trend Comparison Block */}
+                  {sortedBioHistory && sortedBioHistory.length > 0 && (
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 className="text-sm font-bold text-slate-850 flex items-center gap-1.5">
+                          <History className="w-4 h-4 text-blue-600" />
+                          歷次生化數值追蹤與比較 (Historical Biochemistry Trend Comparison)
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          共 {sortedBioHistory.length} 筆監測紀錄 (由舊至新)
+                        </span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-slate-50/80 text-slate-500 border-b border-slate-100">
+                              <th className="px-3 py-2 font-semibold">報告日期</th>
+                              <th className="px-3 py-2 font-semibold">HbA1c (%)</th>
+                              <th className="px-3 py-2 font-semibold">eGFR (腎過濾)</th>
+                              <th className="px-3 py-2 font-semibold font-bold">體重 (kg)</th>
+                              <th className="px-3 py-2 font-semibold">TG (mg/dL)</th>
+                              <th className="px-3 py-2 font-semibold">LDL (mg/dL)</th>
+                              <th className="px-3 py-2 font-semibold">TC 總膽固醇</th>
+                              <th className="px-3 py-2 font-semibold">尿酸 (Uric Acid)</th>
+                              <th className="px-3 py-2 font-semibold">血壓 (BP)</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 text-slate-700">
+                            {sortedBioHistory.map((record, index) => {
+                              const prev = index > 0 ? sortedBioHistory[index - 1] : null;
+                              
+                              const getTrend = (currValStr: string, prevValStr: string, lowerIsBetter: boolean = true) => {
+                                const curr = parseFloat(currValStr);
+                                const prevVal = parseFloat(prevValStr);
+                                if (isNaN(curr) || isNaN(prevVal)) return null;
+                                if (curr === prevVal) return <span className="text-slate-400 text-[10px] ml-1">─</span>;
+                                const diff = curr - prevVal;
+                                const isBetter = lowerIsBetter ? (diff < 0) : (diff > 0);
+                                const sign = diff > 0 ? '↑' : '↓';
+                                const color = isBetter ? 'text-green-600 font-bold' : 'text-red-500 font-bold';
+                                return (
+                                  <span className={`${color} text-[10px] ml-1 select-none`} title={`較前次變動: ${diff > 0 ? '+' : ''}${diff.toFixed(1)}`}>
+                                    {sign}{Math.abs(diff).toFixed(1)}
+                                  </span>
+                                );
+                              };
+
+                              const getBpTrend = (currStr: string, prevStr: string) => {
+                                if (!currStr) return '--';
+                                if (!prevStr) return currStr;
+                                const parseBp = (str: string) => {
+                                  const parts = str.split('/').map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
+                                  return parts.length === 2 ? parts : null;
+                                };
+                                const currBp = parseBp(currStr);
+                                const prevBp = parseBp(prevStr);
+                                if (!currBp || !prevBp) return currStr;
+                                return (
+                                  <span>
+                                    {currStr}
+                                    <span className="text-[9px] text-slate-400 ml-1">
+                                      ({currBp[0] > prevBp[0] ? '↑' : currBp[0] < prevBp[0] ? '↓' : '─'}/
+                                      {currBp[1] > prevBp[1] ? '↑' : currBp[1] < prevBp[1] ? '↓' : '─'})
+                                    </span>
+                                  </span>
+                                );
+                              };
+
+                              return (
+                                <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                  <td className="px-3 py-2.5 font-mono font-bold text-slate-800">{record.date}</td>
+                                  <td className="px-3 py-2.5">
+                                    <span className="font-semibold">{record.hba1c || '--'}</span>
+                                    {prev && getTrend(record.hba1c, prev.hba1c, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span className="font-semibold">{record.egfr || '--'}</span>
+                                    {prev && getTrend(record.egfr, prev.egfr, false)}
+                                  </td>
+                                  <td className="px-3 py-2.5 font-semibold text-blue-600">
+                                    {record.weight ? `${record.weight} kg` : '--'}
+                                    {prev && getTrend(record.weight, prev.weight, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.tg || '--'}</span>
+                                    {prev && getTrend(record.tg, prev.tg, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.ldl || '--'}</span>
+                                    {prev && getTrend(record.ldl, prev.ldl, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.tc || '--'}</span>
+                                    {prev && getTrend(record.tc, prev.tc, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.uricAcid || '--'}</span>
+                                    {prev && getTrend(record.uricAcid, prev.uricAcid, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5 font-mono text-slate-600">
+                                    {prev ? getBpTrend(record.bp, prev.bp) : (record.bp || '--')}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 space-y-2">
                       <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
@@ -3828,6 +4191,31 @@ export default function App() {
                             <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
                               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">智能份數助理</h4>
+                                <button
+                                  onClick={() => {
+                                    setState({
+                                      ...state,
+                                      intervention: {
+                                        ...state.intervention,
+                                        portions: {
+                                          '低脂乳品': 0,
+                                          '全脂乳品': 0,
+                                          '全榖根莖': 0,
+                                          '低脂豆魚蛋肉': 0,
+                                          '中脂豆魚蛋肉': 0,
+                                          '蔬菜': 0,
+                                          '水果': 0,
+                                          '堅果': 0,
+                                          '低氮澱粉': 0
+                                        }
+                                      }
+                                    });
+                                  }}
+                                  className="text-[10px] text-red-500 hover:text-red-700 font-bold flex items-center gap-1 transition-colors px-1.5 py-0.5 rounded hover:bg-red-50 active:scale-95 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  全部清除
+                                </button>
                               </div>
                               {(() => {
                                 const targetC = parseFloat(recommendedMacros?.carbs || '0');
@@ -5308,6 +5696,24 @@ export default function App() {
               return parts.join('、');
             })()}</div>
           </div>
+          
+          {/* Muscle & Sarcopenia Screening Summary Row */}
+          {(state.anthropometry.rightArmMuscle || state.anthropometry.gripStrength) && (
+            <div className="mt-4 pt-4 border-t border-dashed border-indigo-100 bg-indigo-50/20 p-3 rounded-lg border border-indigo-100/50">
+              <h3 className="font-bold text-sm mb-2 text-indigo-900 flex items-center gap-1.5">
+                <span>💪 肌力與肌肉量篩檢評估 (Sarcopenia Screening - AWGS 2025)</span>
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                <div><span className="font-semibold text-slate-500">右手 / 左手肌肉量:</span> {state.anthropometry.rightArmMuscle || '--'} kg / {state.anthropometry.leftArmMuscle || '--'} kg</div>
+                <div><span className="font-semibold text-slate-500">右腳 / 左腳肌肉量:</span> {state.anthropometry.rightLegMuscle || '--'} kg / {state.anthropometry.leftLegMuscle || '--'} kg</div>
+                <div><span className="font-semibold text-slate-500">手握力 / ASMI 指數:</span> {state.anthropometry.gripStrength || '--'} kg ｜ {sarcopeniaAnalysis.asmi ? `${sarcopeniaAnalysis.asmi} kg/m²` : '--'}</div>
+                <div>
+                  <span className="font-semibold text-slate-500">校正型 (ASM/BMI):</span> {sarcopeniaAnalysis.asmOverBmi ? `${sarcopeniaAnalysis.asmOverBmi} m²` : '--'} ｜ <span className="font-bold text-indigo-950">{sarcopeniaAnalysis.result}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mt-4">
             <h3 className="font-bold text-sm mb-2">生化數值:</h3>
             <div className="grid grid-cols-4 gap-2 text-xs">
