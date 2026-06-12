@@ -103,6 +103,12 @@ export interface AppState {
     bodyFat: string;
     edema: string;
     notes?: string;
+    rightArmMuscle?: string;
+    leftArmMuscle?: string;
+    rightLegMuscle?: string;
+    leftLegMuscle?: string;
+    gripStrength?: string;
+    sarcopeniaResult?: string;
   };
   biochemistry: {
     [key: string]: string;
