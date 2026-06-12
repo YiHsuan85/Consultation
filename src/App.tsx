@@ -1583,6 +1583,10 @@ export default function App() {
       const na = typeof item.na === 'number' ? item.na : parseFloat(item.na || '0') || 0;
       const k = typeof item.k === 'number' ? item.k : parseFloat(item.k || '0') || 0;
       const p = typeof item.p === 'number' ? item.p : parseFloat(item.p || '0') || 0;
+      const fiber = typeof item.fiber === 'number' ? item.fiber : parseFloat(item.fiber as string || '0') || 0;
+      const saturatedFat = typeof item.saturatedFat === 'number' ? item.saturatedFat : parseFloat(item.saturatedFat as string || '0') || 0;
+      const transFat = typeof item.transFat === 'number' ? item.transFat : parseFloat(item.transFat as string || '0') || 0;
+      const cholesterol = typeof item.cholesterol === 'number' ? item.cholesterol : parseFloat(item.cholesterol as string || '0') || 0;
       
       const newCategories = { ...acc.categories };
       if (item.category) {
@@ -1594,12 +1598,16 @@ export default function App() {
         protein: acc.protein + (item.protein * qty),
         fat: acc.fat + (item.fat * qty),
         kcal: acc.kcal + ((item.carbs * 4 + item.protein * 4 + item.fat * 9) * qty),
+        fiber: acc.fiber + (fiber * qty),
+        saturatedFat: acc.saturatedFat + (saturatedFat * qty),
+        transFat: acc.transFat + (transFat * qty),
+        cholesterol: acc.cholesterol + (cholesterol * qty),
         na: acc.na + (na * qty),
         k: acc.k + (k * qty),
         p: acc.p + (p * qty),
         categories: newCategories
       };
-    }, { carbs: 0, protein: 0, fat: 0, kcal: 0, na: 0, k: 0, p: 0, categories: {} as Record<string, number> });
+    }, { carbs: 0, protein: 0, fat: 0, kcal: 0, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0, categories: {} as Record<string, number> });
   }, [state.diet.logs]);
 
   const filteredFood = useMemo(() => {
@@ -3158,6 +3166,35 @@ export default function App() {
                           </div>
                         </div>
 
+
+                        {/* 其他關鍵營養素評估 */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-2">
+                          <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex flex-col items-center justify-center text-center shadow-xs">
+                            <span className="text-[10px] font-bold text-slate-400 mb-0.5">膳食纖維</span>
+                            <div className="text-sm font-black text-slate-700">{dietTotals.fiber.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                          </div>
+                          <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex flex-col items-center justify-center text-center shadow-xs">
+                            <span className="text-[10px] font-bold text-slate-400 mb-0.5">飽和脂肪</span>
+                            <div className="text-sm font-black text-slate-700">{dietTotals.saturatedFat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                          </div>
+                          <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex flex-col items-center justify-center text-center shadow-xs">
+                            <span className="text-[10px] font-bold text-slate-400 mb-0.5">反式脂肪</span>
+                            <div className="text-sm font-black text-slate-700">{dietTotals.transFat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                          </div>
+                          <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex flex-col items-center justify-center text-center shadow-xs">
+                            <span className="text-[10px] font-bold text-slate-400 mb-0.5">膽固醇</span>
+                            <div className="text-sm font-black text-slate-700">{dietTotals.cholesterol.toFixed(1)} <span className="text-[9px] font-normal">mg</span></div>
+                          </div>
+                          <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex flex-col items-center justify-center text-center shadow-xs">
+                            <span className="text-[10px] font-bold text-slate-400 mb-0.5">鈉 (Na)</span>
+                            <div className="text-sm font-black text-slate-700">{dietTotals.na.toFixed(0)} <span className="text-[9px] font-normal">mg</span></div>
+                          </div>
+                          <div className="bg-white rounded-xl p-2.5 border border-slate-100 flex flex-col items-center justify-center text-center shadow-xs">
+                            <span className="text-[10px] font-bold text-slate-400 mb-0.5">鉀 (K) / 磷 (P)</span>
+                            <div className="text-sm font-black text-slate-700">{dietTotals.k.toFixed(0)} / {dietTotals.p.toFixed(0)} <span className="text-[9px] font-normal">mg</span></div>
+                          </div>
+                        </div>
+
                         {Object.keys(dietTotals.categories).length > 0 && (
                           <div className="flex flex-wrap gap-x-4 gap-y-2 pt-3 border-t border-blue-100/80">
                             {Object.entries(dietTotals.categories).map(([category, count]) => (
@@ -3458,10 +3495,14 @@ export default function App() {
                           <th className="px-4 py-3">食物名稱</th>
                           <th className="px-4 py-3">類別</th>
                           <th className="px-4 py-3">份數</th>
-                          <th className="px-4 py-3 text-right">熱量 (kcal)</th>
                           <th className="px-4 py-3 text-right">醣 (g)</th>
                           <th className="px-4 py-3 text-right">蛋 (g)</th>
                           <th className="px-4 py-3 text-right">脂 (g)</th>
+                          <th className="px-4 py-3 text-right">熱量 (kcal)</th>
+                          <th className="px-4 py-3 text-right">纖維 (g)</th>
+                          <th className="px-4 py-3 text-right">飽和 (g)</th>
+                          <th className="px-4 py-3 text-right">反式 (g)</th>
+                          <th className="px-4 py-3 text-right">膽固醇 (mg)</th>
                           <th className="px-4 py-3 text-right">Na (mg)</th>
                           <th className="px-4 py-3 text-right">K (mg)</th>
                           <th className="px-4 py-3 text-right">P (mg)</th>
@@ -3501,10 +3542,14 @@ export default function App() {
                                 className="w-16 px-2 py-1 rounded border border-slate-200"
                               />
                             </td>
-                            <td className="px-4 py-3 text-right">{(log.kcal * log.qty).toFixed(0)}</td>
                             <td className="px-4 py-3 text-right">{(log.carbs * log.qty).toFixed(1)}</td>
                             <td className="px-4 py-3 text-right">{(log.protein * log.qty).toFixed(1)}</td>
                             <td className="px-4 py-3 text-right">{(log.fat * log.qty).toFixed(1)}</td>
+                            <td className="px-4 py-3 text-right">{(log.kcal * log.qty).toFixed(0)}</td>
+                            <td className="px-4 py-3 text-right">{((typeof log.fiber === 'number' ? log.fiber : parseFloat(log.fiber || '0') || 0) * log.qty).toFixed(1)}</td>
+                            <td className="px-4 py-3 text-right">{((typeof log.saturatedFat === 'number' ? log.saturatedFat : parseFloat(log.saturatedFat || '0') || 0) * log.qty).toFixed(1)}</td>
+                            <td className="px-4 py-3 text-right">{((typeof log.transFat === 'number' ? log.transFat : parseFloat(log.transFat || '0') || 0) * log.qty).toFixed(1)}</td>
+                            <td className="px-4 py-3 text-right">{((typeof log.cholesterol === 'number' ? log.cholesterol : parseFloat(log.cholesterol || '0') || 0) * log.qty).toFixed(1)}</td>
                             <td className="px-4 py-3 text-right">{( (typeof log.na === 'number' ? log.na : parseFloat(log.na || '0') || 0) * log.qty).toFixed(0)}</td>
                             <td className="px-4 py-3 text-right">{( (typeof log.k === 'number' ? log.k : parseFloat(log.k || '0') || 0) * log.qty).toFixed(0)}</td>
                             <td className="px-4 py-3 text-right">{( (typeof log.p === 'number' ? log.p : parseFloat(log.p || '0') || 0) * log.qty).toFixed(0)}</td>
@@ -3523,7 +3568,7 @@ export default function App() {
                         ))}
                         {state.diet.logs.length === 0 && (
                           <tr>
-                            <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">尚未新增飲食紀錄</td>
+                            <td colSpan={16} className="px-4 py-8 text-center text-slate-400 italic">尚未新增飲食紀錄</td>
                           </tr>
                         )}
                       </tbody>
@@ -3532,10 +3577,15 @@ export default function App() {
                           <td className="px-4 py-3">總計</td>
                           <td className="px-4 py-3">--</td>
                           <td className="px-4 py-3">--</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.kcal.toFixed(0)}</td>
+                          <td className="px-4 py-3">--</td>
                           <td className="px-4 py-3 text-right">{dietTotals.carbs.toFixed(1)}</td>
                           <td className="px-4 py-3 text-right">{dietTotals.protein.toFixed(1)}</td>
                           <td className="px-4 py-3 text-right">{dietTotals.fat.toFixed(1)}</td>
+                          <td className="px-4 py-3 text-right">{dietTotals.kcal.toFixed(0)}</td>
+                          <td className="px-4 py-3 text-right">{dietTotals.fiber.toFixed(1)}</td>
+                          <td className="px-4 py-3 text-right">{dietTotals.saturatedFat.toFixed(1)}</td>
+                          <td className="px-4 py-3 text-right">{dietTotals.transFat.toFixed(1)}</td>
+                          <td className="px-4 py-3 text-right">{dietTotals.cholesterol.toFixed(1)}</td>
                           <td className="px-4 py-3 text-right">{dietTotals.na.toFixed(0)}</td>
                           <td className="px-4 py-3 text-right">{dietTotals.k.toFixed(0)}</td>
                           <td className="px-4 py-3 text-right">{dietTotals.p.toFixed(0)}</td>
@@ -3585,6 +3635,24 @@ export default function App() {
                     <div className="bg-white border border-slate-200 rounded-lg p-2.5 text-center shadow-xs">
                       <div className="text-[10px] text-slate-500 font-semibold mb-0.5">脂肪</div>
                       <div className="text-sm font-black text-slate-700">{dietTotals.fat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-dashed border-slate-200 pt-3">
+                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">膳食纖維</div>
+                      <div className="text-xs font-bold text-slate-700">{dietTotals.fiber.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">飽和脂肪</div>
+                      <div className="text-xs font-bold text-slate-700">{dietTotals.saturatedFat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">反式脂肪</div>
+                      <div className="text-xs font-bold text-slate-700">{dietTotals.transFat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
+                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">膽固醇</div>
+                      <div className="text-xs font-bold text-slate-700">{dietTotals.cholesterol.toFixed(1)} <span className="text-[9px] font-normal">mg</span></div>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2 border-t border-dashed border-slate-200 pt-3 text-[11px] text-slate-605">
