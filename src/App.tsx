@@ -2021,11 +2021,19 @@ export default function App() {
             >
               {/* Client History */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <User className="w-5 h-5 text-blue-600" />
                     個案史 (Client Hx)
                   </h2>
+                  <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {isSaving ? '儲存中...' : '儲存紀錄'}
+                  </button>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="space-y-1">
@@ -2277,11 +2285,19 @@ export default function App() {
 
               {/* Anthropometry */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-blue-600" />
                     體位測量 (Anthropometry)
                   </h2>
+                  <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {isSaving ? '儲存中...' : '儲存紀錄'}
+                  </button>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="space-y-1">
@@ -2494,6 +2510,7 @@ export default function App() {
                     <Activity className="w-5 h-5 text-blue-600" />
                     生化數值 (Biochemistry)
                   </h2>
+                  <div className="flex flex-wrap items-center gap-3">
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-medium text-slate-600">報告日期</label>
                     <input 
@@ -2526,12 +2543,21 @@ export default function App() {
                       });
                       alert('數據已同步至營養監測紀錄');
                     }}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors shadow-sm"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm"
                   >
                     <ArrowRight className="w-4 h-4" />
                     同步至監測紀錄
                   </button>
-                </div>
+                  <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                      <Save className="w-3.5 h-3.5" />
+                      {isSaving ? '儲存中...' : '儲存紀錄'}
+                    </button>
+                  </div>
+                 </div>
                 <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 border-b border-slate-100">
                   {Object.keys(state.biochemistry).map(key => {
                     const range = BIO_RANGES[key];
@@ -2763,11 +2789,19 @@ export default function App() {
 
               {/* Clinical */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Stethoscope className="w-5 h-5 text-blue-600" />
                     臨床狀況 (Clinical)
                   </h2>
+                  <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {isSaving ? '儲存中...' : '儲存紀錄'}
+                  </button>
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="space-y-4">
@@ -2865,11 +2899,19 @@ export default function App() {
 
               {/* Diet History */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Utensils className="w-5 h-5 text-blue-600" />
                     飲食史 (Diet Hx)
                   </h2>
+                  <button 
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {isSaving ? '儲存中...' : '儲存紀錄'}
+                  </button>
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
