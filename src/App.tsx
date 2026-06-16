@@ -3899,7 +3899,7 @@ export default function App() {
                   </div>
 
                   <div className="space-y-1 pt-2">
-                    <label className="text-sm font-medium text-slate-700 font-bold">飲食史備註</label>
+                    <label className="text-sm font-medium text-slate-700 font-bold">飲食備註(習慣、外食、假日差異)</label>
                     <textarea 
                       value={state.diet.notes || ''}
                       onChange={e => setState({...state, diet: {...state.diet, notes: e.target.value}})}
