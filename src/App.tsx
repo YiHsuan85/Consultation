@@ -3732,6 +3732,7 @@ export default function App() {
                         <option>葷</option>
                         <option>素</option>
                         <option>初一.十五素</option>
+                        <option>早素</option>
                         <option>蛋奶素</option>
                       </select>
                     </div>
