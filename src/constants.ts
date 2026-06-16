@@ -770,8 +770,6 @@ export const DIAG_DATA: DiagnosisData = {
   } //NB
 };
 
-
-
 export const DIET_GUIDELINES: { [type: string]: GuidelineData } = {
   'DM': {
     '1200': { '低脂乳品類': 1.5, '全榖雜糧類': 7.5, '中脂豆魚蛋肉類': 2, '蔬菜類': 3, '水果類': 2, '油脂與堅果類': 2.5 },
