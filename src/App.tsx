@@ -403,6 +403,7 @@ const INITIAL_STATE: AppState = {
   anthropometry: {
     height: '',
     weight: '',
+    weightDate: '',
     waist: '',
     weightChange: '',
     bmi: '',
@@ -2309,6 +2310,10 @@ export default function App() {
                     <input type="number" value={state.anthropometry.weight || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weight: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
                   </div>
                   <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700">體重測量日期</label>
+                    <input type="date" value={state.anthropometry.weightDate || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weightDate: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
+                  </div>
+                  <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">BMI</label>
                     <div className={`px-3 py-2 rounded-lg font-bold border ${parseFloat(state.anthropometry.bmi || '0') >= 24 ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
                       {state.anthropometry.bmi || '--'}
@@ -2667,7 +2672,36 @@ export default function App() {
 
                               return (
                                 <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                                  <td className="px-3 py-2.5 font-mono font-bold text-slate-800">{record.date}</td>
+                                  <td className="px-3 py-2.5 font-mono">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setState({
+                                          ...state,
+                                          biochemistryDate: record.date || state.biochemistryDate,
+                                          anthropometry: {
+                                            ...state.anthropometry,
+                                            weight: record.weight !== undefined ? record.weight : state.anthropometry.weight,
+                                            weightDate: record.date || state.anthropometry.weightDate
+                                          },
+                                          biochemistry: {
+                                            ...state.biochemistry,
+                                            HbA1c: record.hba1c !== undefined ? record.hba1c : (state.biochemistry.HbA1c || ''),
+                                            eGFR: record.egfr !== undefined ? record.egfr : (state.biochemistry.eGFR || ''),
+                                            TG: record.tg !== undefined ? record.tg : (state.biochemistry.TG || ''),
+                                            LDL: record.ldl !== undefined ? record.ldl : (state.biochemistry.LDL || ''),
+                                            TC: record.tc !== undefined ? record.tc : (state.biochemistry.TC || ''),
+                                            UricAcid: record.uricAcid !== undefined ? record.uricAcid : (state.biochemistry.UricAcid || ''),
+                                            BP: record.bp !== undefined ? record.bp : (state.biochemistry.BP || ''),
+                                          }
+                                        });
+                                      }}
+                                      title="點擊此報告日期, 即可將該次生化數值與體重帶入上方的輸入欄位"
+                                      className="font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer focus:outline-none transition-all text-left inline-flex items-center gap-1"
+                                    >
+                                      {record.date} 📥
+                                    </button>
+                                  </td>
                                   <td className="px-3 py-2.5">
                                     <span className="font-semibold">{record.hba1c || '--'}</span>
                                     {prev && getTrend(record.hba1c, prev.hba1c, true)}
