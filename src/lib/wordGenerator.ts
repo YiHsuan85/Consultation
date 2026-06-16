@@ -685,10 +685,10 @@ export const generateWordDoc = async (state: AppState) => {
             ...state.monitoring.history.map(record => new TableRow({
               children: [
                 createValueCell(record.date),
-                createValueCell(record.weight),
-                createValueCell(record.hba1c),
-                createValueCell(record.egfr),
-                createValueCell(`${record.tg}/${record.ldl}`)
+                createValueCell(String(record.weight || '--')),
+                createValueCell(String(record.hba1c || '--')),
+                createValueCell(String(record.egfr || '--')),
+                createValueCell(`${record.tg || '--'}/${record.ldl || '--'}`)
               ]
             }))
           ]
