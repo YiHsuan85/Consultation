@@ -979,6 +979,8 @@ export default function App() {
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
   const [dietLogsExpanded, setDietLogsExpanded] = useState(false);
   const [sarcopeniaExpanded, setSarcopeniaExpanded] = useState(false);
+  const [weightChangeExpanded, setWeightChangeExpanded] = useState(false);
+  const [biochemHistoryExpanded, setBiochemHistoryExpanded] = useState(false);
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
@@ -2771,17 +2773,34 @@ export default function App() {
 
                   {/* Weight Loss Clinical Risk & Calculations Section (Renamed to 體重變化) */}
                   <div className="border-t border-slate-100 pt-5 mt-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                      <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setWeightChangeExpanded(!weightChangeExpanded)}
+                      className="w-full flex items-center justify-between text-slate-800 font-bold hover:bg-slate-100/50 p-1.5 -mx-1.5 rounded-xl transition-all cursor-pointer text-left focus:outline-none"
+                    >
+                      <div className="flex items-center gap-2">
                         <Scale className="w-4 h-4 text-emerald-600" />
-                        體重變化
-                      </h3>
-                      <span className="text-[10px] text-slate-400 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 text-emerald-700 font-medium">
-                        NCP 體位評估指標
-                      </span>
-                    </div>
+                        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                          體重變化
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-400 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 text-emerald-700 font-medium whitespace-nowrap">
+                          NCP 體位評估指標
+                        </span>
+                        <span className="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 shadow-2xs hover:bg-emerald-100 transition-colors whitespace-nowrap font-sans">
+                          {weightChangeExpanded ? '收合 ▲' : '展開 ▼'}
+                        </span>
+                      </div>
+                    </button>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {weightChangeExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="space-y-4 pt-2 border-t border-slate-200/50"
+                      >
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       {/* Left: Historical record format table */}
                       <div className="lg:col-span-2 space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
@@ -2931,6 +2950,8 @@ export default function App() {
                         )}
                       </div>
                     </div>
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* Muscle Mass & Sarcopenia Subsection */}
@@ -2943,7 +2964,7 @@ export default function App() {
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-5 bg-indigo-600 rounded"></div>
                         <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
-                          肌力評估 (Muscle Mass & Sarcopenia Screening)
+                          肌力評估
                         </h3>
                       </div>
                       <span className="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 shadow-2xs hover:bg-indigo-100 transition-colors">
@@ -3288,185 +3309,205 @@ export default function App() {
                   {/* Historical Biochemistry Trend Comparison Block */}
                   {sortedBioHistory && sortedBioHistory.length > 0 && (
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <h3 className="text-sm font-bold text-slate-850 flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setBiochemHistoryExpanded(!biochemHistoryExpanded)}
+                        className="w-full flex items-center justify-between text-slate-850 font-bold hover:bg-slate-50 p-1.5 -mx-1.5 rounded-xl transition-all cursor-pointer text-left focus:outline-none"
+                      >
+                        <div className="flex items-center gap-1.5">
                           <History className="w-4 h-4 text-blue-600" />
-                          生化數值追蹤
-                        </h3>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          共 {sortedBioHistory.length} 筆監測紀錄 (由舊至新)
-                        </span>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse text-xs">
-                          <thead>
-                            <tr className="bg-slate-50/80 text-slate-500 border-b border-slate-100">
-                              <th className="px-3 py-2 font-semibold">報告日期</th>
-                              <th className="px-3 py-2 font-semibold">AC</th>
-                              <th className="px-3 py-2 font-semibold">HbA1c (%)</th>
-                              <th className="px-3 py-2 font-semibold">eGFR</th>
-                              <th className="px-3 py-2 font-semibold">TG</th>
-                              <th className="px-3 py-2 font-semibold">HDL</th>
-                              <th className="px-3 py-2 font-semibold">LDL</th>
-                              <th className="px-3 py-2 font-semibold">TC</th>
-                              <th className="px-3 py-2 font-semibold">AST</th>
-                              <th className="px-3 py-2 font-semibold">ALT</th>
-                              <th className="px-3 py-2 font-semibold">UA</th>
-                              <th className="px-3 py-2 font-semibold">BP</th>
-                              <th className="px-3 py-2 font-semibold text-center">操作</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 text-slate-700">
-                            {sortedBioHistory.map((record, index) => {
-                              const prev = index > 0 ? sortedBioHistory[index - 1] : null;
-                              
-                              const getTrend = (currValStr: any, prevValStr: any, lowerIsBetter: boolean = true) => {
-                                const curr = parseFloat(String(currValStr));
-                                const prevVal = parseFloat(String(prevValStr));
-                                if (isNaN(curr) || isNaN(prevVal)) return null;
-                                if (curr === prevVal) return <span className="text-slate-400 text-[10px] ml-1">─</span>;
-                                const diff = curr - prevVal;
-                                const isBetter = lowerIsBetter ? (diff < 0) : (diff > 0);
-                                const sign = diff > 0 ? '↑' : '↓';
-                                const color = isBetter ? 'text-green-600 font-bold' : 'text-red-500 font-bold';
-                                return (
-                                  <span className={`${color} text-[10px] ml-1 select-none`} title={`較前次變動: ${diff > 0 ? '+' : ''}${diff.toFixed(1)}`}>
-                                    {sign}{Math.abs(diff).toFixed(1)}
-                                  </span>
-                                );
-                              };
+                          <h3 className="text-sm font-bold text-slate-850">
+                            生化數值追蹤
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            共 {sortedBioHistory.length} 筆監測紀錄 (由舊至新)
+                          </span>
+                          <span className="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 shadow-2xs hover:bg-blue-100 transition-colors whitespace-nowrap font-sans">
+                            {biochemHistoryExpanded ? '收合 ▲' : '展開 ▼'}
+                          </span>
+                        </div>
+                      </button>
 
-                              const getBpTrend = (currStr: any, prevStr: any) => {
-                                if (!currStr) return '--';
-                                if (!prevStr) return String(currStr);
-                                const parseBp = (str: string) => {
-                                  const parts = str.split('/').map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
-                                  return parts.length === 2 ? parts : null;
-                                };
-                                const currBp = parseBp(String(currStr));
-                                const prevBp = parseBp(String(prevStr));
-                                if (!currBp || !prevBp) return currStr;
-                                return (
-                                  <span>
-                                    {currStr}
-                                    <span className="text-[9px] text-slate-400 ml-1">
-                                      ({currBp[0] > prevBp[0] ? '↑' : currBp[0] < prevBp[0] ? '↓' : '─'}/
-                                      {currBp[1] > prevBp[1] ? '↑' : currBp[1] < prevBp[1] ? '↓' : '─'})
-                                    </span>
-                                  </span>
-                                );
-                              };
-
-                              return (
-                                <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                                  <td className="px-3 py-2.5 font-mono">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setClickedBiochemHistoryDate(record.date);
-                                        setState({
-                                          ...state,
-                                          biochemistryDate: record.date || state.biochemistryDate,
-                                          anthropometry: {
-                                            ...state.anthropometry,
-                                            weight: record.weight !== undefined ? record.weight : state.anthropometry.weight,
-                                            weightDate: record.date || state.anthropometry.weightDate
-                                          },
-                                          biochemistry: {
-                                            ...state.biochemistry,
-                                            AC: record.ac !== undefined ? record.ac : (state.biochemistry.AC || ''),
-                                            HbA1c: record.hba1c !== undefined ? record.hba1c : (state.biochemistry.HbA1c || ''),
-                                            eGFR: record.egfr !== undefined ? record.egfr : (state.biochemistry.eGFR || ''),
-                                            TG: record.tg !== undefined ? record.tg : (state.biochemistry.TG || ''),
-                                            LDL: record.ldl !== undefined ? record.ldl : (state.biochemistry.LDL || ''),
-                                            TC: record.tc !== undefined ? record.tc : (state.biochemistry.TC || ''),
-                                            UricAcid: record.uricAcid !== undefined ? record.uricAcid : (state.biochemistry.UricAcid || ''),
-                                            HDL: record.hdl !== undefined ? record.hdl : (state.biochemistry.HDL || ''),
-                                            AST: record.ast !== undefined ? record.ast : (state.biochemistry.AST || ''),
-                                            ALT: record.alt !== undefined ? record.alt : (state.biochemistry.ALT || ''),
-                                            BP: record.bp !== undefined ? record.bp : (state.biochemistry.BP || ''),
-                                          }
-                                        });
-                                      }}
-                                      title="點擊此報告日期, 即可將該次生化數值與體重帶入上方的輸入欄位"
-                                      className="font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer focus:outline-none transition-all text-left inline-flex items-center gap-1"
-                                    >
-                                      {record.date} 📥
-                                    </button>
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span className="font-semibold">{record.ac || '--'}</span>
-                                    {prev && getTrend(record.ac, prev.ac, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span className="font-semibold">{record.hba1c || '--'}</span>
-                                    {prev && getTrend(record.hba1c, prev.hba1c, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span className="font-semibold">{record.egfr || '--'}</span>
-                                    {prev && getTrend(record.egfr, prev.egfr, false)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.tg || '--'}</span>
-                                    {prev && getTrend(record.tg, prev.tg, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.hdl || '--'}</span>
-                                    {prev && getTrend(record.hdl, prev.hdl, false)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.ldl || '--'}</span>
-                                    {prev && getTrend(record.ldl, prev.ldl, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.tc || '--'}</span>
-                                    {prev && getTrend(record.tc, prev.tc, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.ast || '--'}</span>
-                                    {prev && getTrend(record.ast, prev.ast, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.alt || '--'}</span>
-                                    {prev && getTrend(record.alt, prev.alt, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5">
-                                    <span>{record.uricAcid || '--'}</span>
-                                    {prev && getTrend(record.uricAcid, prev.uricAcid, true)}
-                                  </td>
-                                  <td className="px-3 py-2.5 font-mono text-slate-600">
-                                    {prev ? getBpTrend(record.bp, prev.bp) : (record.bp || '--')}
-                                  </td>
-                                  <td className="px-3 py-2.5 text-center">
-                                    <button 
-                                      type="button"
-                                      onClick={() => {
-                                        const newBiochemHistory = (state.monitoring.biochemHistory || []).filter(h => h.date !== record.date && h.id !== record.id);
-                                        const newLegacyHistory = state.monitoring.history.filter(h => h.date !== record.date);
-                                        if (clickedBiochemHistoryDate === record.date) {
-                                          setClickedBiochemHistoryDate(null);
-                                        }
-                                        setState({
-                                          ...state,
-                                          monitoring: {
-                                            ...state.monitoring,
-                                            biochemHistory: newBiochemHistory,
-                                            history: newLegacyHistory
-                                          }
-                                        });
-                                      }}
-                                      className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
-                                      title="刪除此生化紀錄"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
-                                  </td>
+                      {biochemHistoryExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="pt-2 border-t border-slate-100"
+                        >
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="bg-slate-50/80 text-slate-500 border-b border-slate-100">
+                                  <th className="px-3 py-2 font-semibold">報告日期</th>
+                                  <th className="px-3 py-2 font-semibold">AC</th>
+                                  <th className="px-3 py-2 font-semibold">HbA1c (%)</th>
+                                  <th className="px-3 py-2 font-semibold">eGFR</th>
+                                  <th className="px-3 py-2 font-semibold">TG</th>
+                                  <th className="px-3 py-2 font-semibold">HDL</th>
+                                  <th className="px-3 py-2 font-semibold">LDL</th>
+                                  <th className="px-3 py-2 font-semibold">TC</th>
+                                  <th className="px-3 py-2 font-semibold">AST</th>
+                                  <th className="px-3 py-2 font-semibold">ALT</th>
+                                  <th className="px-3 py-2 font-semibold">UA</th>
+                                  <th className="px-3 py-2 font-semibold">BP</th>
+                                  <th className="px-3 py-2 font-semibold text-center">操作</th>
                                 </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 text-slate-700">
+                                {sortedBioHistory.map((record, index) => {
+                                  const prev = index > 0 ? sortedBioHistory[index - 1] : null;
+                                  
+                                  const getTrend = (currValStr: any, prevValStr: any, lowerIsBetter: boolean = true) => {
+                                    const curr = parseFloat(String(currValStr));
+                                    const prevVal = parseFloat(String(prevValStr));
+                                    if (isNaN(curr) || isNaN(prevVal)) return null;
+                                    if (curr === prevVal) return <span className="text-slate-400 text-[10px] ml-1">─</span>;
+                                    const diff = curr - prevVal;
+                                    const isBetter = lowerIsBetter ? (diff < 0) : (diff > 0);
+                                    const sign = diff > 0 ? '↑' : '↓';
+                                    const color = isBetter ? 'text-green-600 font-bold' : 'text-red-500 font-bold';
+                                    return (
+                                      <span className={`${color} text-[10px] ml-1 select-none`} title={`較前次變動: ${diff > 0 ? '+' : ''}${diff.toFixed(1)}`}>
+                                        {sign}{Math.abs(diff).toFixed(1)}
+                                      </span>
+                                    );
+                                  };
+
+                                  const getBpTrend = (currStr: any, prevStr: any) => {
+                                    if (!currStr) return '--';
+                                    if (!prevStr) return String(currStr);
+                                    const parseBp = (str: string) => {
+                                      const parts = str.split('/').map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
+                                      return parts.length === 2 ? parts : null;
+                                    };
+                                    const currBp = parseBp(String(currStr));
+                                    const prevBp = parseBp(String(prevStr));
+                                    if (!currBp || !prevBp) return currStr;
+                                    return (
+                                      <span>
+                                        {currStr}
+                                        <span className="text-[9px] text-slate-400 ml-1">
+                                          ({currBp[0] > prevBp[0] ? '↑' : currBp[0] < prevBp[0] ? '↓' : '─'}/
+                                          {currBp[1] > prevBp[1] ? '↑' : currBp[1] < prevBp[1] ? '↓' : '─'})
+                                        </span>
+                                      </span>
+                                    );
+                                  };
+
+                                  return (
+                                    <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                      <td className="px-3 py-2.5 font-mono">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setClickedBiochemHistoryDate(record.date);
+                                            setState({
+                                              ...state,
+                                              biochemistryDate: record.date || state.biochemistryDate,
+                                              anthropometry: {
+                                                ...state.anthropometry,
+                                                weight: record.weight !== undefined ? record.weight : state.anthropometry.weight,
+                                                weightDate: record.date || state.anthropometry.weightDate
+                                              },
+                                              biochemistry: {
+                                                ...state.biochemistry,
+                                                AC: record.ac !== undefined ? record.ac : (state.biochemistry.AC || ''),
+                                                HbA1c: record.hba1c !== undefined ? record.hba1c : (state.biochemistry.HbA1c || ''),
+                                                eGFR: record.egfr !== undefined ? record.egfr : (state.biochemistry.eGFR || ''),
+                                                TG: record.tg !== undefined ? record.tg : (state.biochemistry.TG || ''),
+                                                LDL: record.ldl !== undefined ? record.ldl : (state.biochemistry.LDL || ''),
+                                                TC: record.tc !== undefined ? record.tc : (state.biochemistry.TC || ''),
+                                                UricAcid: record.uricAcid !== undefined ? record.uricAcid : (state.biochemistry.UricAcid || ''),
+                                                HDL: record.hdl !== undefined ? record.hdl : (state.biochemistry.HDL || ''),
+                                                AST: record.ast !== undefined ? record.ast : (state.biochemistry.AST || ''),
+                                                ALT: record.alt !== undefined ? record.alt : (state.biochemistry.ALT || ''),
+                                                BP: record.bp !== undefined ? record.bp : (state.biochemistry.BP || ''),
+                                              }
+                                            });
+                                          }}
+                                          title="點擊此報告日期, 即可將該次生化數值與體重帶入上方的輸入欄位"
+                                          className="font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer focus:outline-none transition-all text-left inline-flex items-center gap-1"
+                                        >
+                                          {record.date} 📥
+                                        </button>
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span className="font-semibold">{record.ac || '--'}</span>
+                                        {prev && getTrend(record.ac, prev.ac, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span className="font-semibold">{record.hba1c || '--'}</span>
+                                        {prev && getTrend(record.hba1c, prev.hba1c, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span className="font-semibold">{record.egfr || '--'}</span>
+                                        {prev && getTrend(record.egfr, prev.egfr, false)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.tg || '--'}</span>
+                                        {prev && getTrend(record.tg, prev.tg, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.hdl || '--'}</span>
+                                        {prev && getTrend(record.hdl, prev.hdl, false)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.ldl || '--'}</span>
+                                        {prev && getTrend(record.ldl, prev.ldl, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.tc || '--'}</span>
+                                        {prev && getTrend(record.tc, prev.tc, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.ast || '--'}</span>
+                                        {prev && getTrend(record.ast, prev.ast, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.alt || '--'}</span>
+                                        {prev && getTrend(record.alt, prev.alt, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5">
+                                        <span>{record.uricAcid || '--'}</span>
+                                        {prev && getTrend(record.uricAcid, prev.uricAcid, true)}
+                                      </td>
+                                      <td className="px-3 py-2.5 font-mono text-slate-600">
+                                        {prev ? getBpTrend(record.bp, prev.bp) : (record.bp || '--')}
+                                      </td>
+                                      <td className="px-3 py-2.5 text-center">
+                                        <button 
+                                          type="button"
+                                          onClick={() => {
+                                            const newBiochemHistory = (state.monitoring.biochemHistory || []).filter(h => h.date !== record.date && h.id !== record.id);
+                                            const newLegacyHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                            if (clickedBiochemHistoryDate === record.date) {
+                                              setClickedBiochemHistoryDate(null);
+                                            }
+                                            setState({
+                                              ...state,
+                                              monitoring: {
+                                                ...state.monitoring,
+                                                biochemHistory: newBiochemHistory,
+                                                history: newLegacyHistory
+                                              }
+                                            });
+                                          }}
+                                          className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
+                                          title="刪除此生化紀錄"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   )}
 
@@ -6891,7 +6932,7 @@ export default function App() {
           {(state.anthropometry.rightArmMuscle || state.anthropometry.gripStrength) && (
             <div className="mt-4 pt-4 border-t border-dashed border-indigo-100 bg-indigo-50/20 p-3 rounded-lg border border-indigo-100/50">
               <h3 className="font-bold text-sm mb-2 text-indigo-900 flex items-center gap-1.5">
-                <span>💪 肌力評估 (Sarcopenia Screening - AWGS 2025)</span>
+                <span>💪 肌力評估</span>
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                 <div><span className="font-semibold text-slate-500">右手 / 左手肌肉量:</span> {state.anthropometry.rightArmMuscle || '--'} kg / {state.anthropometry.leftArmMuscle || '--'} kg</div>
