@@ -979,6 +979,7 @@ export default function App() {
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
   const [dietLogsExpanded, setDietLogsExpanded] = useState(false);
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
+  const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -3093,57 +3094,123 @@ export default function App() {
                         const biochemDate = state.biochemistryDate || new Date().toISOString().split('T')[0];
                         const weightDate = state.anthropometry.weightDate || biochemDate;
 
-                        const newBiochemRecord = {
-                          id: Date.now().toString() + '-b',
-                          date: biochemDate,
-                          ac: state.biochemistry.AC || '',
-                          hba1c: state.biochemistry.HbA1c || '',
-                          egfr: state.biochemistry.eGFR || '',
-                          tg: state.biochemistry.TG || '',
-                          ldl: state.biochemistry.LDL || '',
-                          tc: state.biochemistry.TC || '',
-                          uricAcid: state.biochemistry.UricAcid || '',
-                          hdl: state.biochemistry.HDL || '',
-                          ast: state.biochemistry.AST || '',
-                          alt: state.biochemistry.ALT || '',
-                          bp: state.biochemistry.BP || '',
-                          other: ''
-                        };
+                        // 1) Handle biochemHistory update/insert
+                        let updatedBiochemHistory = [...(state.monitoring.biochemHistory || [])];
+                        if (clickedBiochemHistoryDate && clickedBiochemHistoryDate !== biochemDate) {
+                          // Filter out the old record under the pre-changed date
+                          updatedBiochemHistory = updatedBiochemHistory.filter(h => h.date !== clickedBiochemHistoryDate);
+                        }
 
-                        const newWeightRecord = state.anthropometry.weight ? {
-                          id: Date.now().toString() + '-w',
-                          date: weightDate,
-                          weight: state.anthropometry.weight
-                        } : null;
+                        const existingBIdx = updatedBiochemHistory.findIndex(h => h.date === biochemDate);
+                        if (existingBIdx > -1) {
+                          updatedBiochemHistory[existingBIdx] = {
+                            ...updatedBiochemHistory[existingBIdx],
+                            ac: state.biochemistry.AC || '',
+                            hba1c: state.biochemistry.HbA1c || '',
+                            egfr: state.biochemistry.eGFR || '',
+                            tg: state.biochemistry.TG || '',
+                            ldl: state.biochemistry.LDL || '',
+                            tc: state.biochemistry.TC || '',
+                            uricAcid: state.biochemistry.UricAcid || '',
+                            hdl: state.biochemistry.HDL || '',
+                            ast: state.biochemistry.AST || '',
+                            alt: state.biochemistry.ALT || '',
+                            bp: state.biochemistry.BP || '',
+                            other: '從生化表單同步'
+                          };
+                        } else {
+                          updatedBiochemHistory.push({
+                            id: Date.now().toString() + '-sync-b',
+                            date: biochemDate,
+                            ac: state.biochemistry.AC || '',
+                            hba1c: state.biochemistry.HbA1c || '',
+                            egfr: state.biochemistry.eGFR || '',
+                            tg: state.biochemistry.TG || '',
+                            ldl: state.biochemistry.LDL || '',
+                            tc: state.biochemistry.TC || '',
+                            uricAcid: state.biochemistry.UricAcid || '',
+                            hdl: state.biochemistry.HDL || '',
+                            ast: state.biochemistry.AST || '',
+                            alt: state.biochemistry.ALT || '',
+                            bp: state.biochemistry.BP || '',
+                            other: '從生化表單同步'
+                          });
+                        }
 
-                        const legacyRecord: MonitoringRecord = {
-                          date: biochemDate,
-                          weight: state.anthropometry.weight || '',
-                          ac: state.biochemistry.AC || '',
-                          hba1c: state.biochemistry.HbA1c || '',
-                          egfr: state.biochemistry.eGFR || '',
-                          tg: state.biochemistry.TG || '',
-                          ldl: state.biochemistry.LDL || '',
-                          tc: state.biochemistry.TC || '',
-                          uricAcid: state.biochemistry.UricAcid || '',
-                          hdl: state.biochemistry.HDL || '',
-                          ast: state.biochemistry.AST || '',
-                          alt: state.biochemistry.ALT || '',
-                          bp: state.biochemistry.BP || '',
-                          other: ''
-                        };
+                        // 2) Handle legacy monitoring history
+                        let updatedHistory = [...(state.monitoring.history || [])];
+                        if (clickedBiochemHistoryDate && clickedBiochemHistoryDate !== biochemDate) {
+                          updatedHistory = updatedHistory.filter(h => h.date !== clickedBiochemHistoryDate);
+                        }
+
+                        const existingHIdx = updatedHistory.findIndex(h => h.date === biochemDate);
+                        if (existingHIdx > -1) {
+                          updatedHistory[existingHIdx] = {
+                            ...updatedHistory[existingHIdx],
+                            weight: updatedHistory[existingHIdx].weight || state.anthropometry.weight || '',
+                            ac: state.biochemistry.AC || '',
+                            hba1c: state.biochemistry.HbA1c || '',
+                            egfr: state.biochemistry.eGFR || '',
+                            tg: state.biochemistry.TG || '',
+                            ldl: state.biochemistry.LDL || '',
+                            tc: state.biochemistry.TC || '',
+                            uricAcid: state.biochemistry.UricAcid || '',
+                            hdl: state.biochemistry.HDL || '',
+                            ast: state.biochemistry.AST || '',
+                            alt: state.biochemistry.ALT || '',
+                            bp: state.biochemistry.BP || '',
+                            other: '從生化表單同步'
+                          };
+                        } else {
+                          updatedHistory.push({
+                            date: biochemDate,
+                            weight: state.anthropometry.weight || '',
+                            ac: state.biochemistry.AC || '',
+                            hba1c: state.biochemistry.HbA1c || '',
+                            egfr: state.biochemistry.eGFR || '',
+                            tg: state.biochemistry.TG || '',
+                            ldl: state.biochemistry.LDL || '',
+                            tc: state.biochemistry.TC || '',
+                            uricAcid: state.biochemistry.UricAcid || '',
+                            hdl: state.biochemistry.HDL || '',
+                            ast: state.biochemistry.AST || '',
+                            alt: state.biochemistry.ALT || '',
+                            bp: state.biochemistry.BP || '',
+                            other: '從生化表單同步'
+                          });
+                        }
+
+                        // 3) Weight history sync (if weight is entered)
+                        let updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+                        if (state.anthropometry.weight) {
+                          if (clickedBiochemHistoryDate && clickedBiochemHistoryDate !== weightDate) {
+                            updatedWeightHistory = updatedWeightHistory.filter(h => h.date !== clickedBiochemHistoryDate);
+                          }
+                          const existingWIdx = updatedWeightHistory.findIndex(h => h.date === weightDate);
+                          if (existingWIdx > -1) {
+                            updatedWeightHistory[existingWIdx] = {
+                              ...updatedWeightHistory[existingWIdx],
+                              weight: state.anthropometry.weight
+                            };
+                          } else {
+                            updatedWeightHistory.push({
+                              id: Date.now().toString() + '-sync-bw',
+                              date: weightDate,
+                              weight: state.anthropometry.weight
+                            });
+                          }
+                        }
 
                         setState({
                           ...state,
                           monitoring: {
                             ...state.monitoring,
-                            history: [legacyRecord, ...state.monitoring.history],
-                            biochemHistory: [newBiochemRecord, ...(state.monitoring.biochemHistory || [])],
-                            weightHistory: newWeightRecord 
-                              ? [newWeightRecord, ...(state.monitoring.weightHistory || [])]
-                              : (state.monitoring.weightHistory || [])
+                            history: updatedHistory,
+                            biochemHistory: updatedBiochemHistory,
+                            weightHistory: updatedWeightHistory
                           }
                         });
+                        setClickedBiochemHistoryDate(null); // Reset click tracking
                         alert('數據已分別同步至體重與生化監測紀錄');
                       }}
                       className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm"
@@ -3278,6 +3345,7 @@ export default function App() {
                                     <button
                                       type="button"
                                       onClick={() => {
+                                        setClickedBiochemHistoryDate(record.date);
                                         setState({
                                           ...state,
                                           biochemistryDate: record.date || state.biochemistryDate,
@@ -3357,6 +3425,9 @@ export default function App() {
                                       onClick={() => {
                                         const newBiochemHistory = (state.monitoring.biochemHistory || []).filter(h => h.date !== record.date && h.id !== record.id);
                                         const newLegacyHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                        if (clickedBiochemHistoryDate === record.date) {
+                                          setClickedBiochemHistoryDate(null);
+                                        }
                                         setState({
                                           ...state,
                                           monitoring: {
