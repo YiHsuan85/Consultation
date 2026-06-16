@@ -977,7 +977,7 @@ export default function App() {
   const [manualPrevWeight, setManualPrevWeight] = useState('');
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
-  const [dietLogsExpanded, setDietLogsExpanded] = useState(true);
+  const [dietLogsExpanded, setDietLogsExpanded] = useState(false);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -4199,7 +4199,7 @@ export default function App() {
                     ></textarea>
                   </div>
 
-                  {/* 餐次食物名稱細節 (Meal Food Logs Detail) */}
+                  {/* 飲食內容 (Diet Content) */}
                   <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
                     <button
                       type="button"
@@ -4208,7 +4208,7 @@ export default function App() {
                     >
                       <div className="flex items-center gap-2">
                         <ClipboardList className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-bold text-slate-800">餐次食物名稱細節 (共 {state.diet.logs.length} 筆)</span>
+                        <span className="text-sm font-bold text-slate-800">飲食內容 (共 {state.diet.logs.length} 筆)</span>
                       </div>
                       <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200">
                         {dietLogsExpanded ? '收合 ▲' : '展開 ▼'}
