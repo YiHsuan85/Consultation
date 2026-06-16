@@ -22,7 +22,8 @@ import {
   Info,
   FileText,
   LayoutDashboard,
-  Users
+  Users,
+  Scale
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -972,6 +973,8 @@ export default function App() {
     setEditingCell(null);
   };
   const [currentDiagnosis, setCurrentDiagnosis] = useState<PES>({ id: '', domain: '', problem: '', etiology: '', symptom: '' });
+  const [manualPrevWeight, setManualPrevWeight] = useState('');
+  const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
     weight: '',
@@ -1282,7 +1285,98 @@ export default function App() {
     if (!state.monitoring?.history) return [];
     return [...state.monitoring.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [state.monitoring?.history]);
+const weightLossAnalysis = useMemo(() => {
+    const currentWeight = parseFloat(state.anthropometry.weight);
+    if (isNaN(currentWeight) || currentWeight <= 0 || !state.monitoring?.history) {
+      return { hasHistory: false, alerts: [], weekLoss: null, monthLoss: null, sixMonthLoss: null };
+    }
 
+    const currentDate = state.anthropometry.weightDate ? new Date(state.anthropometry.weightDate) : new Date(state.consultDate);
+    const history = state.monitoring.history.filter(h => h.date && h.weight && new Date(h.date).getTime() < currentDate.getTime());
+
+    if (history.length === 0) {
+      return { hasHistory: false, alerts: [], weekLoss: null, monthLoss: null, sixMonthLoss: null };
+    }
+
+    let weekRecord: any = null;
+    let monthRecord: any = null;
+    let sixMonthRecord: any = null;
+
+    let minWeekDiff = Infinity;
+    let minMonthDiff = Infinity;
+    let minSixMonthDiff = Infinity;
+
+    history.forEach(h => {
+      const hDate = new Date(h.date);
+      const diffDays = (currentDate.getTime() - hDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+      // 1 week (target 7 days, allowed 4 to 14 days)
+      if (diffDays >= 4 && diffDays <= 14) {
+        const diff = Math.abs(diffDays - 7);
+        if (diff < minWeekDiff) {
+          minWeekDiff = diff;
+          weekRecord = h;
+        }
+      }
+      // 1 month (target 30 days, allowed 15 to 45 days)
+      if (diffDays >= 15 && diffDays <= 45) {
+        const diff = Math.abs(diffDays - 30);
+        if (diff < minMonthDiff) {
+          minMonthDiff = diff;
+          monthRecord = h;
+        }
+      }
+      // 6 months (target 180 days, allowed 120 to 240 days)
+      if (diffDays >= 120 && diffDays <= 240) {
+        const diff = Math.abs(diffDays - 180);
+        if (diff < minSixMonthDiff) {
+          minSixMonthDiff = diff;
+          sixMonthRecord = h;
+        }
+      }
+    });
+
+    const getLossStats = (hRecord: any) => {
+      if (!hRecord) return null;
+      const hWeight = parseFloat(hRecord.weight);
+      if (isNaN(hWeight) || hWeight <= 0) return null;
+      const lossVal = hWeight - currentWeight;
+      const lossPct = (lossVal / hWeight) * 100;
+      return {
+        prevWeight: hWeight,
+        date: hRecord.date,
+        lossVal: lossVal.toFixed(1),
+        lossPct: lossPct.toFixed(1),
+        isLoss: lossVal > 0,
+        pct: lossPct
+      };
+    };
+
+    const weekLoss = getLossStats(weekRecord);
+    const monthLoss = getLossStats(monthRecord);
+    const sixMonthLoss = getLossStats(sixMonthRecord);
+
+    const alerts: string[] = [];
+    if (weekLoss && weekLoss.pct >= 2) {
+      alerts.push(`符合【1星期下降 2%】臨床警示 (實際變動量: ${weekLoss.lossPct}%, 期間減少 ${weekLoss.lossVal} kg)`);
+    }
+    if (monthLoss && monthLoss.pct >= 5) {
+      alerts.push(`符合【1個月下降 5%】臨床警示 (實際變動量: ${monthLoss.lossPct}%, 期間減少 ${monthLoss.lossVal} kg)`);
+    }
+    if (sixMonthLoss && sixMonthLoss.pct >= 10) {
+      alerts.push(`符合【6個月下降 10%】臨床警示 (實際變動量: ${sixMonthLoss.lossPct}%, 期間減少 ${sixMonthLoss.lossVal} kg)`);
+    }
+
+    return {
+      hasHistory: true,
+      alerts,
+      weekLoss,
+      monthLoss,
+      sixMonthLoss
+    };
+  }, [state.anthropometry.weight, state.anthropometry.weightDate, state.consultDate, state.monitoring?.history]);
+
+  
   // Persistence: Save to local storage whenever state changes
   useEffect(() => {
     localStorage.setItem('nutrition_counseling_record', JSON.stringify(state));
@@ -1343,7 +1437,58 @@ export default function App() {
     console.group('Saving Record');
     try {
       // 1. Prepare clean data mapping - remove ID from the 'data' payload to avoid recursive fields
+      let latestHistory = [...state.monitoring.history];
+      if (state.anthropometry.weightDate && state.anthropometry.weight) {
+        const targetDate = state.anthropometry.weightDate;
+        const currentWeight = state.anthropometry.weight;
+        const existingIdx = latestHistory.findIndex(h => h.date === targetDate);
+        if (existingIdx > -1) {
+          latestHistory[existingIdx] = {
+            ...latestHistory[existingIdx],
+            weight: currentWeight,
+            hba1c: state.biochemistry.HbA1c || latestHistory[existingIdx].hba1c || '',
+            egfr: state.biochemistry.eGFR || latestHistory[existingIdx].egfr || '',
+            tg: state.biochemistry.TG || latestHistory[existingIdx].tg || '',
+            ldl: state.biochemistry.LDL || latestHistory[existingIdx].ldl || '',
+            tc: state.biochemistry.TC || latestHistory[existingIdx].tc || '',
+            uricAcid: state.biochemistry.UricAcid || latestHistory[existingIdx].uricAcid || '',
+            bp: state.biochemistry.BP || latestHistory[existingIdx].bp || '',
+          };
+        } else {
+          latestHistory.push({
+            date: targetDate,
+            weight: currentWeight,
+            hba1c: state.biochemistry.HbA1c || '',
+            egfr: state.biochemistry.eGFR || '',
+            tg: state.biochemistry.TG || '',
+            ldl: state.biochemistry.LDL || '',
+            tc: state.biochemistry.TC || '',
+            uricAcid: state.biochemistry.UricAcid || '',
+            bp: state.biochemistry.BP || '',
+            other: ''
+          });
+        }
+        latestHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+        // Asynchronously update react state so UI also reflects it
+        setState(prev => ({
+          ...prev,
+          monitoring: {
+            ...prev.monitoring,
+            history: latestHistory
+          }
+        }));
+      }
+
+      
       const { id, ...cleanState } = state;
+      if (state.anthropometry.weightDate && state.anthropometry.weight) {
+        cleanState.monitoring = {
+          ...cleanState.monitoring,
+          history: latestHistory
+        };
+      }
+
       
       const payload = {
         userId: user.uid,
@@ -2064,38 +2209,38 @@ export default function App() {
                       <option>退休</option>
                     </select>
                   </div>
-                  <div className="space-y-1 md:col-span-4 mt-2">
-                    <label className="text-sm font-medium text-slate-700">工作說明</label>
-                    <textarea 
-                      value={state.clientHx.jobDescription || ''} 
-                      onChange={e => setState({...state, clientHx: {...state.clientHx, jobDescription: e.target.value}})} 
-                      placeholder="請詳述工作/生活作息等內容..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 min-h-[100px] focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all" 
-                    />
-                  </div>
+                  <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
+                    {/* Left side: 工作說明 */}
+                    <div className="space-y-1 md:col-span-3">
+                      <label className="text-sm font-medium text-slate-700">工作說明</label>
+                      <textarea 
+                        value={state.clientHx.jobDescription || ''} 
+                        onChange={e => setState({...state, clientHx: {...state.clientHx, jobDescription: e.target.value}})} 
+                        placeholder="請詳述工作/生活作息等內容..."
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 min-h-[165px] focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all resize-none" 
+                      />
+                    </div>
 
-                  <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">家族史 (Family Hx)</label>
-                      <input type="text" value={state.clientHx.familyHx || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, familyHx: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="例如：高血壓、糖尿病..." />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">社會史 (Social Hx)</label>
-                      <input type="text" value={state.clientHx.socialHx || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, socialHx: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" placeholder="例如：與家人同住、外食為主..." />
-                    </div>
-                  </div>
+                    {/* Right side: 宗教/飲食禁忌 & 生活習慣 (stacked under each other) */}
 
-                  <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">宗教/飲食禁忌</label>
-                      <input type="text" value={state.clientHx.region || ''} onChange={e => setState({...state, clientHx: {...state.clientHx, region: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">生活習慣</label>
+                   <div className="md:col-span-1 space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-slate-700">宗教/飲食禁忌</label>
+                        <input 
+                          type="text" 
+                          value={state.clientHx.region || ''} 
+                          onChange={e => setState({...state, clientHx: {...state.clientHx, region: e.target.value}})} 
+                          placeholder="例如：蛋奶素、忌牛..."
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" 
+                        />
+                      </div>
                       <div className="space-y-2">
-                        <div className="flex gap-3">
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input 
+                        <label className="text-sm font-medium text-slate-700">生活習慣</label>
+                        <div className="space-y-2 p-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                          <div className="flex gap-3">
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input 
+                                
                               type="checkbox" 
                               checked={!!state.clientHx.habits.none} 
                               onChange={e => {
@@ -2167,13 +2312,13 @@ export default function App() {
                           </label>
                         </div>
 
-                        {/* Frequency Inputs */}
-                        {state.clientHx.habits.smoke && (
-                          <div className="space-y-1">
-                            <label className="text-[11px] font-semibold text-slate-500 block">抽菸頻率</label>
-                            <input
-                              type="text"
-                              value={state.clientHx.habits.smokeFrequency || ''}
+                         {/* Frequency Inputs inside right slot */}
+                          {state.clientHx.habits.smoke && (
+                            <div className="space-y-0.5">
+                              <label className="text-[10px] font-semibold text-slate-500 block">抽菸頻率</label>
+                              <input
+                                type="text"
+                                value={state.clientHx.habits.smokeFrequency || ''}
                               onChange={e => setState({
                                 ...state,
                                 clientHx: {
@@ -2184,15 +2329,15 @@ export default function App() {
                                   }
                                 }
                               })}
-                              placeholder="例如：半包/天"
-                              className="w-full text-xs px-2.5 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white/70"
-                            />
+                              placeholder="如：半包/天"
+                              className="w-full text-xs px-2 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white"
+                              />
                           </div>
                         )}
 
                         {state.clientHx.habits.drink && (
-                          <div className="space-y-1">
-                            <label className="text-[11px] font-semibold text-slate-500 block">喝酒頻率</label>
+                          <div className="space-y-0.5">
+                            <label className="text-[10px] font-semibold text-slate-500 block">喝酒頻率</label>
                             <input
                               type="text"
                               value={state.clientHx.habits.drinkFrequency || ''}
@@ -2206,34 +2351,70 @@ export default function App() {
                                   }
                                 }
                               })}
-                              placeholder="例如：1罐啤酒/週"
-                              className="w-full text-xs px-2.5 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white/70"
-                            />
+                              placeholder="如：1罐啤酒/週"
+                              className="w-full text-xs px-2 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white"
+                              />
                           </div>
                         )}
                       </div>
+                      </div>
                     </div>
-                    <div className="space-y-3">
-                      <label className="text-sm font-semibold text-slate-800 flex items-center justify-between">
-                        <span>運動習慣</span>
+                  </div>
+
+                  {/* Next row: 家族史 / 社會史 (Left) & 運動習慣 (Right, directly below Religion/Habits column) */}
+                  <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-6 mt-4 pt-4 border-t border-slate-100">
+                    {/* Left: Histories */}
+                    <div className="md:col-span-2 space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-slate-700 font-bold flex items-center gap-1">
+                          <History className="w-4 h-4 text-blue-500" />
+                          家族史 (Family Hx)
+                        </label>
+                        <textarea 
+                          value={state.clientHx.familyHx || ''} 
+                          onChange={e => setState({...state, clientHx: {...state.clientHx, familyHx: e.target.value}})} 
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none min-h-[80px] resize-none" 
+                          placeholder="例如：父母有高血壓、糖尿病..." 
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-slate-700 font-bold flex items-center gap-1">
+                          <History className="w-4 h-4 text-teal-500" />
+                          社會史 (Social Hx)
+                        </label>
+                        <textarea 
+                          value={state.clientHx.socialHx || ''} 
+                          onChange={e => setState({...state, clientHx: {...state.clientHx, socialHx: e.target.value}})} 
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none min-h-[80px] resize-none" 
+                          placeholder="例如：與家人同住、三餐外食為主..." 
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right: 運動習慣 (stacked below life habits) */}
+                    <div className="md:col-span-2 space-y-3 p-4 bg-slate-50/30 rounded-xl border border-slate-100">
+                      <label className="text-sm font-bold text-slate-800 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <span>運動習慣 (Exercise Habits)</span>
+                        </span>
                         <button 
                           type="button" 
                           onClick={addExerciseItem}
                           className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-all focus:outline-none"
                         >
                           <Plus className="w-3 h-3" />
-                          新增
+                          新增運動
                         </button>
                       </label>
-                      <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
+                      <div className="flex flex-col gap-3 max-h-[180px] overflow-y-auto pr-1">
                         {(state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }]).map((exerciseItem, idx) => (
-                          <div key={idx} className="relative p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-2 group">
+                          <div key={idx} className="relative p-3 bg-white rounded-xl border border-slate-100 flex flex-col gap-2 group">
                             {idx > 0 && (
                               <button
                                 type="button"
                                 onClick={() => removeExerciseItem(idx)}
                                 className="absolute top-2 right-2 text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-lg transition-all focus:outline-none"
-                                title="刪除運動習慣"
+                                title="刪除"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -2245,12 +2426,12 @@ export default function App() {
                                 placeholder="頻率 (次/週)" 
                                 value={exerciseItem.frequency || ''} 
                                 onChange={e => updateExerciseItem(idx, 'frequency', e.target.value)} 
-                                className="w-1/2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white" 
+                                className="w-1/2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50/50" 
                               />
                               <select 
                                 value={exerciseItem.type || ''} 
                                 onChange={e => updateExerciseItem(idx, 'type', e.target.value)} 
-                                className="w-1/2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white"
+                                className="w-1/2 px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50/50"
                               >
                                 <option value="">選擇類型</option>
                                 {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -2258,10 +2439,10 @@ export default function App() {
                             </div>
                             <input 
                               type="text" 
-                              placeholder="具體運動 (例如: 游泳、慢跑...)" 
+                              placeholder="具體運動 (游泳、慢跑...)" 
                               value={exerciseItem.name || ''} 
                               onChange={e => updateExerciseItem(idx, 'name', e.target.value)} 
-                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white" 
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50/50" 
                             />
                           </div>
                         ))}
@@ -2300,30 +2481,36 @@ export default function App() {
                     {isSaving ? '儲存中...' : '儲存紀錄'}
                   </button>
                 </div>
-                <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">身高 (cm)</label>
-                    <input type="number" value={state.anthropometry.height || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, height: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">體重 (kg)</label>
-                    <input type="number" value={state.anthropometry.weight || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weight: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">體重測量日期</label>
-                    <input type="date" value={state.anthropometry.weightDate || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weightDate: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">BMI</label>
-                    <div className={`px-3 py-2 rounded-lg font-bold border ${parseFloat(state.anthropometry.bmi || '0') >= 24 ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
-                      {state.anthropometry.bmi || '--'}
+                <div className="p-6 space-y-6">
+                  {/* Row 1: Height, Weight, Weight Date, BMI */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">身高 (cm)</label>
+                      <input type="number" value={state.anthropometry.height || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, height: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">體重 (kg)</label>
+                      <input type="number" value={state.anthropometry.weight || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weight: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">體重測量日期</label>
+                      <input type="date" value={state.anthropometry.weightDate || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weightDate: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">BMI</label>
+                      <div className={`px-3 py-2 rounded-lg font-bold border ${parseFloat(state.anthropometry.bmi || '0') >= 24 ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-50 border-slate-200 text-slate-700'}`}>
+                        {state.anthropometry.bmi || '--'}
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">
-                      IBW (標準體重) 
-                      <span className="text-[10px] ml-1 text-slate-400">
-                        ({(calculateAge(state.clientHx.birthday) >= 50 ? 25 : 22)})
+
+                  {/* Row 2: IBW, ABW, Waist, Body Fat */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 border-t border-slate-100 pt-4">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700 font-bold">
+                        IBW (標準體重) 
+                        <span className="text-[10px] ml-1 text-slate-400">
+                          ({(calculateAge(state.clientHx.birthday) >= 50 ? 25 : 22)})
                       </span>
                     </label>
                     <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
@@ -2331,41 +2518,222 @@ export default function App() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">ABW (調整體重)</label>
-                    <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
-                      {state.anthropometry.abw || '--'}
+                   <label className="text-sm font-medium text-slate-700 font-bold">ABW (調整體重)</label>
+                      <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
+                        {state.anthropometry.abw || '--'}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">腰圍 (cm)</label>
+                      <input type="number" value={state.anthropometry.waist || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, waist: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700">體脂率 (%)</label>
+                      <input type="number" step="0.1" value={state.anthropometry.bodyFat || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, bodyFat: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
+                    </div>
+
+                  {/* Row 3: Edema, Notes */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 border-t border-slate-100 pt-4">
+                    <div className="space-y-1 col-span-1">
+                      <label className="text-sm font-medium text-slate-700">水腫狀況</label>
+                      <select value={state.anthropometry.edema || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, edema: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none">
+                        <option>無</option>
+                        <option>輕微 (+)</option>
+                        <option>中度 (++)</option>
+                        <option>嚴重 (+++)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1 md:col-span-3">
+                      <label className="text-sm font-medium text-slate-700">備註 (Notes)</label>
+                      <input 
+                        type="text" 
+                        value={state.anthropometry.notes || ''} 
+                        onChange={e => setState({...state, anthropometry: {...state.anthropometry, notes: e.target.value}})} 
+                        placeholder="自由填寫備註..."
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" 
+                      />
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">腰圍 (cm)</label>
-                    <input type="number" value={state.anthropometry.waist || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, waist: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">體重變化 (1個月)</label>
-                    <input type="text" value={state.anthropometry.weightChange || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, weightChange: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">體脂率 (%)</label>
-                    <input type="number" step="0.1" value={state.anthropometry.bodyFat || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, bodyFat: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">水腫狀況</label>
-                    <select value={state.anthropometry.edema || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, edema: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
-                      <option>無</option>
-                      <option>輕微 (+)</option>
-                      <option>中度 (++)</option>
-                      <option>嚴重 (+++)</option>
-                    </select>
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-sm font-medium text-slate-700">備註 (Notes)</label>
-                    <input 
-                      type="text" 
-                      value={state.anthropometry.notes || ''} 
-                      onChange={e => setState({...state, anthropometry: {...state.anthropometry, notes: e.target.value}})} 
-                      placeholder="自由填寫備註..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200" 
-                    />
+
+                  {/* Weight Loss Clinical Risk & Calculations Section */}
+                  <div className="border-t border-slate-100 pt-5 mt-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                      <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                        <Scale className="w-4 h-4 text-emerald-600" />
+                        臨床體重變化與風險分析 (Weight Loss Clinical Risk Analysis)
+                      </h3>
+                      <span className="text-[10px] text-slate-400 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 text-emerald-700 font-medium">
+                        NCP 體位評估指標
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Left: Auto comparison using state.monitoring.history */}
+                      <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
+                          📋 歷史紀錄自動比對 （體重變化欄位）
+                        </span>
+                        
+                        {!weightLossAnalysis.hasHistory ? (
+                          <div className="text-xs text-slate-400 py-6 text-center italic">
+                            尚無歷史紀錄可進行自動比對。新增首筆體重及日期並儲存後，後續諮詢將會自動對策比對。
+                          </div>
+                        ) : (
+                          <div className="space-y-2 text-xs">
+                            <div className="grid grid-cols-3 bg-slate-50 p-2 rounded text-[11px] font-bold text-slate-500">
+                              <span>比對區間</span>
+                              <span className="text-center">前次體重 (日期)</span>
+                              <span className="text-right">體重變動率</span>
+                            </div>
+
+                            {/* 1 Week */}
+                            <div className="flex justify-between items-center py-1.5 border-b border-slate-50">
+                              <span className="font-medium text-slate-600">1 星期 (7天區間)</span>
+                              {weightLossAnalysis.weekLoss ? (
+                                <>
+                                  <span className="text-slate-500">{weightLossAnalysis.weekLoss.prevWeight} kg ({weightLossAnalysis.weekLoss.date})</span>
+                                  <span className={`font-mono font-bold ${weightLossAnalysis.weekLoss.pct >= 2 ? 'text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md' : 'text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded-md'}`}>
+                                    {weightLossAnalysis.weekLoss.isLoss ? '-' : '+'}{Math.abs(weightLossAnalysis.weekLoss.pct).toFixed(1)}%
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-slate-400 text-right col-span-2">--</span>
+                              )}
+                            </div>
+
+                            {/* 1 Month */}
+                            <div className="flex justify-between items-center py-1.5 border-b border-slate-50">
+                              <span className="font-medium text-slate-600">1 個月 (30天區間)</span>
+                              {weightLossAnalysis.monthLoss ? (
+                                <>
+                                  <span className="text-slate-500">{weightLossAnalysis.monthLoss.prevWeight} kg ({weightLossAnalysis.monthLoss.date})</span>
+                                  <span className={`font-mono font-bold ${weightLossAnalysis.monthLoss.pct >= 5 ? 'text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md' : 'text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded-md'}`}>
+                                    {weightLossAnalysis.monthLoss.isLoss ? '-' : '+'}{Math.abs(weightLossAnalysis.monthLoss.pct).toFixed(1)}%
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-slate-400 text-right col-span-2">--</span>
+                              )}
+                            </div>
+
+                            {/* 6 Months */}
+                            <div className="flex justify-between items-center py-1.5">
+                              <span className="font-medium text-slate-600">6 個月 (180天區間)</span>
+                              {weightLossAnalysis.sixMonthLoss ? (
+                                <>
+                                  <span className="text-slate-500">{weightLossAnalysis.sixMonthLoss.prevWeight} kg ({weightLossAnalysis.sixMonthLoss.date})</span>
+                                  <span className={`font-mono font-bold ${weightLossAnalysis.sixMonthLoss.pct >= 10 ? 'text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md' : 'text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded-md'}`}>
+                                    {weightLossAnalysis.sixMonthLoss.isLoss ? '-' : '+'}{Math.abs(weightLossAnalysis.sixMonthLoss.pct).toFixed(1)}%
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-slate-400 text-right col-span-2">--</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {weightLossAnalysis.alerts.length > 0 && (
+                          <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-700 space-y-1">
+                            <span className="font-bold flex items-center gap-1">⚠️ 臨床顯著體重流失：</span>
+                            {weightLossAnalysis.alerts.map((al, idx) => <p key={idx} className="pl-2 font-medium">• {al}</p>)}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Manual comparison helper */}
+                      <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
+                          ⚡ 手動快速風險試算
+                        </span>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-medium text-slate-500">對比原體重 (kg)</label>
+                            <input 
+                              type="number" 
+                              value={manualPrevWeight} 
+                              onChange={e => setManualPrevWeight(e.target.value)} 
+                              placeholder="例如: 70"
+                              className="w-full px-2.5 py-2 text-xs rounded border border-slate-200 font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-medium text-slate-500">對比時間區間</label>
+                            <select 
+                              value={manualInterval} 
+                              onChange={e => setManualInterval(e.target.value as any)} 
+                              className="w-full px-2.5 py-2 text-xs rounded border border-slate-200 bg-white"
+                            >
+                              <option value="1w">1 星期 (2% 警示)</option>
+                              <option value="1m">1 個月 (5% 警示)</option>
+                              <option value="6m">6 個月 (10% 警示)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Calculated Block */}
+                        {(() => {
+                          const prev = parseFloat(manualPrevWeight);
+                          const curr = parseFloat(state.anthropometry.weight);
+                          if (isNaN(prev) || isNaN(curr) || prev <= 0) {
+                            return (
+                              <div className="mt-2 text-center p-3 text-[11px] text-slate-400 bg-slate-50 rounded">
+                                請輸入「對比原體重」以計算比率。
+                              </div>
+                            );
+                          }
+                          const loss = prev - curr;
+                          const pct = (loss / prev) * 100;
+                          
+                          let threshold = 5;
+                          let intervalText = '1個月';
+                          if (manualInterval === '1w') { threshold = 2; intervalText = '1星期'; }
+                          else if (manualInterval === '6m') { threshold = 10; intervalText = '6個月'; }
+                          
+                          const isAlert = loss > 0 && pct >= threshold;
+
+                          return (
+                            <div className={`mt-2 p-3.5 rounded-lg border text-xs flex flex-col gap-1.5 transition-colors ${
+                              isAlert 
+                                ? 'bg-red-50 border-red-100 text-red-800' 
+                                : loss > 0 
+                                  ? 'bg-amber-50 border-amber-100 text-amber-800' 
+                                  : 'bg-green-50 border-green-100 text-green-800'
+                            }`}>
+                              <div className="flex justify-between items-center font-bold">
+                                <span>計算體重流失百分比:</span>
+                                <span className="font-mono text-sm">{pct.toFixed(2)}%</span>
+                              </div>
+                              <p className="text-[11px] opacity-90">
+                                {loss > 0 
+                                  ? `原體重減少了 ${loss.toFixed(1)} kg。` 
+                                  : loss === 0 
+                                    ? `體重無變化。` 
+                                    : `體重增加了 ${Math.abs(loss).toFixed(1)} kg。`}
+                              </p>
+                              {isAlert ? (
+                                <div className="mt-1 font-bold text-[11px] bg-red-600 text-white rounded px-2 py-0.5 self-start shadow-xs shadow-red-200">
+                                  🚨 符合【{intervalText}下降 {threshold}%】臨床警示！
+                                </div>
+                              ) : (
+                                loss > 0 && (
+                                  <div className="mt-1 font-bold text-[11px] bg-emerald-600 text-white rounded px-2 py-0.5 self-start">
+                                    ✓ 未超過【{intervalText}下降 {threshold}%】臨床警示標準
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          );
+                        })()}
+
+                        {/* Reminders/Notes */}
+                        <div className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2 block">
+                          <strong>臨床醫學體重流失重要警示標準：</strong><br />
+                          • 1星期下降 2% 原體重；或 1個月下降 5% 原體重；或 6個月下降 10% 原體重。
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Muscle Mass & Sarcopenia Subsection */}
@@ -3890,20 +4258,20 @@ export default function App() {
                           <select 
                             value={currentDiagnosis.symptom || ''}
                             disabled={!currentDiagnosis.problem}
-                            onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptom: e.target.value})}
+                            onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptom: e.target.value, symptomOther: e.target.value === '其他' ? '' : currentDiagnosis.symptomOther})}
                             className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:bg-slate-50"
                           >
                             <option value="">請選擇症狀</option>
-                            {currentDiagnosis.problem && currentDiagnosis.problem !== '其他' && DIAG_DATA[currentDiagnosis.domain as keyof typeof DIAG_DATA].problems[currentDiagnosis.problem].symptoms.map(s => <option key={s} value={s}>{s}</option>)}
-                            {currentDiagnosis.problem === '其他' && <option value="其他">其他</option>}
+                            {currentDiagnosis.problem && currentDiagnosis.problem !== '其他' && DIAG_DATA[currentDiagnosis.domain as keyof typeof DIAG_DATA]?.problems[currentDiagnosis.problem]?.symptoms.map(s => <option key={s} value={s}>{s}</option>)}
+                            <option value="其他">其他 (自由填寫 / 自定義...)</option>
                           </select>
                           {currentDiagnosis.symptom === '其他' && (
                             <input 
                               type="text" 
-                              placeholder="請輸入自定義症狀..."
+                              placeholder="請輸入自定義症狀描述..."
                               value={currentDiagnosis.symptomOther || ''}
                               onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptomOther: e.target.value})}
-                              className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                              className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
                             />
                           )}
                         </div>
@@ -3920,8 +4288,15 @@ export default function App() {
                             setCurrentDiagnosis({ domain: '', problem: '', etiology: '', symptom: '', id: '' });
                           }
                         }}
-                        disabled={!currentDiagnosis.problem || !currentDiagnosis.etiology || !currentDiagnosis.symptom}
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 disabled:bg-slate-300 transition-colors"
+                        disabled={
+                          !currentDiagnosis.problem || 
+                          (currentDiagnosis.problem === '其他' && !currentDiagnosis.problemOther?.trim()) ||
+                          !currentDiagnosis.etiology || 
+                          (currentDiagnosis.etiology === '其他' && !currentDiagnosis.etiologyOther?.trim()) ||
+                          !currentDiagnosis.symptom ||
+                          (currentDiagnosis.symptom === '其他' && !currentDiagnosis.symptomOther?.trim())
+                        }
+                        className="px-6 py-2 bg-red-650 text-white rounded-lg font-bold hover:bg-red-700 disabled:bg-slate-300 transition-colors"
                       >
                         新增此診斷
                       </button>
