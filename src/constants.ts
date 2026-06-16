@@ -831,7 +831,7 @@ export const BIO_RANGES: Record<string, { min?: number; max?: number; label: str
   AST: { max: 40, label: '< 40' },
   ALT: { max: 40, label: '< 40' },
   TG: { max: 150, label: '< 150' },
-  LDL: { max: 130, label: '< 130' },
+  LDL: { max: 130, label: '<100(理想)' },
   UricAcid: { min: 3.7, max: 7.7, label: '3.7-7.7' }
 };
 
