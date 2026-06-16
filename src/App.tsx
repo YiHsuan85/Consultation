@@ -2605,19 +2605,78 @@ export default function App() {
 
               {/* Anthropometry */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Calculator className="w-5 h-5 text-blue-600" />
                     體位測量 (Anthropometry)
                   </h2>
-                  <button 
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    {isSaving ? '儲存中...' : '儲存紀錄'}
-                  </button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => {
+                        if (!state.anthropometry.weight) {
+                          alert('請輸入體重後再進行同步');
+                          return;
+                        }
+                        const targetWeightDate = state.anthropometry.weightDate || new Date().toISOString().split('T')[0];
+                        const currentWeight = state.anthropometry.weight;
+
+                        // 1) Legacy backup sync
+                        const latestHistory = [...state.monitoring.history];
+                        const existingIdx = latestHistory.findIndex(h => h.date === targetWeightDate);
+                        if (existingIdx > -1) {
+                          latestHistory[existingIdx] = {
+                            ...latestHistory[existingIdx],
+                            weight: currentWeight
+                          };
+                        } else {
+                          latestHistory.push({
+                            date: targetWeightDate,
+                            weight: currentWeight,
+                            ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
+                            other: '從體重表單同步'
+                          });
+                        }
+
+                        // 2) Modern weightHistory sync
+                        const updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+                        const existingWIdx = updatedWeightHistory.findIndex(h => h.date === targetWeightDate);
+                        if (existingWIdx > -1) {
+                          updatedWeightHistory[existingWIdx] = {
+                            ...updatedWeightHistory[existingWIdx],
+                            weight: currentWeight
+                          };
+                        } else {
+                          updatedWeightHistory.push({
+                            id: Date.now().toString() + '-sync-w',
+                            date: targetWeightDate,
+                            weight: currentWeight
+                          });
+                        }
+
+                        setState({
+                          ...state,
+                          monitoring: {
+                            ...state.monitoring,
+                            history: latestHistory,
+                            weightHistory: updatedWeightHistory
+                          }
+                        });
+                        alert('數據已同步至體重監測紀錄');
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm cursor-pointer font-medium"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      同步至監測紀錄
+                    </button>
+                    <button 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      {isSaving ? '儲存中...' : '儲存紀錄'}
+                    </button>
+                  </div>
                 </div>
                 <div className="p-6 space-y-6">
                   {/* Row 1: Height, Weight, Weight Date, BMI */}
