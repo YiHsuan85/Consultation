@@ -382,7 +382,6 @@ const DIAGNOSTIC_TERMINOLOGIES = {
   }
 };
 
-
 const INITIAL_STATE: AppState = {
   consultDate: new Date().toISOString().split('T')[0],
   goal: '',
@@ -978,6 +977,8 @@ export default function App() {
   const [currentDiagnosis, setCurrentDiagnosis] = useState<PES>({ id: '', domain: '', problem: '', etiology: '', symptom: '' });
   const [manualPrevWeight, setManualPrevWeight] = useState('');
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
+  const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
+  const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
     weight: '',
@@ -2648,8 +2649,8 @@ export default function App() {
                                   let statusEl = <span className="text-slate-400 font-medium">始點紀錄 / 基準</span>;
 
                                   if (prev) {
-                                    const prevW = parseFloat(prev.weight);
-                                    const currW = parseFloat(record.weight);
+                                    const prevW = parseFloat(String(prev.weight));
+                                    const currW = parseFloat(String(record.weight));
                                     if (!isNaN(prevW) && !isNaN(currW) && prevW > 0) {
                                       // 體重變動率 = (此次 - 上次) / 上次 * 100%
                                       // 當變動率 < 0 顯示體重減輕 %; 當變動率 > 0 顯示體重增加
@@ -2921,8 +2922,31 @@ export default function App() {
                     </div>
                     <button
                       onClick={() => {
-                        const newRecord: MonitoringRecord = {
-                          date: state.biochemistryDate || new Date().toISOString().split('T')[0],
+                        const biochemDate = state.biochemistryDate || new Date().toISOString().split('T')[0];
+                        const weightDate = state.anthropometry.weightDate || biochemDate;
+
+                        const newBiochemRecord = {
+                          id: Date.now().toString() + '-b',
+                          date: biochemDate,
+                          ac: state.biochemistry.AC || '',
+                          hba1c: state.biochemistry.HbA1c || '',
+                          egfr: state.biochemistry.eGFR || '',
+                          tg: state.biochemistry.TG || '',
+                          ldl: state.biochemistry.LDL || '',
+                          tc: state.biochemistry.TC || '',
+                          uricAcid: state.biochemistry.UricAcid || '',
+                          bp: state.biochemistry.BP || '',
+                          other: ''
+                        };
+
+                        const newWeightRecord = state.anthropometry.weight ? {
+                          id: Date.now().toString() + '-w',
+                          date: weightDate,
+                          weight: state.anthropometry.weight
+                        } : null;
+
+                        const legacyRecord: MonitoringRecord = {
+                          date: biochemDate,
                           weight: state.anthropometry.weight || '',
                           ac: state.biochemistry.AC || '',
                           hba1c: state.biochemistry.HbA1c || '',
@@ -2934,14 +2958,19 @@ export default function App() {
                           bp: state.biochemistry.BP || '',
                           other: ''
                         };
+
                         setState({
                           ...state,
                           monitoring: {
                             ...state.monitoring,
-                            history: [newRecord, ...state.monitoring.history]
+                            history: [legacyRecord, ...state.monitoring.history],
+                            biochemHistory: [newBiochemRecord, ...(state.monitoring.biochemHistory || [])],
+                            weightHistory: newWeightRecord 
+                              ? [newWeightRecord, ...(state.monitoring.weightHistory || [])]
+                              : (state.monitoring.weightHistory || [])
                           }
                         });
-                        alert('數據已同步至營養監測紀錄');
+                        alert('數據已分別同步至體重與生化監測紀錄');
                       }}
                       className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm"
                     >
@@ -3028,9 +3057,9 @@ export default function App() {
                             {sortedBioHistory.map((record, index) => {
                               const prev = index > 0 ? sortedBioHistory[index - 1] : null;
                               
-                              const getTrend = (currValStr: string, prevValStr: string, lowerIsBetter: boolean = true) => {
-                                const curr = parseFloat(currValStr);
-                                const prevVal = parseFloat(prevValStr);
+                              const getTrend = (currValStr: any, prevValStr: any, lowerIsBetter: boolean = true) => {
+                                const curr = parseFloat(String(currValStr));
+                                const prevVal = parseFloat(String(prevValStr));
                                 if (isNaN(curr) || isNaN(prevVal)) return null;
                                 if (curr === prevVal) return <span className="text-slate-400 text-[10px] ml-1">─</span>;
                                 const diff = curr - prevVal;
@@ -3044,15 +3073,15 @@ export default function App() {
                                 );
                               };
 
-                              const getBpTrend = (currStr: string, prevStr: string) => {
+                              const getBpTrend = (currStr: any, prevStr: any) => {
                                 if (!currStr) return '--';
-                                if (!prevStr) return currStr;
+                                if (!prevStr) return String(currStr);
                                 const parseBp = (str: string) => {
                                   const parts = str.split('/').map(p => parseFloat(p.trim())).filter(n => !isNaN(n));
                                   return parts.length === 2 ? parts : null;
                                 };
-                                const currBp = parseBp(currStr);
-                                const prevBp = parseBp(prevStr);
+                                const currBp = parseBp(String(currStr));
+                                const prevBp = parseBp(String(prevStr));
                                 if (!currBp || !prevBp) return currStr;
                                 return (
                                   <span>
@@ -3537,40 +3566,56 @@ export default function App() {
 
                   {/* 便當油脂估計備註 */}
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2 shadow-sm">
-                    <div className="flex items-center gap-2 text-amber-800 font-bold border-b border-amber-200 pb-2 mb-2">
-                      <Info className="w-4 h-4" />
-                      <span className="text-sm">便當油脂與食材估計參考</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100">
-                        <span className="text-[11px] font-bold text-amber-600 uppercase">一般蔬菜</span>
-                        <span className="text-sm text-amber-900 font-medium tracking-tight">每樣蔬菜：0.5-1 ex</span>
+                    <button
+                      type="button"
+                      onClick={() => setBentoRefExpanded(!bentoRefExpanded)}
+                      className="w-full flex items-center justify-between text-amber-800 font-bold border-b border-amber-200 pb-2 mb-2 hover:text-amber-900 cursor-pointer text-left focus:outline-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Info className="w-4 h-4 text-amber-700" />
+                        <span className="text-sm text-amber-850">便當油脂與食材估計參考</span>
                       </div>
-                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100">
-                        <span className="text-[11px] font-bold text-amber-600 uppercase">吸油食材</span>
-                        <span className="text-sm text-amber-900 font-medium tracking-tight">茄子、苦瓜、豆皮、干絲：1-1.5 以上</span>
-                      </div>
-                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100 font-bold block">
-                        <span className="text-[11px] font-bold text-amber-600 uppercase">炸物/勾芡</span>
-                        <span className="text-sm text-amber-900 font-bold tracking-tight text-red-700">排骨、糖醋、三杯：1.5-2 以上</span>
-                      </div>
-                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100">
-                        <span className="text-[11px] font-bold text-amber-600 uppercase">雞胸肉估計</span>
-                        <span className="text-sm text-amber-900 font-medium tracking-tight">全聯一片 100-150g：約 3.5-5 ex 肉類</span>
-                      </div>
-                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100 shadow-sm">
-                        <span className="text-[11px] font-bold text-amber-700 uppercase">八方招牌水餃 (10顆)</span>
-                        <span className="text-xs text-amber-950 font-medium tracking-tight leading-relaxed">
-                          160g白飯 + 33ml油 + 1片雞胸肉 + 2.5g鹽巴
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-1 p-2 bg-white/50 rounded-lg border border-amber-100 shadow-sm">
-                        <span className="text-[11px] font-bold text-amber-700 uppercase">八方招牌鍋貼 (10顆)</span>
-                        <span className="text-xs text-amber-950 font-medium tracking-tight leading-relaxed">
-                          160g白飯 + 50ml油 + 1/3片雞胸肉 + 2g鹽巴
-                        </span>
-                      </div>
-                    </div>
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 text-amber-800 rounded border border-amber-200">
+                        {bentoRefExpanded ? '收合 ▲' : '展開 ▼'}
+                      </span>
+                    </button>
+                    
+                    {bentoRefExpanded && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-1"
+                      >
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100">
+                          <span className="text-[11px] font-bold text-amber-600 uppercase">一般蔬菜</span>
+                          <span className="text-xs text-amber-900 font-medium tracking-tight">每樣蔬菜：0.5-1 ex</span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100">
+                          <span className="text-[11px] font-bold text-amber-600 uppercase">吸油食材</span>
+                          <span className="text-xs text-amber-900 font-medium tracking-tight">茄子、苦瓜、豆皮、干絲：1-1.5 以上</span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100">
+                          <span className="text-[11px] font-bold text-amber-600 uppercase">炸物/勾芡</span>
+                          <span className="text-xs text-amber-900 font-bold tracking-tight text-red-700">排骨、糖醋、三杯：1.5-2 以上</span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100">
+                          <span className="text-[11px] font-bold text-amber-600 uppercase">雞胸肉估計</span>
+                          <span className="text-xs text-amber-900 font-medium tracking-tight">全聯一片 100-150g：約 3.5-5 ex 肉類</span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100 shadow-3xs">
+                          <span className="text-[11px] font-bold text-amber-700 uppercase">八方招牌水餃 (10顆)</span>
+                          <span className="text-[11.5px] text-amber-950 font-medium tracking-tight leading-relaxed">
+                            160g白飯 + 33ml油 + 1片雞胸肉 + 2.5g鹽巴
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100 shadow-3xs">
+                          <span className="text-[11px] font-bold text-amber-700 uppercase">八方招牌鍋貼 (10顆)</span>
+                          <span className="text-[11.5px] text-amber-950 font-medium tracking-tight leading-relaxed">
+                            160g白飯 + 50ml油 + 1/3片雞胸肉 + 2g鹽巴
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
 
                   {/* 飲食攝取營養素統計 (Diet Intake Nutrient Summary) */}
