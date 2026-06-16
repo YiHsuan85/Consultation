@@ -24,8 +24,6 @@ import {
   LayoutDashboard,
   Users,
   Scale,
-  ChevronUp,   // 補上此行
-  ChevronDown  // 補上此行
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -1966,7 +1964,7 @@ export default function App() {
           </button>
         </nav>
         <div className="mt-auto space-y-4 text-center">
-          <button onClick={handleLogout} className="w-12 h-12 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all">
+          <button onClick={handleLogout} className="w-12 h-12 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-55 transition-all">
             <LogOut className="w-6 h-6" />
           </button>
         </div>
@@ -3032,7 +3030,7 @@ export default function App() {
 
                         <div className="text-sm font-bold text-slate-800 flex items-center gap-1.5 flex-wrap pt-1">
                           <span>是否符合肌少症判斷：</span>
-                          <span className={`px-3 py-1 rounded-lg text-sm font-black ${sarcopeniaAnalysis.isSarcopenia ? 'bg-amber-100 text-amber-900 border border-amber-250 animate-pulse' : sarcopeniaAnalysis.applicable ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                          <span className={`px-3 py-1 rounded-lg text-sm font-black ${sarcopeniaAnalysis.isSarcopenia ? 'bg-amber-105 text-amber-900 border border-amber-250 animate-pulse' : sarcopeniaAnalysis.applicable ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                             {sarcopeniaAnalysis.result}
                           </span>
                         </div>
