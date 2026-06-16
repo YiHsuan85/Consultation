@@ -90,6 +90,7 @@ export interface PES {
 export interface MonitoringRecord {
   date: string;
   weight: number;
+  ac: number;
   hba1c: number;
   egfr: number;
   tg: number;
