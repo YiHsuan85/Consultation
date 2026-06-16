@@ -5006,7 +5006,7 @@ export default function App() {
                         value={state.intervention.referral || ''}
                         onChange={e => setState({...state, intervention: {...state.intervention, referral: e.target.value}})}
                         placeholder="例如：轉介復健科評估吞嚥功能..."
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 h-24"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 h-24 text-slate-800"
                       ></textarea>
                     </div>
                   </div>
@@ -5024,274 +5024,527 @@ export default function App() {
               className="space-y-8"
             >
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Activity className="w-5 h-5 text-purple-600" />
-                    營養監測 (Monitoring)
+                    營養監測 (Nutrition Monitoring)
                   </h2>
-                </div>
-                <div className="p-6 space-y-8">
-                  {/* Monitoring Input Form */}
-                  <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-6">
-                    <h3 className="font-bold text-slate-700">新增監測紀錄</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">日期</label>
-                        <input 
-                          type="date" 
-                          value={currentMonitoring.date || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, date: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">體重 (kg)</label>
-                        <input 
-                          type="number" 
-                          step="0.1"
-                          value={currentMonitoring.weight || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, weight: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">AC</label>
-                        <input 
-                          type="number" 
-                          step="0.1"
-                          value={currentMonitoring.ac || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, ac: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">HbA1c (%)</label>
-                        <input 
-                          type="number" 
-                          step="0.1"
-                          value={currentMonitoring.hba1c || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, hba1c: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">eGFR</label>
-                        <input 
-                          type="number" 
-                          step="0.1"
-                          value={currentMonitoring.egfr || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, egfr: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">TG</label>
-                        <input 
-                          type="number" 
-                          value={currentMonitoring.tg || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, tg: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">LDL</label>
-                        <input 
-                          type="number" 
-                          value={currentMonitoring.ldl || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, ldl: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">TC</label>
-                        <input 
-                          type="number" 
-                          value={currentMonitoring.tc || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, tc: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">UA</label>
-                        <input 
-                          type="number" 
-                          step="0.1"
-                          value={currentMonitoring.uricAcid || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, uricAcid: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-500">BP</label>
-                        <input 
-                          type="text" 
-                          value={currentMonitoring.bp || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, bp: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                          placeholder="ex: 120/80"
-                        />
-                      </div>
-                      <div className="space-y-1 col-span-2 md:col-span-3 lg:col-span-4 xl:col-span-5">
-                        <label className="text-xs font-medium text-slate-500">其他 (自由填寫)</label>
-                        <input 
-                          type="text" 
-                          value={currentMonitoring.other || ''}
-                          onChange={e => setCurrentMonitoring({...currentMonitoring, other: e.target.value})}
-                          className="w-full px-2 py-1 text-sm rounded border border-slate-200 bg-white"
-                          placeholder="例如：血壓、尿酸、體脂率等..."
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end">
-                      <button 
-                        onClick={() => {
-                          if (currentMonitoring.date) {
-                            setState({
-                              ...state, 
-                              monitoring: {
-                                ...state.monitoring,
-                                history: [...state.monitoring.history, { ...currentMonitoring }].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                              }
-                            });
-                            setCurrentMonitoring({
-                              date: new Date().toISOString().split('T')[0],
-                              weight: '', ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: ''
-                            });
-                          }
-                        }}
-                        className="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-colors"
-                      >
-                        新增紀錄
-                      </button>
-                    </div>
+                  
+                  {/* Segmented Controller */}
+                  <div className="flex bg-slate-100 p-1 rounded-lg w-fit border border-slate-200/50">
+                    <button
+                      type="button"
+                      onClick={() => setMonitoringSubView('all')}
+                      className={`px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                        monitoringSubView === 'all'
+                          ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
+                          : 'text-slate-600 hover:text-slate-800'
+                      }`}
+                    >
+                      顯示全部 (All)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMonitoringSubView('weight')}
+                      className={`px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                        monitoringSubView === 'weight'
+                          ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
+                          : 'text-slate-600 hover:text-slate-800'
+                      }`}
+                    >
+                      體重監測 (Weight)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMonitoringSubView('biochem')}
+                      className={`px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                        monitoringSubView === 'biochem'
+                          ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
+                          : 'text-slate-600 hover:text-slate-800'
+                      }`}
+                    >
+                      生化指標 (Biochemistry)
+                    </button>
                   </div>
+                </div>
 
-                  {/* Monitoring History Table */}
-                  <div className="space-y-4">
-                    <h3 className="font-bold text-slate-700">歷史趨勢紀錄</h3>
-                    <div className="overflow-x-auto rounded-xl border border-slate-200">
-                      <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-50 text-slate-600 font-bold">
-                          <tr>
-                            <th className="px-4 py-3">日期</th>
-                            <th className="px-4 py-3">體重 (kg)</th>
-                            <th className="px-4 py-3">AC</th>
-                            <th className="px-4 py-3">HbA1c (%)</th>
-                            <th className="px-4 py-3">eGFR</th>
-                            <th className="px-4 py-3">TG</th>
-                            <th className="px-4 py-3">LDL</th>
-                            <th className="px-4 py-3">TC</th>
-                            <th className="px-4 py-3">UA</th>
-                            <th className="px-4 py-3">BP</th>
-                            <th className="px-4 py-3">其他</th>
-                            <th className="px-4 py-3 text-center">操作</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {state.monitoring.history.length === 0 ? (
-                            <tr>
-                              <td colSpan={12} className="px-4 py-8 text-center text-slate-400">尚無歷史紀錄</td>
-                            </tr>
-                          ) : (
-                            state.monitoring.history.map((record, idx) => (
-                              <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                                <td className="px-4 py-3 font-medium">{record.date}</td>
-                                <td className="px-4 py-3">{record.weight || '--'}</td>
-                                <td className="px-4 py-3">{record.ac || '--'}</td>
-                                <td className="px-4 py-3">{record.hba1c || '--'}</td>
-                                <td className="px-4 py-3">{record.egfr || '--'}</td>
-                                <td className="px-4 py-3">{record.tg || '--'}</td>
-                                <td className="px-4 py-3">{record.ldl || '--'}</td>
-                                <td className="px-4 py-3">{record.tc || '--'}</td>
-                                <td className="px-4 py-3">{record.uricAcid || '--'}</td>
-                                <td className="px-4 py-3">{record.bp || '--'}</td>
-                                <td className="px-4 py-3 max-w-xs truncate" title={record.other}>{record.other || '--'}</td>
-                                <td className="px-4 py-3 text-center">
-                                  <button 
-                                    onClick={() => setState({
-                                      ...state, 
+                <div className="p-6 space-y-8">
+                  
+                  {/* Part 1: Weight History Panel */}
+                  {(monitoringSubView === 'all' || monitoringSubView === 'weight') && (
+                    <motion.div 
+                      key="monitoring-weight-section"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-emerald-50/20 p-5 rounded-2xl border border-emerald-100/75 space-y-6"
+                    >
+                      <div className="flex items-center gap-2 text-emerald-800 font-bold border-b border-emerald-100 pb-2.5">
+                        <Scale className="w-5 h-5" />
+                        <span className="text-base font-bold">① 體重歷史紀錄與變化趨勢 (Weight Monitoring)</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        {/* Add Weight Form and Table */}
+                        <div className="lg:col-span-2 space-y-4">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-3xs space-y-4">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">新增體重紀錄</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-slate-500">日期</label>
+                                <input 
+                                  type="date" 
+                                  value={currentWeightRec.date}
+                                  onChange={e => setCurrentWeightRec({ ...currentWeightRec, date: e.target.value })}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-slate-500">體重 (kg)</label>
+                                <input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="例如: 65.2"
+                                  value={currentWeightRec.weight}
+                                  onChange={e => setCurrentWeightRec({ ...currentWeightRec, weight: e.target.value })}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white font-medium"
+                                />
+                              </div>
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  if (currentWeightRec.date && currentWeightRec.weight) {
+                                    const newRec = {
+                                      id: Date.now().toString() + '-w',
+                                      date: currentWeightRec.date,
+                                      weight: currentWeightRec.weight
+                                    };
+                                    // sync to legacy as backup
+                                    const newLegacyRec = {
+                                      date: currentWeightRec.date,
+                                      weight: currentWeightRec.weight,
+                                      ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: '體重端填寫'
+                                    };
+                                    setState({
+                                      ...state,
                                       monitoring: {
                                         ...state.monitoring,
-                                        history: state.monitoring.history.filter((_, i) => i !== idx)
+                                        weightHistory: [newRec, ...(state.monitoring.weightHistory || [])].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+                                        history: [newLegacyRec, ...state.monitoring.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                                       }
-                                    })}
-                                    className="text-slate-300 hover:text-red-500 transition-colors"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                                    });
+                                    setCurrentWeightRec({
+                                      date: new Date().toISOString().split('T')[0],
+                                      weight: ''
+                                    });
+                                  } else {
+                                    alert('請輸入完整的日期與體重');
+                                  }
+                                }}
+                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                              >
+                                新增體重
+                              </button>
+                            </div>
+                          </div>
 
-                  {/* Charts */}
-                  {state.monitoring.history.length > 1 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-bold text-slate-500 uppercase mb-6">體重與 HbA1c 趨勢</h4>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={state.monitoring.history}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="date" tick={{fontSize: 10}} stroke="#94a3b8" />
-                              <YAxis yAxisId="left" tick={{fontSize: 10}} stroke="#94a3b8" />
-                              <YAxis yAxisId="right" orientation="right" tick={{fontSize: 10}} stroke="#94a3b8" />
-                              <Tooltip />
-                              <Legend verticalAlign="top" height={36} />
-                              <Line yAxisId="left" type="monotone" dataKey="weight" name="體重 (kg)" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                              <Line yAxisId="right" type="monotone" dataKey="hba1c" name="HbA1c (%)" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                            </LineChart>
-                          </ResponsiveContainer>
+                          {/* Weight History Table */}
+                          <div className="bg-white rounded-xl border border-slate-200/80 shadow-3xs overflow-hidden">
+                            <div className="px-4 py-3 bg-slate-50/60 border-b border-slate-100 flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">體重紀錄列表</span>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50/70 text-slate-500 font-bold text-xs uppercase animate-none">
+                                  <tr>
+                                    <th className="px-4 py-2">日期</th>
+                                    <th className="px-4 py-2">體重 (kg)</th>
+                                    <th className="px-4 py-2 text-center">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {sortedWeightHistory.length === 0 ? (
+                                    <tr>
+                                      <td colSpan={3} className="px-4 py-6 text-center text-slate-400 italic">尚無體重歷史紀錄</td>
+                                    </tr>
+                                  ) : (
+                                    sortedWeightHistory.map((record, idx) => (
+                                      <tr key={record.id || idx} className="hover:bg-slate-50/40 transition-colors">
+                                        <td className="px-4 py-2.5 font-medium">{record.date}</td>
+                                        <td className="px-4 py-2.5 font-bold text-slate-700">{record.weight} kg</td>
+                                        <td className="px-4 py-2.5 text-center">
+                                          <button 
+                                            type="button"
+                                            onClick={() => {
+                                              const newWeightHistory = (state.monitoring.weightHistory || []).filter(h => h.date !== record.date && h.id !== record.id);
+                                              const newLegacyHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                              setState({
+                                                ...state,
+                                                monitoring: {
+                                                  ...state.monitoring,
+                                                  weightHistory: newWeightHistory,
+                                                  history: newLegacyHistory
+                                                }
+                                              });
+                                            }}
+                                            className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
+                                            title="刪除此紀錄"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h4 className="text-sm font-bold text-slate-500 uppercase mb-6">腎功能與血脂趨勢</h4>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={state.monitoring.history}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                              <XAxis dataKey="date" tick={{fontSize: 10}} stroke="#94a3b8" />
-                              <YAxis tick={{fontSize: 10}} stroke="#94a3b8" />
-                              <Tooltip />
-                              <Legend verticalAlign="top" height={36} />
-                              <Line type="monotone" dataKey="egfr" name="eGFR" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} />
-                              <Line type="monotone" dataKey="tg" name="TG" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
-                              <Line type="monotone" dataKey="ldl" name="LDL" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                            </LineChart>
-                          </ResponsiveContainer>
+
+                        {/* Weight Trend Chart */}
+                        <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-3xs flex flex-col justify-between">
+                          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">體重規律趨勢圖</h4>
+                          <div className="h-60 w-full flex-1 min-h-[220px]">
+                            {sortedWeightHistory.length < 2 ? (
+                              <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 text-xs p-5 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+                                <span>至少需要 2 筆以上的體重歷史數據才能繪製趨勢圖。</span>
+                              </div>
+                            ) : (
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={sortedWeightHistory} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                  <XAxis dataKey="date" tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <YAxis domain={['auto', 'auto']} tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
+                                  <Line type="monotone" dataKey="weight" name="體重 (kg)" stroke="#10b981" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            )}
+                          </div>
                         </div>
+
                       </div>
-                    </div>
+                    </motion.div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">下次追蹤日期</label>
+                  {/* Part 2: Biochemistry History Panel */}
+                  {(monitoringSubView === 'all' || monitoringSubView === 'biochem') && (
+                    <motion.div 
+                      key="monitoring-biochem-section"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-blue-50/20 p-5 rounded-2xl border border-blue-100/75 space-y-6"
+                    >
+                      <div className="flex items-center gap-2 text-blue-800 font-bold border-b border-blue-100 pb-2.5">
+                        <Activity className="w-5 h-5 text-blue-600" />
+                        <span className="text-base font-bold">② 生化與指標臨床追蹤 (Biochemical History)</span>
+                      </div>
+
+                      {/* Biochem Input Form */}
+                      <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-3xs space-y-4">
+                        <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">新增生化與血壓指標</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">日期</label>
+                            <input 
+                              type="date" 
+                              value={currentBiochemRec.date}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, date: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">AC</label>
+                            <input 
+                              type="number" 
+                              step="0.1"
+                              placeholder="例: 110"
+                              value={currentBiochemRec.ac}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, ac: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">HbA1c (%)</label>
+                            <input 
+                              type="number" 
+                              step="0.1"
+                              placeholder="例: 6.8"
+                              value={currentBiochemRec.hba1c}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, hba1c: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">eGFR</label>
+                            <input 
+                              type="number" 
+                              step="0.1"
+                              placeholder="例: 94"
+                              value={currentBiochemRec.egfr}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, egfr: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">TG</label>
+                            <input 
+                              type="number" 
+                              placeholder="例: 130"
+                              value={currentBiochemRec.tg}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, tg: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">LDL</label>
+                            <input 
+                              type="number" 
+                              placeholder="例: 95"
+                              value={currentBiochemRec.ldl}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, ldl: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">TC</label>
+                            <input 
+                              type="number" 
+                              placeholder="例: 190"
+                              value={currentBiochemRec.tc}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, tc: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">UA</label>
+                            <input 
+                              type="number" 
+                              step="0.1"
+                              placeholder="例: 6.2"
+                              value={currentBiochemRec.uricAcid}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, uricAcid: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">BP</label>
+                            <input 
+                              type="text" 
+                              placeholder="例: 124/82"
+                              value={currentBiochemRec.bp}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, bp: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white font-medium"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-semibold text-slate-600">其他生化備註</label>
+                            <input 
+                              type="text" 
+                              placeholder="例如：尿蛋白、ALT 等..."
+                              value={currentBiochemRec.other}
+                              onChange={e => setCurrentBiochemRec({ ...currentBiochemRec, other: e.target.value })}
+                              className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white text-slate-800"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end pt-1">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (currentBiochemRec.date) {
+                                const newRec = {
+                                  id: Date.now().toString() + '-b',
+                                  ...currentBiochemRec
+                                };
+                                // sync to legacy as backup
+                                const newLegacyRec = {
+                                  date: currentBiochemRec.date,
+                                  weight: '',
+                                  ac: currentBiochemRec.ac,
+                                  hba1c: currentBiochemRec.hba1c,
+                                  egfr: currentBiochemRec.egfr,
+                                  tg: currentBiochemRec.tg,
+                                  ldl: currentBiochemRec.ldl,
+                                  tc: currentBiochemRec.tc,
+                                  uricAcid: currentBiochemRec.uricAcid,
+                                  bp: currentBiochemRec.bp,
+                                  other: currentBiochemRec.other
+                                };
+                                setState({
+                                  ...state,
+                                  monitoring: {
+                                    ...state.monitoring,
+                                    biochemHistory: [newRec, ...(state.monitoring.biochemHistory || [])].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+                                    history: [newLegacyRec, ...state.monitoring.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                                  }
+                                });
+                                setCurrentBiochemRec({
+                                  date: new Date().toISOString().split('T')[0],
+                                  ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: ''
+                                });
+                              } else {
+                                alert('請填寫生化資料的日期');
+                              }
+                            }}
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs shadow-sm transition-colors cursor-pointer"
+                          >
+                            新增公信生化紀錄
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Biochem Table */}
+                      <div className="bg-white rounded-xl border border-slate-200/80 shadow-3xs overflow-hidden animate-none">
+                        <div className="px-4 py-3 bg-slate-50/60 border-b border-slate-100 flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">生化數值歷次追蹤紀錄</span>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left border-collapse">
+                            <thead className="bg-slate-50/70 text-slate-500 font-bold border-b border-slate-100 uppercase">
+                              <tr>
+                                <th className="px-3 py-2.5">日期</th>
+                                <th className="px-3 py-2.5">AC</th>
+                                <th className="px-3 py-2.5">HbA1c (%)</th>
+                                <th className="px-3 py-2.5">eGFR</th>
+                                <th className="px-3 py-2.5">TG</th>
+                                <th className="px-3 py-2.5">LDL</th>
+                                <th className="px-3 py-2.5">TC</th>
+                                <th className="px-3 py-2.5">UA</th>
+                                <th className="px-3 py-2.5">BP</th>
+                                <th className="px-3 py-2.5">其他</th>
+                                <th className="px-3 py-2.5 text-center">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 text-slate-700">
+                              {sortedBioHistory.length === 0 ? (
+                                <tr>
+                                  <td colSpan={11} className="px-3 py-6 text-center text-slate-400 italic">尚無生化指標追蹤紀錄</td>
+                                </tr>
+                              ) : (
+                                sortedBioHistory.map((record, idx) => (
+                                  <tr key={record.id || idx} className="hover:bg-slate-50/40 transition-colors">
+                                    <td className="px-3 py-2.5 font-bold text-slate-800">{record.date}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.ac || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.hba1c ? `${record.hba1c} %` : '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.egfr || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.tg || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.ldl || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.tc || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.uricAcid || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium font-mono">{record.bp || '--'}</td>
+                                    <td className="px-3 py-2.5 max-w-[120px] truncate" title={record.other}>{record.other || '--'}</td>
+                                    <td className="px-3 py-2.5 text-center">
+                                      <button 
+                                        type="button"
+                                        onClick={() => {
+                                          const newBiochemHistory = (state.monitoring.biochemHistory || []).filter(h => h.date !== record.date && h.id !== record.id);
+                                          const newLegacyHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                          setState({
+                                            ...state,
+                                            monitoring: {
+                                              ...state.monitoring,
+                                              biochemHistory: newBiochemHistory,
+                                              history: newLegacyHistory
+                                            }
+                                          });
+                                        }}
+                                        className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
+                                        title="刪除此紀錄"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* Biochem Trends Charts */}
+                      {sortedBioHistory.length >= 2 && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-3xs">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">醣類與血壓趨勢</h4>
+                            <div className="h-56">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={sortedBioHistory as any[]} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                  <XAxis dataKey="date" tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <YAxis yAxisId="left" tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <YAxis yAxisId="right" orientation="right" tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
+                                  <Legend verticalAlign="top" iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
+                                  <Line yAxisId="left" type="monotone" dataKey="ac" name="AC" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} />
+                                  <Line yAxisId="right" type="monotone" dataKey="hba1c" name="HbA1c (%)" stroke="#ef4444" strokeWidth={2.5} dot={{ r: 3 }} />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+
+                          <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-3xs">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">腎過濾與血脂指標變動</h4>
+                            <div className="h-56">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={sortedBioHistory as any[]} margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                  <XAxis dataKey="date" tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <YAxis tick={{fontSize: 9}} stroke="#94a3b8" />
+                                  <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px' }} />
+                                  <Legend verticalAlign="top" iconSize={8} wrapperStyle={{ fontSize: '10px' }} />
+                                  <Line type="monotone" dataKey="egfr" name="eGFR" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />
+                                  <Line type="monotone" dataKey="tg" name="TG" stroke="#8b5cf6" strokeWidth={1.8} dot={{ r: 3 }} />
+                                  <Line type="monotone" dataKey="ldl" name="LDL" stroke="#3b82f6" strokeWidth={1.8} dot={{ r: 3 }} />
+                                  <Line type="monotone" dataKey="tc" name="TC" stroke="#e11d48" strokeWidth={1.8} dot={{ r: 3 }} />
+                                  <Line type="monotone" dataKey="uricAcid" name="UA" stroke="#84cc16" strokeWidth={1.8} dot={{ r: 3 }} />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* Plan & Dates */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                        <Calendar className="w-4 h-4 text-purple-600" />
+                        下次諮詢追蹤日期
+                      </label>
                       <div className="relative w-64">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input 
                           type="date" 
                           value={state.monitoring.nextDate || ''}
-                          onChange={e => setState({...state, monitoring: {...state.monitoring, nextDate: e.target.value}})}
-                          className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200"
+                          onChange={e => setState({
+                            ...state, 
+                            monitoring: { ...state.monitoring, nextDate: e.target.value }
+                          })}
+                          className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-purple-500/20"
                         />
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">監測指標與計畫</label>
+                    
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-slate-700">後續追蹤計畫與備註 (Monitoring Plan)</label>
                       <textarea 
                         rows={4}
                         value={state.monitoring.plan || ''}
-                        onChange={e => setState({...state, monitoring: {...state.monitoring, plan: e.target.value}})}
-                        placeholder="紀錄預計追蹤的生化數值、體重變化或飲食遵從性..."
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                        onChange={e => setState({
+                          ...state, 
+                          monitoring: { ...state.monitoring, plan: e.target.value }
+                        })}
+                        placeholder="在此規劃下一次追蹤的生化數據、體重指標或飲食遵從性要求..."
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-500/30 outline-none transition-all text-sm"
                       ></textarea>
                     </div>
                   </div>
+
                 </div>
               </section>
             </motion.div>
