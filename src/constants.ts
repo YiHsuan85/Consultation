@@ -168,7 +168,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '富士蘋果1顆（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 4.2, k: 138.4, p: 11.6 },
   { name: '柳丁1顆（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 7.3, k: 200.2, p: 28.7 },
   { name: '香蕉半根（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 259.5, p: 16.5 },
-  { name: '聖女蕃茄13-15顆（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 16.9, k: 354.7, p: 46 },
+  { name: '聖女蕃茄13-15顆（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 16.9, k: 354.7, p: 46 },
   { name: '綠葡萄13顆（8分滿）', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 3.8, k: 155, p: 20.2 },
   { name: '草莓16顆', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 10.5, k: 308, p: 35.5 },
   { name: '荔枝100g(9顆)', category: '水果類', carbs: 15, protein: 0, fat: 0, kcal: 60, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 1.1, k: 170.5, p: 22.9 },
