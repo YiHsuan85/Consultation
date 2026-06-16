@@ -3737,7 +3737,7 @@ export default function App() {
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">建議熱量需求 (僅供參考)</label>
+                      <label className="text-sm font-medium text-slate-700">建議熱量 (Wt與運動)</label>
                       <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-full min-h-[42px] flex flex-col justify-center py-2">
                         <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
                         {recommendedMacros && (
@@ -3750,7 +3750,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">建議熱量需求 (Harris Benedict)</label>
+                      <label className="text-sm font-medium text-slate-700">建議熱量 (Harris Benedict)</label>
                       <div className="px-3 py-2 bg-indigo-50/70 text-indigo-900 rounded-lg border border-indigo-100 h-full min-h-[42px] flex flex-col justify-center gap-1.5 shadow-xs">
                         {recommendedHBKcal.err ? (
                           <div className="text-[10px] text-slate-500 font-medium leading-tight">{recommendedHBKcal.err}</div>
