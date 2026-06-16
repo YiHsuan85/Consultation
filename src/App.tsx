@@ -989,6 +989,9 @@ export default function App() {
     ldl: '',
     tc: '',
     uricAcid: '',
+    hdl: '',
+    ast: '',
+    alt: '',
     bp: '',
     other: ''
   });
@@ -1005,6 +1008,9 @@ export default function App() {
     ldl: '',
     tc: '',
     uricAcid: '',
+    hdl: '',
+    ast: '',
+    alt: '',
     bp: '',
     other: ''
   });
@@ -1310,7 +1316,7 @@ export default function App() {
     // Fallback migration to support legacy history records
     if (!state.monitoring?.history) return [];
     return [...state.monitoring.history]
-      .filter(h => (h.ac || h.hba1c || h.egfr || h.tg || h.ldl || h.tc || h.uricAcid || h.bp || h.other))
+      .filter(h => (h.ac || h.hba1c || h.egfr || h.tg || h.ldl || h.tc || h.uricAcid || h.hdl || h.ast || h.alt || h.bp || h.other))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [state.monitoring?.biochemHistory, state.monitoring?.history]);
 
@@ -1505,7 +1511,7 @@ export default function App() {
           latestHistory.push({
             date: targetWeightDate,
             weight: currentWeight,
-            ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '',
+            ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
             other: '從體重表單同步'
           });
         }
@@ -1542,6 +1548,9 @@ export default function App() {
             ldl: state.biochemistry.LDL || latestHistory[existingIdx].ldl || '',
             tc: state.biochemistry.TC || latestHistory[existingIdx].tc || '',
             uricAcid: state.biochemistry.UricAcid || latestHistory[existingIdx].uricAcid || '',
+            hdl: state.biochemistry.HDL || latestHistory[existingIdx].hdl || '',
+            ast: state.biochemistry.AST || latestHistory[existingIdx].ast || '',
+            alt: state.biochemistry.ALT || latestHistory[existingIdx].alt || '',
             bp: state.biochemistry.BP || latestHistory[existingIdx].bp || '',
           };
         } else {
@@ -1555,6 +1564,9 @@ export default function App() {
             ldl: state.biochemistry.LDL || '',
             tc: state.biochemistry.TC || '',
             uricAcid: state.biochemistry.UricAcid || '',
+            hdl: state.biochemistry.HDL || '',
+            ast: state.biochemistry.AST || '',
+            alt: state.biochemistry.ALT || '',
             bp: state.biochemistry.BP || '',
             other: '從生化表單同步'
           });
@@ -1572,6 +1584,9 @@ export default function App() {
           ldl: state.biochemistry.LDL || '',
           tc: state.biochemistry.TC || '',
           uricAcid: state.biochemistry.UricAcid || '',
+          hdl: state.biochemistry.HDL || '',
+          ast: state.biochemistry.AST || '',
+          alt: state.biochemistry.ALT || '',
           bp: state.biochemistry.BP || '',
           other: '儲存時同步'
         };
@@ -3011,6 +3026,9 @@ export default function App() {
                           ldl: state.biochemistry.LDL || '',
                           tc: state.biochemistry.TC || '',
                           uricAcid: state.biochemistry.UricAcid || '',
+                          hdl: state.biochemistry.HDL || '',
+                          ast: state.biochemistry.AST || '',
+                          alt: state.biochemistry.ALT || '',
                           bp: state.biochemistry.BP || '',
                           other: ''
                         };
@@ -3031,6 +3049,9 @@ export default function App() {
                           ldl: state.biochemistry.LDL || '',
                           tc: state.biochemistry.TC || '',
                           uricAcid: state.biochemistry.UricAcid || '',
+                          hdl: state.biochemistry.HDL || '',
+                          ast: state.biochemistry.AST || '',
+                          alt: state.biochemistry.ALT || '',
                           bp: state.biochemistry.BP || '',
                           other: ''
                         };
@@ -3123,8 +3144,11 @@ export default function App() {
                               <th className="px-3 py-2 font-semibold">HbA1c (%)</th>
                               <th className="px-3 py-2 font-semibold">eGFR</th>
                               <th className="px-3 py-2 font-semibold">TG</th>
+                              <th className="px-3 py-2 font-semibold">HDL</th>
                               <th className="px-3 py-2 font-semibold">LDL</th>
                               <th className="px-3 py-2 font-semibold">TC</th>
+                              <th className="px-3 py-2 font-semibold">AST</th>
+                              <th className="px-3 py-2 font-semibold">ALT</th>
                               <th className="px-3 py-2 font-semibold">UA</th>
                               <th className="px-3 py-2 font-semibold">BP</th>
                               <th className="px-3 py-2 font-semibold text-center">操作</th>
@@ -3194,6 +3218,9 @@ export default function App() {
                                             LDL: record.ldl !== undefined ? record.ldl : (state.biochemistry.LDL || ''),
                                             TC: record.tc !== undefined ? record.tc : (state.biochemistry.TC || ''),
                                             UricAcid: record.uricAcid !== undefined ? record.uricAcid : (state.biochemistry.UricAcid || ''),
+                                            HDL: record.hdl !== undefined ? record.hdl : (state.biochemistry.HDL || ''),
+                                            AST: record.ast !== undefined ? record.ast : (state.biochemistry.AST || ''),
+                                            ALT: record.alt !== undefined ? record.alt : (state.biochemistry.ALT || ''),
                                             BP: record.bp !== undefined ? record.bp : (state.biochemistry.BP || ''),
                                           }
                                         });
@@ -3221,12 +3248,24 @@ export default function App() {
                                     {prev && getTrend(record.tg, prev.tg, true)}
                                   </td>
                                   <td className="px-3 py-2.5">
+                                    <span>{record.hdl || '--'}</span>
+                                    {prev && getTrend(record.hdl, prev.hdl, false)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
                                     <span>{record.ldl || '--'}</span>
                                     {prev && getTrend(record.ldl, prev.ldl, true)}
                                   </td>
                                   <td className="px-3 py-2.5">
                                     <span>{record.tc || '--'}</span>
                                     {prev && getTrend(record.tc, prev.tc, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.ast || '--'}</span>
+                                    {prev && getTrend(record.ast, prev.ast, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.alt || '--'}</span>
+                                    {prev && getTrend(record.alt, prev.alt, true)}
                                   </td>
                                   <td className="px-3 py-2.5">
                                     <span>{record.uricAcid || '--'}</span>
@@ -5244,7 +5283,7 @@ export default function App() {
                                     const newLegacyRec = {
                                       date: currentWeightRec.date,
                                       weight: currentWeightRec.weight,
-                                      ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: '體重端填寫'
+                                      ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '', other: '體重端填寫'
                                     };
                                     setState({
                                       ...state,
@@ -5490,6 +5529,9 @@ export default function App() {
                                   ldl: currentBiochemRec.ldl,
                                   tc: currentBiochemRec.tc,
                                   uricAcid: currentBiochemRec.uricAcid,
+                                  hdl: currentBiochemRec.hdl,
+                                  ast: currentBiochemRec.ast,
+                                  alt: currentBiochemRec.alt,
                                   bp: currentBiochemRec.bp,
                                   other: currentBiochemRec.other
                                 };
@@ -5503,7 +5545,8 @@ export default function App() {
                                 });
                                 setCurrentBiochemRec({
                                   date: new Date().toISOString().split('T')[0],
-                                  ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: ''
+                                  ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: '',
+                                  hdl: '', ast: '', alt: ''
                                 });
                               } else {
                                 alert('請填寫生化資料的日期');
@@ -5530,8 +5573,11 @@ export default function App() {
                                 <th className="px-3 py-2.5">HbA1c (%)</th>
                                 <th className="px-3 py-2.5">eGFR</th>
                                 <th className="px-3 py-2.5">TG</th>
+                                <th className="px-3 py-2.5">HDL</th>
                                 <th className="px-3 py-2.5">LDL</th>
                                 <th className="px-3 py-2.5">TC</th>
+                                <th className="px-3 py-2.5">AST</th>
+                                <th className="px-3 py-2.5">ALT</th>
                                 <th className="px-3 py-2.5">UA</th>
                                 <th className="px-3 py-2.5">BP</th>
                                 <th className="px-3 py-2.5">其他</th>
@@ -5541,7 +5587,7 @@ export default function App() {
                             <tbody className="divide-y divide-slate-100 text-slate-700">
                               {sortedBioHistory.length === 0 ? (
                                 <tr>
-                                  <td colSpan={11} className="px-3 py-6 text-center text-slate-400 italic">尚無生化指標追蹤紀錄</td>
+                                  <td colSpan={14} className="px-3 py-6 text-center text-slate-400 italic">尚無生化指標追蹤紀錄</td>
                                 </tr>
                               ) : (
                                 sortedBioHistory.map((record, idx) => (
@@ -5551,8 +5597,11 @@ export default function App() {
                                     <td className="px-3 py-2.5 font-medium">{record.hba1c ? `${record.hba1c} %` : '--'}</td>
                                     <td className="px-3 py-2.5 font-medium">{record.egfr || '--'}</td>
                                     <td className="px-3 py-2.5 font-medium">{record.tg || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.hdl || '--'}</td>
                                     <td className="px-3 py-2.5 font-medium">{record.ldl || '--'}</td>
                                     <td className="px-3 py-2.5 font-medium">{record.tc || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.ast || '--'}</td>
+                                    <td className="px-3 py-2.5 font-medium">{record.alt || '--'}</td>
                                     <td className="px-3 py-2.5 font-medium">{record.uricAcid || '--'}</td>
                                     <td className="px-3 py-2.5 font-medium font-mono">{record.bp || '--'}</td>
                                     <td className="px-3 py-2.5 max-w-[120px] truncate" title={record.other}>{record.other || '--'}</td>
