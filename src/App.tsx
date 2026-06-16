@@ -3824,7 +3824,7 @@ export default function App() {
                         value={state.diet.currentWaterNotes || ''} 
                         onChange={e => setState({...state, diet: {...state.diet, currentWaterNotes: e.target.value}})} 
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all" 
-                        placeholder="請詳述飲水習慣（如：溫開水）..."
+                        placeholder="飲水（如：水、茶、手搖飲）..."
                       />
                     </div>
                     <div className="space-y-1">
