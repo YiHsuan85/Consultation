@@ -51,6 +51,26 @@ export interface PES {
   symptomOther?: string;
 }
 
+export interface WeightRecord {
+  id: string;
+  date: string;
+  weight: string | number;
+}
+
+export interface BiochemRecord {
+  id: string;
+  date: string;
+  ac?: string | number;
+  hba1c?: string | number;
+  egfr?: string | number;
+  tg?: string | number;
+  ldl?: string | number;
+  tc?: string | number;
+  uricAcid?: string | number;
+  bp?: string | number;
+  other?: string;
+}
+
 export interface MonitoringRecord {
   date: string;
   weight: string | number;
@@ -171,6 +191,8 @@ export interface AppState {
   };
   monitoring: {
     history: MonitoringRecord[];
+    weightHistory?: WeightRecord[];
+    biochemHistory?: BiochemRecord[];
     nextDate: string;
     plan: string;
   };
