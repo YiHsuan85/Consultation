@@ -485,7 +485,7 @@ export const generateWordDoc = async (state: AppState) => {
           new Paragraph({
             children: [
               new TextRun({ text: `PES ${idx + 1}: `, bold: true }),
-              new TextRun({ text: `${pes.problem} (P) 相關於 ${pes.etiology} (E) 經由 ${pes.symptom} (S) 證實。` }),
+              new TextRun({ text: `${pes.problem === '其他' ? (pes.problemOther || '其他') : pes.problem} (P) 相關於 ${pes.etiology === '其他' ? (pes.etiologyOther || '其他') : pes.etiology} (E) 經由 ${pes.symptom === '其他' ? (pes.symptomOther || '其他') : pes.symptom} (S) 證實。` }),
             ],
             spacing: { after: 100 },
           })
