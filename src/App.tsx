@@ -1285,7 +1285,8 @@ export default function App() {
     if (!state.monitoring?.history) return [];
     return [...state.monitoring.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [state.monitoring?.history]);
-const weightLossAnalysis = useMemo(() => {
+
+  const weightLossAnalysis = useMemo(() => {
     const currentWeight = parseFloat(state.anthropometry.weight);
     if (isNaN(currentWeight) || currentWeight <= 0 || !state.monitoring?.history) {
       return { hasHistory: false, alerts: [], weekLoss: null, monthLoss: null, sixMonthLoss: null };
@@ -1376,7 +1377,6 @@ const weightLossAnalysis = useMemo(() => {
     };
   }, [state.anthropometry.weight, state.anthropometry.weightDate, state.consultDate, state.monitoring?.history]);
 
-  
   // Persistence: Save to local storage whenever state changes
   useEffect(() => {
     localStorage.setItem('nutrition_counseling_record', JSON.stringify(state));
@@ -1480,7 +1480,6 @@ const weightLossAnalysis = useMemo(() => {
         }));
       }
 
-      
       const { id, ...cleanState } = state;
       if (state.anthropometry.weightDate && state.anthropometry.weight) {
         cleanState.monitoring = {
@@ -1488,7 +1487,6 @@ const weightLossAnalysis = useMemo(() => {
           history: latestHistory
         };
       }
-
       
       const payload = {
         userId: user.uid,
@@ -2222,8 +2220,7 @@ const weightLossAnalysis = useMemo(() => {
                     </div>
 
                     {/* Right side: 宗教/飲食禁忌 & 生活習慣 (stacked under each other) */}
-
-                   <div className="md:col-span-1 space-y-4">
+                    <div className="md:col-span-1 space-y-4">
                       <div className="space-y-1">
                         <label className="text-sm font-medium text-slate-700">宗教/飲食禁忌</label>
                         <input 
@@ -2240,123 +2237,122 @@ const weightLossAnalysis = useMemo(() => {
                           <div className="flex gap-3">
                             <label className="flex items-center gap-1.5 cursor-pointer">
                               <input 
-                                
-                              type="checkbox" 
-                              checked={!!state.clientHx.habits.none} 
-                              onChange={e => {
-                                const checked = e.target.checked;
-                                setState({
-                                  ...state, 
-                                  clientHx: {
-                                    ...state.clientHx, 
-                                    habits: {
-                                      ...state.clientHx.habits, 
-                                      none: checked,
-                                      smoke: checked ? false : state.clientHx.habits.smoke,
-                                      drink: checked ? false : state.clientHx.habits.drink,
-                                      smokeFrequency: checked ? '' : state.clientHx.habits.smokeFrequency,
-                                      drinkFrequency: checked ? '' : state.clientHx.habits.drinkFrequency,
+                                type="checkbox" 
+                                checked={!!state.clientHx.habits.none} 
+                                onChange={e => {
+                                  const checked = e.target.checked;
+                                  setState({
+                                    ...state, 
+                                    clientHx: {
+                                      ...state.clientHx, 
+                                      habits: {
+                                        ...state.clientHx.habits, 
+                                        none: checked,
+                                        smoke: checked ? false : state.clientHx.habits.smoke,
+                                        drink: checked ? false : state.clientHx.habits.drink,
+                                        smokeFrequency: checked ? '' : state.clientHx.habits.smokeFrequency,
+                                        drinkFrequency: checked ? '' : state.clientHx.habits.drinkFrequency,
+                                      }
                                     }
-                                  }
-                                });
-                              }} 
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
-                            />
-                            <span className="text-sm text-slate-600">無</span>
-                          </label>
+                                  });
+                                }} 
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
+                              />
+                              <span className="text-sm text-slate-600">無</span>
+                            </label>
 
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={state.clientHx.habits.smoke} 
-                              onChange={e => {
-                                const checked = e.target.checked;
-                                setState({
-                                  ...state, 
-                                  clientHx: {
-                                    ...state.clientHx, 
-                                    habits: {
-                                      ...state.clientHx.habits, 
-                                      smoke: checked,
-                                      none: checked ? false : (!state.clientHx.habits.drink),
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={state.clientHx.habits.smoke} 
+                                onChange={e => {
+                                  const checked = e.target.checked;
+                                  setState({
+                                    ...state, 
+                                    clientHx: {
+                                      ...state.clientHx, 
+                                      habits: {
+                                        ...state.clientHx.habits, 
+                                        smoke: checked,
+                                        none: checked ? false : (!state.clientHx.habits.drink),
+                                      }
                                     }
-                                  }
-                                });
-                              }} 
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
-                            />
-                            <span className="text-sm text-slate-600">抽菸</span>
-                          </label>
+                                  });
+                                }} 
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
+                              />
+                              <span className="text-sm text-slate-600">抽菸</span>
+                            </label>
 
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input 
-                              type="checkbox" 
-                              checked={state.clientHx.habits.drink} 
-                              onChange={e => {
-                                const checked = e.target.checked;
-                                setState({
-                                  ...state, 
-                                  clientHx: {
-                                    ...state.clientHx, 
-                                    habits: {
-                                      ...state.clientHx.habits, 
-                                      drink: checked,
-                                      none: checked ? false : (!state.clientHx.habits.smoke),
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={state.clientHx.habits.drink} 
+                                onChange={e => {
+                                  const checked = e.target.checked;
+                                  setState({
+                                    ...state, 
+                                    clientHx: {
+                                      ...state.clientHx, 
+                                      habits: {
+                                        ...state.clientHx.habits, 
+                                        drink: checked,
+                                        none: checked ? false : (!state.clientHx.habits.smoke),
+                                      }
                                     }
-                                  }
-                                });
-                              }} 
-                              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
-                            />
-                            <span className="text-sm text-slate-600">喝酒</span>
-                          </label>
-                        </div>
+                                  });
+                                }} 
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500/20" 
+                              />
+                              <span className="text-sm text-slate-600">喝酒</span>
+                            </label>
+                          </div>
 
-                         {/* Frequency Inputs inside right slot */}
+                          {/* Frequency Inputs inside right slot */}
                           {state.clientHx.habits.smoke && (
                             <div className="space-y-0.5">
                               <label className="text-[10px] font-semibold text-slate-500 block">抽菸頻率</label>
                               <input
                                 type="text"
                                 value={state.clientHx.habits.smokeFrequency || ''}
-                              onChange={e => setState({
-                                ...state,
-                                clientHx: {
-                                  ...state.clientHx,
-                                  habits: {
-                                    ...state.clientHx.habits,
-                                    smokeFrequency: e.target.value
+                                onChange={e => setState({
+                                  ...state,
+                                  clientHx: {
+                                    ...state.clientHx,
+                                    habits: {
+                                      ...state.clientHx.habits,
+                                      smokeFrequency: e.target.value
+                                    }
                                   }
-                                }
-                              })}
-                              placeholder="如：半包/天"
-                              className="w-full text-xs px-2 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white"
+                                })}
+                                placeholder="如：半包/天"
+                                className="w-full text-xs px-2 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white"
                               />
-                          </div>
-                        )}
+                            </div>
+                          )}
 
-                        {state.clientHx.habits.drink && (
-                          <div className="space-y-0.5">
-                            <label className="text-[10px] font-semibold text-slate-500 block">喝酒頻率</label>
-                            <input
-                              type="text"
-                              value={state.clientHx.habits.drinkFrequency || ''}
-                              onChange={e => setState({
-                                ...state,
-                                clientHx: {
-                                  ...state.clientHx,
-                                  habits: {
-                                    ...state.clientHx.habits,
-                                    drinkFrequency: e.target.value
+                          {state.clientHx.habits.drink && (
+                            <div className="space-y-0.5">
+                              <label className="text-[10px] font-semibold text-slate-500 block">喝酒頻率</label>
+                              <input
+                                type="text"
+                                value={state.clientHx.habits.drinkFrequency || ''}
+                                onChange={e => setState({
+                                  ...state,
+                                  clientHx: {
+                                    ...state.clientHx,
+                                    habits: {
+                                      ...state.clientHx.habits,
+                                      drinkFrequency: e.target.value
+                                    }
                                   }
-                                }
-                              })}
-                              placeholder="如：1罐啤酒/週"
-                              className="w-full text-xs px-2 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white"
+                                })}
+                                placeholder="如：1罐啤酒/週"
+                                className="w-full text-xs px-2 py-1 rounded border border-slate-200 outline-none focus:border-blue-500 transition-colors bg-white"
                               />
-                          </div>
-                        )}
-                      </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2511,14 +2507,14 @@ const weightLossAnalysis = useMemo(() => {
                         IBW (標準體重) 
                         <span className="text-[10px] ml-1 text-slate-400">
                           ({(calculateAge(state.clientHx.birthday) >= 50 ? 25 : 22)})
-                      </span>
-                    </label>
-                    <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
-                      {state.anthropometry.ibw || '--'}
+                        </span>
+                      </label>
+                      <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
+                        {state.anthropometry.ibw || '--'}
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-1">
-                   <label className="text-sm font-medium text-slate-700 font-bold">ABW (調整體重)</label>
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-slate-700 font-bold">ABW (調整體重)</label>
                       <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
                         {state.anthropometry.abw || '--'}
                       </div>
@@ -2531,6 +2527,7 @@ const weightLossAnalysis = useMemo(() => {
                       <label className="text-sm font-medium text-slate-700">體脂率 (%)</label>
                       <input type="number" step="0.1" value={state.anthropometry.bodyFat || ''} onChange={e => setState({...state, anthropometry: {...state.anthropometry, bodyFat: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500/20 outline-none" />
                     </div>
+                  </div>
 
                   {/* Row 3: Edema, Notes */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 border-t border-slate-100 pt-4">
@@ -2884,53 +2881,53 @@ const weightLossAnalysis = useMemo(() => {
                     生化數值 (Biochemistry)
                   </h2>
                   <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium text-slate-600">報告日期</label>
-                    <input 
-                      type="date"
-                      value={state.biochemistryDate || ''}
-                      onChange={e => setState({...state, biochemistryDate: e.target.value})}
-                      className="px-3 py-1.5 text-sm rounded-lg border border-slate-200"
-                    />
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newRecord: MonitoringRecord = {
-                        date: state.biochemistryDate || new Date().toISOString().split('T')[0],
-                        weight: state.anthropometry.weight || '',
-                        hba1c: state.biochemistry.HbA1c || '',
-                        egfr: state.biochemistry.eGFR || '',
-                        tg: state.biochemistry.TG || '',
-                        ldl: state.biochemistry.LDL || '',
-                        tc: state.biochemistry.TC || '',
-                        uricAcid: state.biochemistry.UricAcid || '',
-                        bp: state.biochemistry.BP || '',
-                        other: ''
-                      };
-                      setState({
-                        ...state,
-                        monitoring: {
-                          ...state.monitoring,
-                          history: [newRecord, ...state.monitoring.history]
-                        }
-                      });
-                      alert('數據已同步至營養監測紀錄');
-                    }}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    同步至監測紀錄
-                  </button>
-                  <button 
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
-                  >
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-slate-600">報告日期</label>
+                      <input 
+                        type="date"
+                        value={state.biochemistryDate || ''}
+                        onChange={e => setState({...state, biochemistryDate: e.target.value})}
+                        className="px-3 py-1.5 text-sm rounded-lg border border-slate-200"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newRecord: MonitoringRecord = {
+                          date: state.biochemistryDate || new Date().toISOString().split('T')[0],
+                          weight: state.anthropometry.weight || '',
+                          hba1c: state.biochemistry.HbA1c || '',
+                          egfr: state.biochemistry.eGFR || '',
+                          tg: state.biochemistry.TG || '',
+                          ldl: state.biochemistry.LDL || '',
+                          tc: state.biochemistry.TC || '',
+                          uricAcid: state.biochemistry.UricAcid || '',
+                          bp: state.biochemistry.BP || '',
+                          other: ''
+                        };
+                        setState({
+                          ...state,
+                          monitoring: {
+                            ...state.monitoring,
+                            history: [newRecord, ...state.monitoring.history]
+                          }
+                        });
+                        alert('數據已同步至營養監測紀錄');
+                      }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      同步至監測紀錄
+                    </button>
+                    <button 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
+                    >
                       <Save className="w-3.5 h-3.5" />
                       {isSaving ? '儲存中...' : '儲存紀錄'}
                     </button>
                   </div>
-                 </div>
+                </div>
                 <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 border-b border-slate-100">
                   {Object.keys(state.biochemistry).map(key => {
                     const range = BIO_RANGES[key];
@@ -3609,7 +3606,6 @@ const weightLossAnalysis = useMemo(() => {
                             </span>
                           </div>
                         </div>
-
 
                         {/* 其他關鍵營養素評估 */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-2">
