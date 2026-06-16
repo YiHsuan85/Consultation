@@ -203,7 +203,6 @@ const DIAG_PROBLEM_INFO: { [key: string]: { definition: string; notes?: string }
   }
 };
 
-
 const HB_ACTIVITY_OPTIONS = [
   { label: '輕度活動 (1.3)', value: 1.3 },
   { label: '臥床 (1.2)', value: 1.2 },
