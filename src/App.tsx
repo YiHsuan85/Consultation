@@ -2351,20 +2351,20 @@ export default function App() {
                       <option>退休</option>
                     </select>
                   </div>
-                  <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-6 mt-2">
-                    {/* Left side: 工作說明 */}
-                    <div className="space-y-1 md:col-span-3">
+                  <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-5 gap-6 mt-2">
+                    {/* Left side: 工作說明 (3/5) */}
+                    <div className="md:col-span-3 space-y-1">
                       <label className="text-sm font-medium text-slate-700">工作說明</label>
                       <textarea 
                         value={state.clientHx.jobDescription || ''} 
                         onChange={e => setState({...state, clientHx: {...state.clientHx, jobDescription: e.target.value}})} 
                         placeholder="請詳述工作/生活作息等內容..."
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 min-h-[165px] focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all resize-none" 
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 min-h-[120px] focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all resize-none" 
                       />
                     </div>
 
-                    {/* Right side: 宗教/飲食禁忌 & 生活習慣 & 運動習慣 (stacked under each other) */}
-                    <div className="md:col-span-1 space-y-4">
+                    {/* Right side: 宗教/飲食禁忌 & 生活習慣 (2/5) */}
+                    <div className="md:col-span-2 space-y-4">
                       <div className="space-y-1">
                         <label className="text-sm font-medium text-slate-700">宗教/飲食禁忌</label>
                         <input 
@@ -2498,63 +2498,63 @@ export default function App() {
                           )}
                         </div>
                       </div>
+                    </div>
 
-                      {/* 運動習慣 stacked immediately below 生活習慣 */}
-                      <div className="space-y-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <label className="text-sm font-bold text-slate-800 flex items-center justify-between">
-                          <span className="flex items-center gap-1">
-                            <span>運動習慣</span>
-                          </span>
-                          <button 
-                            type="button" 
-                            onClick={addExerciseItem}
-                            className="flex items-center gap-0.5 text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-1.5 py-0.5 rounded transition-all focus:outline-none"
-                          >
-                            <Plus className="w-2.5 h-2.5" />
-                            新增
-                          </button>
+                    {/* 運動習慣 - 落在工作說明與生活習慣下方，佔據整行 5/5 滿版寬度 */}
+                    <div className="md:col-span-5 space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-slate-800 flex items-center gap-1">
+                          <span>運動習慣</span>
                         </label>
-                        <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-1">
-                          {(state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }]).map((exerciseItem, idx) => (
-                            <div key={idx} className="relative p-2 bg-white rounded-lg border border-slate-100 flex flex-col gap-1.5 group">
-                              {idx > 0 && (
-                                <button
-                                  type="button"
-                                  onClick={() => removeExerciseItem(idx)}
-                                  className="absolute top-1.5 right-1.5 text-slate-400 hover:text-red-500 hover:bg-red-55 p-0.5 rounded transition-all focus:outline-none"
-                                  title="刪除"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              )}
-                              <div className="text-[9px] font-bold text-slate-400">項目 {idx + 1}</div>
-                              <div className="flex gap-1.5">
-                                <input 
-                                  type="text" 
-                                  placeholder="頻率" 
-                                  value={exerciseItem.frequency || ''} 
-                                  onChange={e => updateExerciseItem(idx, 'frequency', e.target.value)} 
-                                  className="w-1/2 px-2 py-1 text-[11px] rounded border border-slate-250 bg-slate-50" 
-                                />
-                                <select 
-                                  value={exerciseItem.type || ''} 
-                                  onChange={e => updateExerciseItem(idx, 'type', e.target.value)} 
-                                  className="w-1/2 px-1 py-1 text-[11px] rounded border border-slate-250 bg-slate-50"
-                                >
-                                  <option value="">選擇類型</option>
-                                  {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                                </select>
-                              </div>
+                        <button 
+                          type="button" 
+                          onClick={addExerciseItem}
+                          className="flex items-center gap-0.5 text-[10px] text-blue-600 hover:text-blue-800 font-bold bg-blue-50 hover:bg-blue-100 px-1.5 py-0.5 rounded transition-all focus:outline-none cursor-pointer"
+                        >
+                          <Plus className="w-2.5 h-2.5" />
+                          新增
+                        </button>
+                      </div>
+                      <div className="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1">
+                        {(state.clientHx.exerciseList || [{ frequency: '', name: '', type: '' }]).map((exerciseItem, idx) => (
+                          <div key={idx} className="relative p-2.5 bg-white rounded-lg border border-slate-100 flex flex-col md:flex-row items-start md:items-center gap-2 group pr-8">
+                            <div className="text-[10px] font-bold text-slate-400 whitespace-nowrap min-w-[35px]">項目 {idx + 1}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full">
                               <input 
                                 type="text" 
-                                placeholder="具體運動 (如: 慢跑)" 
+                                placeholder="頻率 (如：3次/週)" 
+                                value={exerciseItem.frequency || ''} 
+                                onChange={e => updateExerciseItem(idx, 'frequency', e.target.value)} 
+                                className="w-full px-2 py-1 text-xs rounded border border-slate-250 bg-slate-50 outline-none focus:border-blue-500 hover:bg-slate-100 transition-colors" 
+                              />
+                              <select 
+                                value={exerciseItem.type || ''} 
+                                onChange={e => updateExerciseItem(idx, 'type', e.target.value)} 
+                                className="w-full px-1.5 py-1 text-xs rounded border border-slate-250 bg-slate-50 outline-none focus:border-blue-500 hover:bg-slate-100 transition-colors"
+                              >
+                                <option value="">選擇類型</option>
+                                {EXERCISE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                              </select>
+                              <input 
+                                type="text" 
+                                placeholder="具體運動 (如：慢跑)" 
                                 value={exerciseItem.name || ''} 
                                 onChange={e => updateExerciseItem(idx, 'name', e.target.value)} 
-                                className="w-full px-2 py-1 text-[11px] rounded border border-slate-250 bg-slate-50" 
+                                className="w-full px-2 py-1 text-xs rounded border border-slate-250 bg-slate-50 outline-none focus:border-blue-500 hover:bg-slate-100 transition-colors" 
                               />
                             </div>
-                          ))}
-                        </div>
+                            {idx > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => removeExerciseItem(idx)}
+                                className="absolute top-1/2 -translate-y-1/2 right-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-all focus:outline-none"
+                                title="刪除"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -3732,12 +3732,11 @@ export default function App() {
                         <option>葷</option>
                         <option>素</option>
                         <option>初一.十五素</option>
-                        <option>早素</option>
                         <option>蛋奶素</option>
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">建議熱量 (Wt與運動)</label>
+                      <label className="text-sm font-medium text-slate-700">建議熱量 (Wt,運動)</label>
                       <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-full min-h-[42px] flex flex-col justify-center py-2">
                         <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
                         {recommendedMacros && (
