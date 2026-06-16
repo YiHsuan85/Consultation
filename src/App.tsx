@@ -978,6 +978,8 @@ export default function App() {
   const [manualPrevWeight, setManualPrevWeight] = useState('');
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
+  const [sarcopeniaExpanded, setSarcopeniaExpanded] = useState(true);
+  const [dietLogsExpanded, setDietLogsExpanded] = useState(true);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -1541,6 +1543,9 @@ export default function App() {
             tg: state.biochemistry.TG || latestHistory[existingIdx].tg || '',
             ldl: state.biochemistry.LDL || latestHistory[existingIdx].ldl || '',
             tc: state.biochemistry.TC || latestHistory[existingIdx].tc || '',
+            hdl: state.biochemistry.HDL || latestHistory[existingIdx].hdl || '',
+            ast: state.biochemistry.AST || latestHistory[existingIdx].ast || '',
+            alt: state.biochemistry.ALT || latestHistory[existingIdx].alt || '',
             uricAcid: state.biochemistry.UricAcid || latestHistory[existingIdx].uricAcid || '',
             bp: state.biochemistry.BP || latestHistory[existingIdx].bp || '',
           };
@@ -1554,6 +1559,9 @@ export default function App() {
             tg: state.biochemistry.TG || '',
             ldl: state.biochemistry.LDL || '',
             tc: state.biochemistry.TC || '',
+            hdl: state.biochemistry.HDL || '',
+            ast: state.biochemistry.AST || '',
+            alt: state.biochemistry.ALT || '',
             uricAcid: state.biochemistry.UricAcid || '',
             bp: state.biochemistry.BP || '',
             other: '從生化表單同步'
@@ -1571,6 +1579,9 @@ export default function App() {
           tg: state.biochemistry.TG || '',
           ldl: state.biochemistry.LDL || '',
           tc: state.biochemistry.TC || '',
+          hdl: state.biochemistry.HDL || '',
+          ast: state.biochemistry.AST || '',
+          alt: state.biochemistry.ALT || '',
           uricAcid: state.biochemistry.UricAcid || '',
           bp: state.biochemistry.BP || '',
           other: '儲存時同步'
@@ -2595,14 +2606,75 @@ export default function App() {
                     <Calculator className="w-5 h-5 text-blue-600" />
                     體位測量 (Anthropometry)
                   </h2>
-                  <button 
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    {isSaving ? '儲存中...' : '儲存紀錄'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const wDate = state.anthropometry.weightDate || state.consultDate || new Date().toISOString().split('T')[0];
+                        const w = state.anthropometry.weight;
+                        if (!w) {
+                          alert('請先輸入體重！');
+                          return;
+                        }
+
+                        // Update weightHistory
+                        const updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+                        const existingWIdx = updatedWeightHistory.findIndex(h => h.date === wDate);
+                        if (existingWIdx > -1) {
+                          updatedWeightHistory[existingWIdx] = {
+                            ...updatedWeightHistory[existingWIdx],
+                            weight: w
+                          };
+                        } else {
+                          updatedWeightHistory.push({
+                            id: Date.now().toString() + '-w',
+                            date: wDate,
+                            weight: w
+                          });
+                        }
+                        updatedWeightHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                        // Update legacy history for compatibility
+                        const updatedLegacyHistory = [...state.monitoring.history];
+                        const existingLegIdx = updatedLegacyHistory.findIndex(h => h.date === wDate);
+                        if (existingLegIdx > -1) {
+                          updatedLegacyHistory[existingLegIdx] = {
+                            ...updatedLegacyHistory[existingLegIdx],
+                            weight: w
+                          };
+                        } else {
+                          updatedLegacyHistory.push({
+                            date: wDate,
+                            weight: w,
+                            ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '', other: '從體位測量同步'
+                          });
+                        }
+                        updatedLegacyHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                        setState({
+                          ...state,
+                          monitoring: {
+                            ...state.monitoring,
+                            weightHistory: updatedWeightHistory,
+                            history: updatedLegacyHistory
+                          }
+                        });
+                        alert('體重數據已同步至監測紀錄');
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5" />
+                      同步至監測紀錄
+                    </button>
+                    <button 
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-4 py-1.5 bg-blue-600 active:bg-blue-700 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 transition-all font-bold text-xs cursor-pointer shadow-xs whitespace-nowrap"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      {isSaving ? '儲存中...' : '儲存紀錄'}
+                    </button>
+                  </div>
                 </div>
                 <div className="p-6 space-y-6">
                   {/* Row 1: Height, Weight, Weight Date, BMI */}
@@ -2841,14 +2913,25 @@ export default function App() {
 
                   {/* Muscle Mass & Sarcopenia Subsection */}
                   <div className="md:col-span-4 border-t border-slate-100 pt-5 mt-2">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-5 bg-indigo-600 rounded"></div>
-                      <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
-                        肌力與肌肉量篩檢評估 (Muscle Mass & Sarcopenia Screening)
-                      </h3>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSarcopeniaExpanded(!sarcopeniaExpanded)}
+                      className="w-full flex items-center justify-between text-left focus:outline-none hover:bg-slate-50 p-2 rounded-lg transition-colors mb-4 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-5 bg-indigo-600 rounded"></div>
+                        <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                          肌力與肌肉量篩檢評估 (Muscle Mass & Sarcopenia Screening)
+                        </h3>
+                      </div>
+                      <span className="text-slate-400">
+                        {sarcopeniaExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </span>
+                    </button>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {sarcopeniaExpanded && (
+                      <>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-semibold text-slate-600">1. 右手肌肉量 (kg)</label>
                         <input
@@ -2975,6 +3058,8 @@ export default function App() {
                         </p>
                       </div>
                     </div>
+                    </>
+                    )}
                   </div>
                 </div>
               </section>
@@ -3001,8 +3086,13 @@ export default function App() {
                         const biochemDate = state.biochemistryDate || new Date().toISOString().split('T')[0];
                         const weightDate = state.anthropometry.weightDate || biochemDate;
 
+                        // Modern biochemHistory sync with overwrite logic
+                        const updatedBiochemHistory = [...(state.monitoring.biochemHistory || [])];
+                        const existingBIdx = updatedBiochemHistory.findIndex(h => h.date === biochemDate);
+                        const targetBId = existingBIdx > -1 ? updatedBiochemHistory[existingBIdx].id : Date.now().toString() + '-b';
+                        
                         const newBiochemRecord = {
-                          id: Date.now().toString() + '-b',
+                          id: targetBId,
                           date: biochemDate,
                           ac: state.biochemistry.AC || '',
                           hba1c: state.biochemistry.HbA1c || '',
@@ -3010,47 +3100,80 @@ export default function App() {
                           tg: state.biochemistry.TG || '',
                           ldl: state.biochemistry.LDL || '',
                           tc: state.biochemistry.TC || '',
+                          hdl: state.biochemistry.HDL || '',
+                          ast: state.biochemistry.AST || '',
+                          alt: state.biochemistry.ALT || '',
                           uricAcid: state.biochemistry.UricAcid || '',
                           bp: state.biochemistry.BP || '',
-                          other: ''
+                          other: '手動同步'
                         };
 
-                        const newWeightRecord = state.anthropometry.weight ? {
-                          id: Date.now().toString() + '-w',
-                          date: weightDate,
-                          weight: state.anthropometry.weight
-                        } : null;
+                        if (existingBIdx > -1) {
+                          updatedBiochemHistory[existingBIdx] = newBiochemRecord;
+                        } else {
+                          updatedBiochemHistory.push(newBiochemRecord);
+                        }
+                        updatedBiochemHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
+                        // Modern weightHistory sync with overwrite logic (if weight exists)
+                        const updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+                        if (state.anthropometry.weight) {
+                          const existingWIdx = updatedWeightHistory.findIndex(h => h.date === weightDate);
+                          const targetWId = existingWIdx > -1 ? updatedWeightHistory[existingWIdx].id : Date.now().toString() + '-w';
+                          const newWeightRecord = {
+                            id: targetWId,
+                            date: weightDate,
+                            weight: state.anthropometry.weight
+                          };
+                          if (existingWIdx > -1) {
+                            updatedWeightHistory[existingWIdx] = newWeightRecord;
+                          } else {
+                            updatedWeightHistory.push(newWeightRecord);
+                          }
+                          updatedWeightHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                        }
+
+                        // Legacy history sync with overwrite logic
+                        const updatedLegacyHistory = [...state.monitoring.history];
+                        const existingLegIdx = updatedLegacyHistory.findIndex(h => h.date === biochemDate);
                         const legacyRecord: MonitoringRecord = {
                           date: biochemDate,
-                          weight: state.anthropometry.weight || '',
+                          weight: state.anthropometry.weight || (existingLegIdx > -1 ? updatedLegacyHistory[existingLegIdx].weight : ''),
                           ac: state.biochemistry.AC || '',
                           hba1c: state.biochemistry.HbA1c || '',
                           egfr: state.biochemistry.eGFR || '',
                           tg: state.biochemistry.TG || '',
                           ldl: state.biochemistry.LDL || '',
                           tc: state.biochemistry.TC || '',
+                          hdl: state.biochemistry.HDL || '',
+                          ast: state.biochemistry.AST || '',
+                          alt: state.biochemistry.ALT || '',
                           uricAcid: state.biochemistry.UricAcid || '',
                           bp: state.biochemistry.BP || '',
-                          other: ''
+                          other: '手動同步'
                         };
+
+                        if (existingLegIdx > -1) {
+                          updatedLegacyHistory[existingLegIdx] = legacyRecord;
+                        } else {
+                          updatedLegacyHistory.push(legacyRecord);
+                        }
+                        updatedLegacyHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
                         setState({
                           ...state,
                           monitoring: {
                             ...state.monitoring,
-                            history: [legacyRecord, ...state.monitoring.history],
-                            biochemHistory: [newBiochemRecord, ...(state.monitoring.biochemHistory || [])],
-                            weightHistory: newWeightRecord 
-                              ? [newWeightRecord, ...(state.monitoring.weightHistory || [])]
-                              : (state.monitoring.weightHistory || [])
+                            history: updatedLegacyHistory,
+                            biochemHistory: updatedBiochemHistory,
+                            weightHistory: updatedWeightHistory
                           }
                         });
-                        alert('數據已分別同步至體重與生化監測紀錄');
+                        alert('數據已同步至體重與生化監測紀錄（相同日期的記錄已覆蓋更新）');
                       }}
-                      className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-105 text-xs font-bold transition-all shadow-xs"
                     >
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                       同步至監測紀錄
                     </button>
                     <button 
@@ -3125,6 +3248,9 @@ export default function App() {
                               <th className="px-3 py-2 font-semibold">TG</th>
                               <th className="px-3 py-2 font-semibold">LDL</th>
                               <th className="px-3 py-2 font-semibold">TC</th>
+                              <th className="px-3 py-2 font-semibold">HDL</th>
+                              <th className="px-3 py-2 font-semibold">AST</th>
+                              <th className="px-3 py-2 font-semibold">ALT</th>
                               <th className="px-3 py-2 font-semibold">UA</th>
                               <th className="px-3 py-2 font-semibold">BP</th>
                               <th className="px-3 py-2 font-semibold text-center">操作</th>
@@ -3193,6 +3319,9 @@ export default function App() {
                                             TG: record.tg !== undefined ? record.tg : (state.biochemistry.TG || ''),
                                             LDL: record.ldl !== undefined ? record.ldl : (state.biochemistry.LDL || ''),
                                             TC: record.tc !== undefined ? record.tc : (state.biochemistry.TC || ''),
+                                            HDL: record.hdl !== undefined ? record.hdl : (state.biochemistry.HDL || ''),
+                                            AST: record.ast !== undefined ? record.ast : (state.biochemistry.AST || ''),
+                                            ALT: record.alt !== undefined ? record.alt : (state.biochemistry.ALT || ''),
                                             UricAcid: record.uricAcid !== undefined ? record.uricAcid : (state.biochemistry.UricAcid || ''),
                                             BP: record.bp !== undefined ? record.bp : (state.biochemistry.BP || ''),
                                           }
@@ -3227,6 +3356,18 @@ export default function App() {
                                   <td className="px-3 py-2.5">
                                     <span>{record.tc || '--'}</span>
                                     {prev && getTrend(record.tc, prev.tc, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.hdl || '--'}</span>
+                                    {prev && getTrend(record.hdl, prev.hdl, false)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.ast || '--'}</span>
+                                    {prev && getTrend(record.ast, prev.ast, true)}
+                                  </td>
+                                  <td className="px-3 py-2.5">
+                                    <span>{record.alt || '--'}</span>
+                                    {prev && getTrend(record.alt, prev.alt, true)}
                                   </td>
                                   <td className="px-3 py-2.5">
                                     <span>{record.uricAcid || '--'}</span>
@@ -4101,7 +4242,25 @@ export default function App() {
                     ></textarea>
                   </div>
 
-                  <div className="overflow-x-auto rounded-lg border border-slate-200">
+                  <div className="border-t border-slate-200/80 pt-5 mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setDietLogsExpanded(!dietLogsExpanded)}
+                      className="w-full flex items-center justify-between text-left focus:outline-none hover:bg-slate-50 p-2 rounded-lg transition-colors mb-4 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Utensils className="w-5 h-5 text-indigo-600" />
+                        <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                          餐次食物名稱細節 (Meal Food Details Logs)
+                        </h3>
+                      </div>
+                      <span className="text-slate-400">
+                        {dietLogsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </span>
+                    </button>
+
+                    {dietLogsExpanded && (
+                      <div className="overflow-x-auto rounded-lg border border-slate-200 shadow-2xs">
                     <table className="w-full text-sm text-left">
                       <thead className="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
                         <tr>
@@ -4209,6 +4368,8 @@ export default function App() {
                         </tr>
                       </tfoot>
                     </table>
+                  </div>
+                  )}
                   </div>
                 </div>
               </section>
