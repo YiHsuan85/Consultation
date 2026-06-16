@@ -811,7 +811,7 @@ export const EXCHANGE_VALUES = {
 };
 
 export const MEALS = ['早餐', '早點', '午餐', '午點', '晚餐', '晚點'];
-export const EXERCISE_TYPES = ['排球', '羽毛球', '爬山', '腳踏車', '游泳', '快走', '慢跑', '肌力訓練'];
+export const EXERCISE_TYPES = ['排球', '羽毛球', '爬山', '腳踏車', '游泳', '快走', '慢跑', '瑜珈', '肌力訓練'];
 export const ACTIVITY_FACTORS = ['無', '輕度', '中度', '重度'] as const;
 export const INTERVENTION_CATEGORIES = ['低脂乳品類', '全脂乳品類', '全榖雜糧類', '低氮澱粉', '低脂豆魚蛋肉類', '中脂豆魚蛋肉類', '蔬菜類', '水果類', '油脂與堅果類'];
 export const DIET_LOG_CATEGORIES = ['低脂奶類', '全脂奶類', '低脂豆魚蛋肉類', '中脂豆魚蛋肉類', '全穀雜糧類', '蔬菜類', '水果類', '油脂與堅果種子類', '外食類', '醬料類'];
