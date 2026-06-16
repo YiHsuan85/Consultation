@@ -67,10 +67,10 @@ export interface BiochemRecord {
   ldl?: string | number;
   tc?: string | number;
   uricAcid?: string | number;
-  bp?: string | number;
   hdl?: string | number;
   ast?: string | number;
   alt?: string | number;
+  bp?: string | number;
   other?: string;
 }
 
@@ -84,10 +84,10 @@ export interface MonitoringRecord {
   ldl?: string | number;
   tc?: string | number;
   uricAcid?: string | number;
-  bp?: string | number;
   hdl?: string | number;
   ast?: string | number;
   alt?: string | number;
+  bp?: string | number;
   other?: string;
 }
 
