@@ -2723,7 +2723,7 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 border-t border-slate-100 pt-4">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700 font-bold">
-                        IBW 
+                        IBW (標準體重) 
                         <span className="text-[10px] ml-1 text-slate-400">
                           ({(calculateAge(state.clientHx.birthday) >= 50 ? 25 : 22)})
                         </span>
@@ -2733,7 +2733,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700 font-bold">ABW </label>
+                      <label className="text-sm font-medium text-slate-700 font-bold">ABW (調整體重)</label>
                       <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
                         {state.anthropometry.abw || '--'}
                       </div>
@@ -3561,29 +3561,35 @@ export default function App() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
-                      <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">糖尿病參考值 (正常 | 前期 | 確診)</div>
-                      <div className="grid grid-cols-1 gap-y-1">
-                        <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
-                        <div><span className="text-slate-500">PC:</span> &lt;140 | 140-199 | &gt;200</div>
-                        <div><span className="text-slate-500">A1c:</span> 4-5.6 | 5.7-6.4 | &gt;6.5%</div>
-                      </div>
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3 mt-4">
+                    <div className="flex items-center gap-2 border-b border-slate-105 pb-2">
+                      <div className="w-1.5 h-3.5 bg-blue-600 rounded-full" />
+                      <h4 className="text-sm font-bold text-slate-800">生化數值參考/目標</h4>
                     </div>
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
-                      <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">血脂 ASCVD 預防目標 (LDL | Non-HDL)</div>
-                      <div className="space-y-1">
-                        <div><span className="text-slate-700 font-bold underline">預防:</span> (3–10%): &lt;100 | &lt;130; (≥10%): &lt;70 | &lt;100</div>
-                        <div><span className="text-slate-700 font-bold underline">已病:</span> (非極高): &lt;70 | &lt;100; (極高): &lt;55 | &lt;85</div>
-                        <div className="text-[10px] text-slate-500 pt-1">TG &gt; 400 時 LDL 計算誤差大，建議看 Non-HDL</div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
+                        <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">糖尿病參考值 (正常 | 前期 | 確診)</div>
+                        <div className="grid grid-cols-1 gap-y-1">
+                          <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
+                          <div><span className="text-slate-500">PC:</span> &lt;140 | 140-199 | &gt;200</div>
+                          <div><span className="text-slate-500">A1c:</span> 4-5.6 | 5.7-6.4 | &gt;6.5%</div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm text-[11px] leading-relaxed">
-                      <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級與 HDL 標準</div>
-                      <div className="space-y-1">
-                        <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
-                        <div><span className="text-slate-700 font-medium underline">HDL:</span> 男 &gt; 40 | 女 &gt; 50 (mg/dL)</div>
-                        <div><span className="text-slate-700 font-medium underline">TC:</span> &lt; 200 (mg/dL)</div>
+                      <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
+                        <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">血脂 ASCVD 預防目標 (LDL | Non-HDL)</div>
+                        <div className="space-y-1">
+                          <div><span className="text-slate-700 font-bold underline">預防:</span> (3–10%): &lt;100 | &lt;130; (≥10%): &lt;70 | &lt;100</div>
+                          <div><span className="text-slate-700 font-bold underline">已病:</span> (非極高): &lt;70 | &lt;100; (極高): &lt;55 | &lt;85</div>
+                          <div className="text-[10px] text-slate-500 pt-1">TG &gt; 400 時 LDL 計算誤差大，建議看 Non-HDL</div>
+                        </div>
+                      </div>
+                      <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
+                        <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級與 HDL 標準</div>
+                        <div className="space-y-1">
+                          <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
+                          <div><span className="text-slate-700 font-medium underline">HDL:</span> 男 &gt; 40 | 女 &gt; 50 (mg/dL)</div>
+                          <div><span className="text-slate-700 font-medium underline">TC:</span> &lt; 200 (mg/dL)</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -3731,12 +3737,13 @@ export default function App() {
                       <select value={state.diet.preference || ''} onChange={e => setState({...state, diet: {...state.diet, preference: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
                         <option>葷</option>
                         <option>素</option>
+                        <option>早素</option>
                         <option>初一.十五素</option>
                         <option>蛋奶素</option>
                       </select>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">建議熱量 (Wt,運動)</label>
+                      <label className="text-sm font-medium text-slate-700">建議熱量 (Wt+運動)</label>
                       <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-full min-h-[42px] flex flex-col justify-center py-2">
                         <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
                         {recommendedMacros && (
@@ -3803,7 +3810,7 @@ export default function App() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">飲水量 (ml/d)</label>
+                      <label className="text-sm font-medium text-slate-700">目前飲水量 (ml/d)</label>
                       <input 
                         type="number" 
                         value={state.diet.currentWater || ''} 
@@ -3813,7 +3820,7 @@ export default function App() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">飲水描述 (選填)</label>
+                      <label className="text-sm font-medium text-slate-700">飲水量描述 (選填)</label>
                       <input 
                         type="text" 
                         value={state.diet.currentWaterNotes || ''} 
@@ -3885,21 +3892,11 @@ export default function App() {
                           <span className="text-sm text-slate-600 font-medium">{item}</span>
                         </label>
                       ))}
-                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                        <span className="text-xs text-slate-500">其他:</span>
-                        <input 
-                          type="text" 
-                          placeholder="請輸入其他餐次..."
-                          value={state.diet.mealsOther || ''}
-                          onChange={e => setState({...state, diet: {...state.diet, mealsOther: e.target.value}})}
-                          className="w-full px-3 py-1 text-sm rounded border border-slate-200"
-                        />
-                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-2">
-                    <label className="text-sm font-medium text-slate-700 font-bold">飲食備註(習慣、外食、假日差異)</label>
+                    <label className="text-sm font-medium text-slate-700 font-bold">飲食史備註</label>
                     <textarea 
                       value={state.diet.notes || ''}
                       onChange={e => setState({...state, diet: {...state.diet, notes: e.target.value}})}
