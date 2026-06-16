@@ -978,6 +978,7 @@ export default function App() {
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
   const [dietLogsExpanded, setDietLogsExpanded] = useState(false);
+  const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -2621,7 +2622,13 @@ export default function App() {
                         const currentWeight = state.anthropometry.weight;
 
                         // 1) Legacy backup sync
-                        const latestHistory = [...state.monitoring.history];
+                        let latestHistory = [...state.monitoring.history];
+                        
+                        // If we are modifying a clicked record and the date has changed, remove the record under the old date
+                        if (clickedWeightHistoryDate && clickedWeightHistoryDate !== targetWeightDate) {
+                          latestHistory = latestHistory.filter(h => h.date !== clickedWeightHistoryDate);
+                        }
+
                         const existingIdx = latestHistory.findIndex(h => h.date === targetWeightDate);
                         if (existingIdx > -1) {
                           latestHistory[existingIdx] = {
@@ -2638,7 +2645,13 @@ export default function App() {
                         }
 
                         // 2) Modern weightHistory sync
-                        const updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+                        let updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+
+                        // If we are modifying a clicked record and the date has changed, remove the record under the old date
+                        if (clickedWeightHistoryDate && clickedWeightHistoryDate !== targetWeightDate) {
+                          updatedWeightHistory = updatedWeightHistory.filter(h => h.date !== clickedWeightHistoryDate);
+                        }
+
                         const existingWIdx = updatedWeightHistory.findIndex(h => h.date === targetWeightDate);
                         if (existingWIdx > -1) {
                           updatedWeightHistory[existingWIdx] = {
@@ -2661,6 +2674,7 @@ export default function App() {
                             weightHistory: updatedWeightHistory
                           }
                         });
+                        setClickedWeightHistoryDate(null); // Reset click tracking after sync
                         alert('數據已同步至體重監測紀錄');
                       }}
                       className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm cursor-pointer font-medium"
@@ -2829,6 +2843,7 @@ export default function App() {
                                         <button
                                           type="button"
                                           onClick={() => {
+                                            setClickedWeightHistoryDate(record.date);
                                             setState({
                                               ...state,
                                               anthropometry: {
@@ -2855,6 +2870,9 @@ export default function App() {
                                           onClick={() => {
                                             const newHistory = state.monitoring.history.filter(h => h.date !== record.date);
                                             const newWeightHistory = (state.monitoring.weightHistory || []).filter(h => h.date !== record.date);
+                                            if (clickedWeightHistoryDate === record.date) {
+                                              setClickedWeightHistoryDate(null);
+                                            }
                                             setState({
                                               ...state,
                                               monitoring: {
