@@ -978,6 +978,7 @@ export default function App() {
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
   const [dietLogsExpanded, setDietLogsExpanded] = useState(false);
+  const [sarcopeniaExpanded, setSarcopeniaExpanded] = useState(false);
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
@@ -2934,14 +2935,29 @@ export default function App() {
 
                   {/* Muscle Mass & Sarcopenia Subsection */}
                   <div className="md:col-span-4 border-t border-slate-100 pt-5 mt-2">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-5 bg-indigo-600 rounded"></div>
-                      <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
-                        肌力與肌肉量篩檢評估 (Muscle Mass & Sarcopenia Screening)
-                      </h3>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSarcopeniaExpanded(!sarcopeniaExpanded)}
+                      className="w-full flex items-center justify-between text-slate-800 font-bold hover:bg-slate-50 p-2 -mx-2 rounded-xl transition-all cursor-pointer text-left focus:outline-none mb-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-5 bg-indigo-600 rounded"></div>
+                        <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
+                          肌力與肌肉量篩檢評估 (Muscle Mass & Sarcopenia Screening)
+                        </h3>
+                      </div>
+                      <span className="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 shadow-2xs hover:bg-indigo-100 transition-colors">
+                        {sarcopeniaExpanded ? '收合 ▲' : '展開 ▼'}
+                      </span>
+                    </button>
 
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {sarcopeniaExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="space-y-4"
+                      >
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="space-y-1">
                         <label className="text-xs font-semibold text-slate-600">1. 右手肌肉量 (kg)</label>
                         <input
@@ -3068,6 +3084,8 @@ export default function App() {
                         </p>
                       </div>
                     </div>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </section>
