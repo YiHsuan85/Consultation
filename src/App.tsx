@@ -1486,14 +1486,55 @@ export default function App() {
     try {
       // 1. Prepare clean data mapping - remove ID from the 'data' payload to avoid recursive fields
       let latestHistory = [...state.monitoring.history];
-      if (state.anthropometry.weightDate && state.anthropometry.weight) {
-        const targetDate = state.anthropometry.weightDate;
+      let updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+      let updatedBiochemHistory = [...(state.monitoring.biochemHistory || [])];
+
+      // Sync weight separately to weightHistory if a weight is entered
+      if (state.anthropometry.weight) {
+        const targetWeightDate = state.anthropometry.weightDate || state.consultDate || new Date().toISOString().split('T')[0];
         const currentWeight = state.anthropometry.weight;
-        const existingIdx = latestHistory.findIndex(h => h.date === targetDate);
+        
+        // 1) Legacy backup sync
+        const existingIdx = latestHistory.findIndex(h => h.date === targetWeightDate);
         if (existingIdx > -1) {
           latestHistory[existingIdx] = {
             ...latestHistory[existingIdx],
+            weight: currentWeight
+          };
+        } else {
+          latestHistory.push({
+            date: targetWeightDate,
             weight: currentWeight,
+            ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', bp: '',
+            other: '從體重表單同步'
+          });
+        }
+
+        // 2) Modern weightHistory sync
+        const existingWIdx = updatedWeightHistory.findIndex(h => h.date === targetWeightDate);
+        if (existingWIdx > -1) {
+          updatedWeightHistory[existingWIdx] = {
+            ...updatedWeightHistory[existingWIdx],
+            weight: currentWeight
+          };
+        } else {
+          updatedWeightHistory.push({
+            id: Date.now().toString() + '-save-w',
+            date: targetWeightDate,
+            weight: currentWeight
+          });
+        }
+      }
+
+      // Sync biochemistry separately to biochemHistory if any biochemistry value exists
+      const biochemDate = state.biochemistryDate || state.consultDate || new Date().toISOString().split('T')[0];
+      const hasAnyBiochem = Object.entries(state.biochemistry).some(([k, val]) => val !== undefined && val !== '');
+      if (hasAnyBiochem) {
+        // 1) Legacy backup sync
+        const existingIdx = latestHistory.findIndex(h => h.date === biochemDate);
+        if (existingIdx > -1) {
+          latestHistory[existingIdx] = {
+            ...latestHistory[existingIdx],
             ac: state.biochemistry.AC || latestHistory[existingIdx].ac || '',
             hba1c: state.biochemistry.HbA1c || latestHistory[existingIdx].hba1c || '',
             egfr: state.biochemistry.eGFR || latestHistory[existingIdx].egfr || '',
@@ -1505,8 +1546,8 @@ export default function App() {
           };
         } else {
           latestHistory.push({
-            date: targetDate,
-            weight: currentWeight,
+            date: biochemDate,
+            weight: '',
             ac: state.biochemistry.AC || '',
             hba1c: state.biochemistry.HbA1c || '',
             egfr: state.biochemistry.eGFR || '',
@@ -1515,28 +1556,61 @@ export default function App() {
             tc: state.biochemistry.TC || '',
             uricAcid: state.biochemistry.UricAcid || '',
             bp: state.biochemistry.BP || '',
-            other: ''
+            other: '從生化表單同步'
           });
         }
-        latestHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
-        // Asynchronously update react state so UI also reflects it
-        setState(prev => ({
-          ...prev,
-          monitoring: {
-            ...prev.monitoring,
-            history: latestHistory
-          }
-        }));
+
+        // 2) Modern biochemHistory sync
+        const existingBIdx = updatedBiochemHistory.findIndex(h => h.date === biochemDate);
+        const newBRec = {
+          id: Date.now().toString() + '-save-b',
+          date: biochemDate,
+          ac: state.biochemistry.AC || '',
+          hba1c: state.biochemistry.HbA1c || '',
+          egfr: state.biochemistry.eGFR || '',
+          tg: state.biochemistry.TG || '',
+          ldl: state.biochemistry.LDL || '',
+          tc: state.biochemistry.TC || '',
+          uricAcid: state.biochemistry.UricAcid || '',
+          bp: state.biochemistry.BP || '',
+          other: '儲存時同步'
+        };
+
+        if (existingBIdx > -1) {
+          updatedBiochemHistory[existingBIdx] = {
+            ...updatedBiochemHistory[existingBIdx],
+            ...newBRec,
+            id: updatedBiochemHistory[existingBIdx].id || newBRec.id
+          };
+        } else {
+          updatedBiochemHistory.push(newBRec);
+        }
       }
 
+      // Sort both histories
+      latestHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      updatedWeightHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      updatedBiochemHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Update local state first
+      setState(prev => ({
+        ...prev,
+        monitoring: {
+          ...prev.monitoring,
+          history: latestHistory,
+          weightHistory: updatedWeightHistory,
+          biochemHistory: updatedBiochemHistory
+        }
+      }));
+
+      // Build payload for saving using the newly updated histories
       const { id, ...cleanState } = state;
-      if (state.anthropometry.weightDate && state.anthropometry.weight) {
-        cleanState.monitoring = {
-          ...cleanState.monitoring,
-          history: latestHistory
-        };
-      }
+      cleanState.monitoring = {
+        ...cleanState.monitoring,
+        history: latestHistory,
+        weightHistory: updatedWeightHistory,
+        biochemHistory: updatedBiochemHistory
+      };
       
       const payload = {
         userId: user.uid,
@@ -2706,11 +2780,13 @@ export default function App() {
                                           type="button"
                                           onClick={() => {
                                             const newHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                            const newWeightHistory = (state.monitoring.weightHistory || []).filter(h => h.date !== record.date);
                                             setState({
                                               ...state,
                                               monitoring: {
                                                 ...state.monitoring,
-                                                history: newHistory
+                                                history: newHistory,
+                                                weightHistory: newWeightHistory
                                               }
                                             });
                                           }}
@@ -3051,6 +3127,7 @@ export default function App() {
                               <th className="px-3 py-2 font-semibold">TC</th>
                               <th className="px-3 py-2 font-semibold">UA</th>
                               <th className="px-3 py-2 font-semibold">BP</th>
+                              <th className="px-3 py-2 font-semibold text-center">操作</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 text-slate-700">
@@ -3157,6 +3234,27 @@ export default function App() {
                                   </td>
                                   <td className="px-3 py-2.5 font-mono text-slate-600">
                                     {prev ? getBpTrend(record.bp, prev.bp) : (record.bp || '--')}
+                                  </td>
+                                  <td className="px-3 py-2.5 text-center">
+                                    <button 
+                                      type="button"
+                                      onClick={() => {
+                                        const newBiochemHistory = (state.monitoring.biochemHistory || []).filter(h => h.date !== record.date && h.id !== record.id);
+                                        const newLegacyHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                        setState({
+                                          ...state,
+                                          monitoring: {
+                                            ...state.monitoring,
+                                            biochemHistory: newBiochemHistory,
+                                            history: newLegacyHistory
+                                          }
+                                        });
+                                      }}
+                                      className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
+                                      title="刪除此生化紀錄"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
                                   </td>
                                 </tr>
                               );
