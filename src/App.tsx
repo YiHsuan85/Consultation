@@ -3803,7 +3803,7 @@ export default function App() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">目前飲水量 (ml/d)</label>
+                      <label className="text-sm font-medium text-slate-700">飲水量 (ml/d)</label>
                       <input 
                         type="number" 
                         value={state.diet.currentWater || ''} 
