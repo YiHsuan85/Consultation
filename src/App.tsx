@@ -3813,7 +3813,7 @@ export default function App() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">飲水量描述 (選填)</label>
+                      <label className="text-sm font-medium text-slate-700">飲水描述 (選填)</label>
                       <input 
                         type="text" 
                         value={state.diet.currentWaterNotes || ''} 
