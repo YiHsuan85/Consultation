@@ -269,7 +269,7 @@ export const generateWordDoc = async (state: AppState) => {
             new TableRow({
               children: [
                 createHeaderCell("身高 (cm)"), createValueCell(state.anthropometry.height),
-                createHeaderCell("體重 (kg)"), createValueCell(state.anthropometry.weight),
+                createHeaderCell("體重 (kg)"), createValueCell(state.anthropometry.weight + (state.anthropometry.weightDate ? ` (${state.anthropometry.weightDate})` : '')),
               ],
             }),
             new TableRow({
@@ -763,7 +763,7 @@ export const generateReminderWordDoc = async (state: AppState) => {
             new TableRow({
               children: [
                 createHeaderCell("身高 (cm)"), createValueCell(state.anthropometry.height),
-                createHeaderCell("體重 (kg)"), createValueCell(state.anthropometry.weight),
+                createHeaderCell("體重 (kg)"), createValueCell(state.anthropometry.weight + (state.anthropometry.weightDate ? ` (${state.anthropometry.weightDate})` : '')),
               ],
             }),
             new TableRow({
