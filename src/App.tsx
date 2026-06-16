@@ -3568,7 +3568,7 @@ export default function App() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
-                        <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">糖尿病參考值 (正常 | 前期 | 確診)</div>
+                        <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">DM參考值 (正常 | 前期 | 確診)</div>
                         <div className="grid grid-cols-1 gap-y-1">
                           <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
                           <div><span className="text-slate-500">PC:</span> &lt;140 | 140-199 | &gt;200</div>
@@ -3584,11 +3584,9 @@ export default function App() {
                         </div>
                       </div>
                       <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
-                        <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級與 HDL 標準</div>
+                        <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級</div>
                         <div className="space-y-1">
                           <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
-                          <div><span className="text-slate-700 font-medium underline">HDL:</span> 男 &gt; 40 | 女 &gt; 50 (mg/dL)</div>
-                          <div><span className="text-slate-700 font-medium underline">TC:</span> &lt; 200 (mg/dL)</div>
                         </div>
                       </div>
                     </div>
