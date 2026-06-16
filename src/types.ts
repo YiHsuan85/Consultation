@@ -53,15 +53,16 @@ export interface PES {
 
 export interface MonitoringRecord {
   date: string;
-  weight: string;
-  hba1c: string;
-  egfr: string;
-  tg: string;
-  ldl: string;
-  tc: string;
-  uricAcid: string;
-  bp: string;
-  other: string;
+  weight: string | number;
+  ac?: string | number;
+  hba1c?: string | number;
+  egfr?: string | number;
+  tg?: string | number;
+  ldl?: string | number;
+  tc?: string | number;
+  uricAcid?: string | number;
+  bp?: string | number;
+  other?: string;
 }
 
 export interface AppState {
