@@ -99,6 +99,7 @@ export interface AppState {
   anthropometry: {
     height: string;
     weight: string;
+    weightDate?: string;
     waist: string;
     weightChange: string;
     bmi: string;
