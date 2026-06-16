@@ -18,6 +18,7 @@ export function NutritionMonitoring({ monitoring, onChange }: Props) {
     const newRecord: MonitoringRecord = {
       date: new Date().toISOString().split('T')[0],
       weight: 0,
+      ac: 0,
       hba1c: 0,
       egfr: 0,
       tg: 0,
