@@ -2785,7 +2785,7 @@ export default function App() {
                       {/* Left: Historical record format table */}
                       <div className="lg:col-span-2 space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
-                          📋 體重歷史追蹤紀錄 (由舊至新)
+                          📋 體重紀錄
                         </span>
 
                         <div className="overflow-x-auto rounded-lg border border-slate-100">
@@ -2943,7 +2943,7 @@ export default function App() {
                       <div className="flex items-center gap-2">
                         <div className="w-1 h-5 bg-indigo-600 rounded"></div>
                         <h3 className="text-base font-bold text-slate-800 flex items-center gap-1.5">
-                          肌力與肌肉量篩檢評估 (Muscle Mass & Sarcopenia Screening)
+                          肌力評估 (Muscle Mass & Sarcopenia Screening)
                         </h3>
                       </div>
                       <span className="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg border border-indigo-100 shadow-2xs hover:bg-indigo-100 transition-colors">
@@ -3291,7 +3291,7 @@ export default function App() {
                       <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                         <h3 className="text-sm font-bold text-slate-850 flex items-center gap-1.5">
                           <History className="w-4 h-4 text-blue-600" />
-                          歷次生化數值追蹤與比較 (Historical Biochemistry Trend Comparison)
+                          生化數值追蹤
                         </h3>
                         <span className="text-[10px] text-slate-400 font-mono">
                           共 {sortedBioHistory.length} 筆監測紀錄 (由舊至新)
@@ -6891,7 +6891,7 @@ export default function App() {
           {(state.anthropometry.rightArmMuscle || state.anthropometry.gripStrength) && (
             <div className="mt-4 pt-4 border-t border-dashed border-indigo-100 bg-indigo-50/20 p-3 rounded-lg border border-indigo-100/50">
               <h3 className="font-bold text-sm mb-2 text-indigo-900 flex items-center gap-1.5">
-                <span>💪 肌力與肌肉量篩檢評估 (Sarcopenia Screening - AWGS 2025)</span>
+                <span>💪 肌力評估 (Sarcopenia Screening - AWGS 2025)</span>
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                 <div><span className="font-semibold text-slate-500">右手 / 左手肌肉量:</span> {state.anthropometry.rightArmMuscle || '--'} kg / {state.anthropometry.leftArmMuscle || '--'} kg</div>
