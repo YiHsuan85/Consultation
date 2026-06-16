@@ -2723,7 +2723,7 @@ export default function App() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 border-t border-slate-100 pt-4">
                     <div className="space-y-1">
                       <label className="text-sm font-medium text-slate-700 font-bold">
-                        IBW (標準體重) 
+                        IBW 
                         <span className="text-[10px] ml-1 text-slate-400">
                           ({(calculateAge(state.clientHx.birthday) >= 50 ? 25 : 22)})
                         </span>
@@ -2733,7 +2733,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700 font-bold">ABW (調整體重)</label>
+                      <label className="text-sm font-medium text-slate-700 font-bold">ABW </label>
                       <div className="px-3 py-2 rounded-lg font-bold border bg-slate-50 border-slate-200 text-slate-700">
                         {state.anthropometry.abw || '--'}
                       </div>
