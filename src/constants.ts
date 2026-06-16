@@ -819,21 +819,21 @@ export const INTERVENTION_CATEGORIES = ['低脂乳品類', '全脂乳品類', '�
 export const DIET_LOG_CATEGORIES = ['低脂奶類', '全脂奶類', '低脂豆魚蛋肉類', '中脂豆魚蛋肉類', '全穀雜糧類', '蔬菜類', '水果類', '油脂與堅果種子類', '外食類', '醬料類'];
 
 export const BIO_RANGES: Record<string, { min?: number; max?: number; label: string }> = {
-  AC: { max: 99, label: '< 99' },
   HbA1c: { max: 5.7, label: '< 5.7' },
+  AC: { max: 110, label: '< 110' },
+  PC: { max: 140, label: '< 140' },
+  FPG: { max: 200, label: '< 200' },
   UPCR: { max: 150, label: '< 150' },
   BUN: { min: 8, max: 26, label: '8-26' },
   Cr: { min: 0.6, max: 1.3, label: '0.6-1.3' },
   Na: { min: 136, max: 145, label: '136-145' },
   K: { min: 3.5, max: 5.1, label: '3.5-5.1' },
   TC: { max: 200, label: '< 200' },
+  HDL: { label: '男>40|女>50' },
+  AST: { max: 40, label: '< 40' },
+  ALT: { max: 40, label: '< 40' },
   TG: { max: 150, label: '< 150' },
   LDL: { max: 130, label: '< 130' },
-  Alb: { max: 5.5, label: '3.5-5.5' },
-  AST: { max: 40, label: '40' },
-  ALT: { max: 40, label: '40' },
-  FPG: { min: 70, max: 100, label: '70-100' },
-  eGFR: { min: 0, max: 100, label: '<13 | 15-29 | 30-44 | 45-59' },
   UricAcid: { min: 3.7, max: 7.7, label: '3.7-7.7' }
 };
 
