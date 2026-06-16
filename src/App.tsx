@@ -1286,6 +1286,13 @@ export default function App() {
     return [...state.monitoring.history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [state.monitoring?.history]);
 
+  const sortedWeightHistory = useMemo(() => {
+    if (!state.monitoring?.history) return [];
+    return [...state.monitoring.history]
+      .filter(record => record.weight && record.date)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [state.monitoring?.history]);
+
   const weightLossAnalysis = useMemo(() => {
     const currentWeight = parseFloat(state.anthropometry.weight);
     if (isNaN(currentWeight) || currentWeight <= 0 || !state.monitoring?.history) {
@@ -2552,183 +2559,160 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Weight Loss Clinical Risk & Calculations Section */}
+                  {/* Weight Loss Clinical Risk & Calculations Section (Renamed to 體重變化) */}
                   <div className="border-t border-slate-100 pt-5 mt-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                       <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
                         <Scale className="w-4 h-4 text-emerald-600" />
-                        臨床體重變化與風險分析 (Weight Loss Clinical Risk Analysis)
+                        體重變化
                       </h3>
                       <span className="text-[10px] text-slate-400 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 text-emerald-700 font-medium">
                         NCP 體位評估指標
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Left: Auto comparison using state.monitoring.history */}
-                      <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Left: Historical record format table */}
+                      <div className="lg:col-span-2 space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
-                          📋 歷史紀錄自動比對 （體重變化欄位）
+                          📋 體重歷史追蹤紀錄 (由舊至新)
                         </span>
-                        
-                        {!weightLossAnalysis.hasHistory ? (
-                          <div className="text-xs text-slate-400 py-6 text-center italic">
-                            尚無歷史紀錄可進行自動比對。新增首筆體重及日期並儲存後，後續諮詢將會自動對策比對。
-                          </div>
-                        ) : (
-                          <div className="space-y-2 text-xs">
-                            <div className="grid grid-cols-3 bg-slate-50 p-2 rounded text-[11px] font-bold text-slate-500">
-                              <span>比對區間</span>
-                              <span className="text-center">前次體重 (日期)</span>
-                              <span className="text-right">體重變動率</span>
-                            </div>
 
-                            {/* 1 Week */}
-                            <div className="flex justify-between items-center py-1.5 border-b border-slate-50">
-                              <span className="font-medium text-slate-600">1 星期 (7天區間)</span>
-                              {weightLossAnalysis.weekLoss ? (
-                                <>
-                                  <span className="text-slate-500">{weightLossAnalysis.weekLoss.prevWeight} kg ({weightLossAnalysis.weekLoss.date})</span>
-                                  <span className={`font-mono font-bold ${weightLossAnalysis.weekLoss.pct >= 2 ? 'text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md' : 'text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded-md'}`}>
-                                    {weightLossAnalysis.weekLoss.isLoss ? '-' : '+'}{Math.abs(weightLossAnalysis.weekLoss.pct).toFixed(1)}%
-                                  </span>
-                                </>
+                        <div className="overflow-x-auto rounded-lg border border-slate-100">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                <th className="px-3 py-2 font-semibold">測量日期</th>
+                                <th className="px-3 py-2 font-semibold">體重 (kg)</th>
+                                <th className="px-3 py-2 font-semibold">體重變動率 (%)</th>
+                                <th className="px-3 py-2 font-semibold">狀態評估 (Status)</th>
+                                <th className="px-3 py-2 font-semibold text-center">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50 text-slate-700">
+                              {sortedWeightHistory.length === 0 ? (
+                                <tr>
+                                  <td colSpan={5} className="px-3 py-6 text-center text-slate-450 italic">
+                                    尚無體重歷史紀錄。在上方輸入體重與日期並點擊「儲存紀錄」後即可在此顯示。
+                                  </td>
+                                </tr>
                               ) : (
-                                <span className="text-slate-400 text-right col-span-2">--</span>
-                              )}
-                            </div>
+                                sortedWeightHistory.map((record, index) => {
+                                  const prev = index > 0 ? sortedWeightHistory[index - 1] : null;
+                                  let rateStr = '--';
+                                  let statusEl = <span className="text-slate-400 font-medium">始點紀錄 / 基準</span>;
 
-                            {/* 1 Month */}
-                            <div className="flex justify-between items-center py-1.5 border-b border-slate-50">
-                              <span className="font-medium text-slate-600">1 個月 (30天區間)</span>
-                              {weightLossAnalysis.monthLoss ? (
-                                <>
-                                  <span className="text-slate-500">{weightLossAnalysis.monthLoss.prevWeight} kg ({weightLossAnalysis.monthLoss.date})</span>
-                                  <span className={`font-mono font-bold ${weightLossAnalysis.monthLoss.pct >= 5 ? 'text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md' : 'text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded-md'}`}>
-                                    {weightLossAnalysis.monthLoss.isLoss ? '-' : '+'}{Math.abs(weightLossAnalysis.monthLoss.pct).toFixed(1)}%
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-slate-400 text-right col-span-2">--</span>
-                              )}
-                            </div>
+                                  if (prev) {
+                                    const prevW = parseFloat(prev.weight);
+                                    const currW = parseFloat(record.weight);
+                                    if (!isNaN(prevW) && !isNaN(currW) && prevW > 0) {
+                                      // 體重變動率 = (此次 - 上次) / 上次 * 100%
+                                      // 當變動率 < 0 顯示體重減輕 %; 當變動率 > 0 顯示體重增加
+                                      const rate = ((currW - prevW) / prevW) * 100;
+                                      rateStr = `${rate > 0 ? '+' : ''}${rate.toFixed(1)}%`;
+                                      
+                                      if (rate < 0) {
+                                        statusEl = (
+                                          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold block text-center">
+                                            體重減輕 {Math.abs(rate).toFixed(1)}%
+                                          </span>
+                                        );
+                                      } else if (rate > 0) {
+                                        statusEl = (
+                                          <span className="text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 font-bold block text-center">
+                                            體重增加
+                                          </span>
+                                        );
+                                      } else {
+                                        statusEl = <span className="text-slate-500 font-medium block text-center">無變動</span>;
+                                      }
+                                    }
+                                  }
 
-                            {/* 6 Months */}
-                            <div className="flex justify-between items-center py-1.5">
-                              <span className="font-medium text-slate-600">6 個月 (180天區間)</span>
-                              {weightLossAnalysis.sixMonthLoss ? (
-                                <>
-                                  <span className="text-slate-500">{weightLossAnalysis.sixMonthLoss.prevWeight} kg ({weightLossAnalysis.sixMonthLoss.date})</span>
-                                  <span className={`font-mono font-bold ${weightLossAnalysis.sixMonthLoss.pct >= 10 ? 'text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md' : 'text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded-md'}`}>
-                                    {weightLossAnalysis.sixMonthLoss.isLoss ? '-' : '+'}{Math.abs(weightLossAnalysis.sixMonthLoss.pct).toFixed(1)}%
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-slate-400 text-right col-span-2">--</span>
+                                  return (
+                                    <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                      <td className="px-3 py-2.5 font-mono font-medium">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setState({
+                                              ...state,
+                                              anthropometry: {
+                                                ...state.anthropometry,
+                                                weight: record.weight,
+                                                weightDate: record.date
+                                              }
+                                            });
+                                          }}
+                                          title="帶入上方輸入框"
+                                          className="text-blue-600 hover:underline cursor-pointer focus:outline-none"
+                                        >
+                                          {record.date} 📥
+                                        </button>
+                                      </td>
+                                      <td className="px-3 py-2.5 font-bold text-slate-800">{record.weight} kg</td>
+                                      <td className={`px-3 py-2.5 font-mono font-bold ${rateStr.startsWith('-') ? 'text-emerald-600' : rateStr.startsWith('+') ? 'text-red-650' : 'text-slate-500'}`}>
+                                        {rateStr}
+                                      </td>
+                                      <td className="px-3 py-2.5">{statusEl}</td>
+                                      <td className="px-3 py-2.5 text-center">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            const newHistory = state.monitoring.history.filter(h => h.date !== record.date);
+                                            setState({
+                                              ...state,
+                                              monitoring: {
+                                                ...state.monitoring,
+                                                history: newHistory
+                                              }
+                                            });
+                                          }}
+                                          className="text-slate-300 hover:text-red-500 transition-colors"
+                                          title="刪除此筆紀錄"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })
                               )}
-                            </div>
-                          </div>
-                        )}
-
-                        {weightLossAnalysis.alerts.length > 0 && (
-                          <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-700 space-y-1">
-                            <span className="font-bold flex items-center gap-1">⚠️ 臨床顯著體重流失：</span>
-                            {weightLossAnalysis.alerts.map((al, idx) => <p key={idx} className="pl-2 font-medium">• {al}</p>)}
-                          </div>
-                        )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
 
-                      {/* Right: Manual comparison helper */}
+                      {/* Right: NCP Alert reference and notifications */}
                       <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
-                          ⚡ 手動快速風險試算
+                          ⚠️ NCP 臨床體重流失警示
                         </span>
 
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-medium text-slate-500">對比原體重 (kg)</label>
-                            <input 
-                              type="number" 
-                              value={manualPrevWeight} 
-                              onChange={e => setManualPrevWeight(e.target.value)} 
-                              placeholder="例如: 70"
-                              className="w-full px-2.5 py-2 text-xs rounded border border-slate-200 font-medium"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-medium text-slate-500">對比時間區間</label>
-                            <select 
-                              value={manualInterval} 
-                              onChange={e => setManualInterval(e.target.value as any)} 
-                              className="w-full px-2.5 py-2 text-xs rounded border border-slate-200 bg-white"
-                            >
-                              <option value="1w">1 星期 (2% 警示)</option>
-                              <option value="1m">1 個月 (5% 警示)</option>
-                              <option value="6m">6 個月 (10% 警示)</option>
-                            </select>
-                          </div>
+                        <div className="text-xs text-slate-600 leading-relaxed space-y-1.5 p-3 bg-slate-50/55 border border-slate-100 rounded-xl">
+                          <p className="font-bold text-indigo-900">臨床體重流失警訊標準 (NCP)：</p>
+                          <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600 font-medium">
+                            <li><strong>1 星期</strong> 下降 <span className="text-red-600 font-bold">2%</span> 原體重</li>
+                            <li><strong>1 個月</strong> 下降 <span className="text-red-600 font-bold">5%</span> 原體重</li>
+                            <li><strong>6 個月</strong> 下降 <span className="text-red-600 font-bold">10%</span> 原體重</li>
+                          </ul>
+                          <p className="text-[10px] text-slate-400 mt-1 italic">
+                            ※ 系統將自動比對歷史紀錄，偵測是否達成上述警告門檻。
+                          </p>
                         </div>
 
-                        {/* Calculated Block */}
-                        {(() => {
-                          const prev = parseFloat(manualPrevWeight);
-                          const curr = parseFloat(state.anthropometry.weight);
-                          if (isNaN(prev) || isNaN(curr) || prev <= 0) {
-                            return (
-                              <div className="mt-2 text-center p-3 text-[11px] text-slate-400 bg-slate-50 rounded">
-                                請輸入「對比原體重」以計算比率。
-                              </div>
-                            );
-                          }
-                          const loss = prev - curr;
-                          const pct = (loss / prev) * 100;
-                          
-                          let threshold = 5;
-                          let intervalText = '1個月';
-                          if (manualInterval === '1w') { threshold = 2; intervalText = '1星期'; }
-                          else if (manualInterval === '6m') { threshold = 10; intervalText = '6個月'; }
-                          
-                          const isAlert = loss > 0 && pct >= threshold;
-
-                          return (
-                            <div className={`mt-2 p-3.5 rounded-lg border text-xs flex flex-col gap-1.5 transition-colors ${
-                              isAlert 
-                                ? 'bg-red-50 border-red-100 text-red-800' 
-                                : loss > 0 
-                                  ? 'bg-amber-50 border-amber-100 text-amber-800' 
-                                  : 'bg-green-50 border-green-100 text-green-800'
-                            }`}>
-                              <div className="flex justify-between items-center font-bold">
-                                <span>計算體重流失百分比:</span>
-                                <span className="font-mono text-sm">{pct.toFixed(2)}%</span>
-                              </div>
-                              <p className="text-[11px] opacity-90">
-                                {loss > 0 
-                                  ? `原體重減少了 ${loss.toFixed(1)} kg。` 
-                                  : loss === 0 
-                                    ? `體重無變化。` 
-                                    : `體重增加了 ${Math.abs(loss).toFixed(1)} kg。`}
-                              </p>
-                              {isAlert ? (
-                                <div className="mt-1 font-bold text-[11px] bg-red-600 text-white rounded px-2 py-0.5 self-start shadow-xs shadow-red-200">
-                                  🚨 符合【{intervalText}下降 {threshold}%】臨床警示！
-                                </div>
-                              ) : (
-                                loss > 0 && (
-                                  <div className="mt-1 font-bold text-[11px] bg-emerald-600 text-white rounded px-2 py-0.5 self-start">
-                                    ✓ 未超過【{intervalText}下降 {threshold}%】臨床警示標準
-                                  </div>
-                                )
-                              )}
-                            </div>
-                          );
-                        })()}
-
-                        {/* Reminders/Notes */}
-                        <div className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2 block">
-                          <strong>臨床醫學體重流失重要警示標準：</strong><br />
-                          • 1星期下降 2% 原體重；或 1個月下降 5% 原體重；或 6個月下降 10% 原體重。
-                        </div>
+                        {weightLossAnalysis.alerts.length > 0 ? (
+                          <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-700 space-y-1 shadow-xs">
+                            <span className="font-bold flex items-center gap-1 text-red-800">⚠️ 臨床顯著體重流失提醒：</span>
+                            {weightLossAnalysis.alerts.map((al, idx) => (
+                              <p key={idx} className="pl-2 font-medium text-[11px]">• {al}</p>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs text-emerald-700 text-center font-semibold">
+                            ✓ 歷史體重變動正常，未達臨床流失警示標準。
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2986,7 +2970,6 @@ export default function App() {
                               <th className="px-3 py-2 font-semibold">報告日期</th>
                               <th className="px-3 py-2 font-semibold">HbA1c (%)</th>
                               <th className="px-3 py-2 font-semibold">eGFR (腎過濾)</th>
-                              <th className="px-3 py-2 font-semibold font-bold">體重 (kg)</th>
                               <th className="px-3 py-2 font-semibold">TG (mg/dL)</th>
                               <th className="px-3 py-2 font-semibold">LDL (mg/dL)</th>
                               <th className="px-3 py-2 font-semibold">TC 總膽固醇</th>
@@ -3074,10 +3057,6 @@ export default function App() {
                                   <td className="px-3 py-2.5">
                                     <span className="font-semibold">{record.egfr || '--'}</span>
                                     {prev && getTrend(record.egfr, prev.egfr, false)}
-                                  </td>
-                                  <td className="px-3 py-2.5 font-semibold text-blue-600">
-                                    {record.weight ? `${record.weight} kg` : '--'}
-                                    {prev && getTrend(record.weight, prev.weight, true)}
                                   </td>
                                   <td className="px-3 py-2.5">
                                     <span>{record.tg || '--'}</span>
