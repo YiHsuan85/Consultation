@@ -977,6 +977,7 @@ export default function App() {
   const [manualPrevWeight, setManualPrevWeight] = useState('');
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
+  const [dietLogsExpanded, setDietLogsExpanded] = useState(true);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
@@ -4100,114 +4101,137 @@ export default function App() {
                     ></textarea>
                   </div>
 
-                  <div className="overflow-x-auto rounded-lg border border-slate-200">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
-                        <tr>
-                          <th className="px-4 py-3">餐次</th>
-                          <th className="px-4 py-3">食物名稱</th>
-                          <th className="px-4 py-3">類別</th>
-                          <th className="px-4 py-3">份數</th>
-                          <th className="px-4 py-3 text-right">醣 (g)</th>
-                          <th className="px-4 py-3 text-right">蛋 (g)</th>
-                          <th className="px-4 py-3 text-right">脂 (g)</th>
-                          <th className="px-4 py-3 text-right">熱量 (kcal)</th>
-                          <th className="px-4 py-3 text-right">纖維 (g)</th>
-                          <th className="px-4 py-3 text-right">飽和 (g)</th>
-                          <th className="px-4 py-3 text-right">反式 (g)</th>
-                          <th className="px-4 py-3 text-right">膽固醇 (mg)</th>
-                          <th className="px-4 py-3 text-right">Na (mg)</th>
-                          <th className="px-4 py-3 text-right">K (mg)</th>
-                          <th className="px-4 py-3 text-right">P (mg)</th>
-                          <th className="px-4 py-3 text-center">操作</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {state.diet.logs.map((log) => (
-                          <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="px-4 py-3">
-                              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                {log.meal}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 font-medium text-slate-800">{log.name}</td>
-                            <td className="px-4 py-3">
-                              <select 
-                                value={log.category || ''} 
-                                onChange={e => {
-                                  const newLogs = state.diet.logs.map(l => l.id === log.id ? {...l, category: e.target.value} : l);
-                                  setState({...state, diet: {...state.diet, logs: newLogs}});
-                                }}
-                                className="text-xs px-2 py-1 rounded border border-slate-200 bg-white focus:ring-1 focus:ring-blue-500 outline-none"
-                              >
-                                {DIET_LOG_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                              </select>
-                            </td>
-                            <td className="px-4 py-3">
-                              <input 
-                                type="number" 
-                                value={log.qty || 0} 
-                                step="0.5"
-                                onChange={e => {
-                                  const newLogs = state.diet.logs.map(l => l.id === log.id ? {...l, qty: parseFloat(e.target.value) || 0} : l);
-                                  setState({...state, diet: {...state.diet, logs: newLogs}});
-                                }}
-                                className="w-16 px-2 py-1 rounded border border-slate-200"
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-right">{(log.carbs * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{(log.protein * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{(log.fat * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{(log.kcal * log.qty).toFixed(0)}</td>
-                            <td className="px-4 py-3 text-right">{((typeof log.fiber === 'number' ? log.fiber : parseFloat(log.fiber || '0') || 0) * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{((typeof log.saturatedFat === 'number' ? log.saturatedFat : parseFloat(log.saturatedFat || '0') || 0) * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{((typeof log.transFat === 'number' ? log.transFat : parseFloat(log.transFat || '0') || 0) * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{((typeof log.cholesterol === 'number' ? log.cholesterol : parseFloat(log.cholesterol || '0') || 0) * log.qty).toFixed(1)}</td>
-                            <td className="px-4 py-3 text-right">{( (typeof log.na === 'number' ? log.na : parseFloat(log.na || '0') || 0) * log.qty).toFixed(0)}</td>
-                            <td className="px-4 py-3 text-right">{( (typeof log.k === 'number' ? log.k : parseFloat(log.k || '0') || 0) * log.qty).toFixed(0)}</td>
-                            <td className="px-4 py-3 text-right">{( (typeof log.p === 'number' ? log.p : parseFloat(log.p || '0') || 0) * log.qty).toFixed(0)}</td>
-                            <td className="px-4 py-3 text-center">
-                              <button 
-                                onClick={() => {
-                                  const newLogs = state.diet.logs.filter(l => l.id !== log.id);
-                                  setState({...state, diet: {...state.diet, logs: newLogs}});
-                                }}
-                                className="p-1 text-red-400 hover:text-red-655 hover:bg-red-50 rounded transition-all"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                        {state.diet.logs.length === 0 && (
-                          <tr>
-                            <td colSpan={16} className="px-4 py-8 text-center text-slate-400 italic">尚未新增飲食紀錄</td>
-                          </tr>
-                        )}
-                      </tbody>
-                      <tfoot className="bg-blue-50 font-bold text-blue-900">
-                        <tr>
-                          <td className="px-4 py-3">總計</td>
-                          <td className="px-4 py-3">--</td>
-                          <td className="px-4 py-3">--</td>
-                          <td className="px-4 py-3">--</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.carbs.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.protein.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.fat.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.kcal.toFixed(0)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.fiber.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.saturatedFat.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.transFat.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.cholesterol.toFixed(1)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.na.toFixed(0)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.k.toFixed(0)}</td>
-                          <td className="px-4 py-3 text-right">{dietTotals.p.toFixed(0)}</td>
-                          <td className="px-4 py-3 text-center">
-                            <span className="text-xs bg-blue-200 px-2 py-1 rounded-full">{dietTotals.kcal.toFixed(0)} kcal</span>
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                  {/* 餐次食物名稱細節 (Meal Food Logs Detail) */}
+                  <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 space-y-3 shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => setDietLogsExpanded(!dietLogsExpanded)}
+                      className="w-full flex items-center justify-between text-slate-800 font-bold border-b border-slate-200 pb-2 mb-1 hover:text-slate-900 cursor-pointer text-left focus:outline-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ClipboardList className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-bold text-slate-800">餐次食物名稱細節 (共 {state.diet.logs.length} 筆)</span>
+                      </div>
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200">
+                        {dietLogsExpanded ? '收合 ▲' : '展開 ▼'}
+                      </span>
+                    </button>
+                    
+                    {dietLogsExpanded && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="overflow-x-auto rounded-lg border border-slate-200 bg-white"
+                      >
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
+                            <tr>
+                              <th className="px-4 py-3">餐次</th>
+                              <th className="px-4 py-3">食物名稱</th>
+                              <th className="px-4 py-3">類別</th>
+                              <th className="px-4 py-3">份數</th>
+                              <th className="px-4 py-3 text-right">醣 (g)</th>
+                              <th className="px-4 py-3 text-right">蛋 (g)</th>
+                              <th className="px-4 py-3 text-right">脂 (g)</th>
+                              <th className="px-4 py-3 text-right">熱量 (kcal)</th>
+                              <th className="px-4 py-3 text-right">纖維 (g)</th>
+                              <th className="px-4 py-3 text-right">飽和 (g)</th>
+                              <th className="px-4 py-3 text-right">反式 (g)</th>
+                              <th className="px-4 py-3 text-right">膽固醇 (mg)</th>
+                              <th className="px-4 py-3 text-right">Na (mg)</th>
+                              <th className="px-4 py-3 text-right">K (mg)</th>
+                              <th className="px-4 py-3 text-right">P (mg)</th>
+                              <th className="px-4 py-3 text-center">操作</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {state.diet.logs.map((log) => (
+                              <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                                <td className="px-4 py-3">
+                                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                    {log.meal}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 font-medium text-slate-800">{log.name}</td>
+                                <td className="px-4 py-3">
+                                  <select 
+                                    value={log.category || ''} 
+                                    onChange={e => {
+                                      const newLogs = state.diet.logs.map(l => l.id === log.id ? {...l, category: e.target.value} : l);
+                                      setState({...state, diet: {...state.diet, logs: newLogs}});
+                                    }}
+                                    className="text-xs px-2 py-1 rounded border border-slate-200 bg-white focus:ring-1 focus:ring-blue-500 outline-none"
+                                  >
+                                    {DIET_LOG_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                  </select>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <input 
+                                    type="number" 
+                                    value={log.qty || 0} 
+                                    step="0.5"
+                                    onChange={e => {
+                                      const newLogs = state.diet.logs.map(l => l.id === log.id ? {...l, qty: parseFloat(e.target.value) || 0} : l);
+                                      setState({...state, diet: {...state.diet, logs: newLogs}});
+                                    }}
+                                    className="w-16 px-2 py-1 rounded border border-slate-200"
+                                  />
+                                </td>
+                                <td className="px-4 py-3 text-right">{(log.carbs * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{(log.protein * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{(log.fat * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{(log.kcal * log.qty).toFixed(0)}</td>
+                                <td className="px-4 py-3 text-right">{((typeof log.fiber === 'number' ? log.fiber : parseFloat(log.fiber || '0') || 0) * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{((typeof log.saturatedFat === 'number' ? log.saturatedFat : parseFloat(log.saturatedFat || '0') || 0) * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{((typeof log.transFat === 'number' ? log.transFat : parseFloat(log.transFat || '0') || 0) * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{((typeof log.cholesterol === 'number' ? log.cholesterol : parseFloat(log.cholesterol || '0') || 0) * log.qty).toFixed(1)}</td>
+                                <td className="px-4 py-3 text-right">{( (typeof log.na === 'number' ? log.na : parseFloat(log.na || '0') || 0) * log.qty).toFixed(0)}</td>
+                                <td className="px-4 py-3 text-right">{( (typeof log.k === 'number' ? log.k : parseFloat(log.k || '0') || 0) * log.qty).toFixed(0)}</td>
+                                <td className="px-4 py-3 text-right">{( (typeof log.p === 'number' ? log.p : parseFloat(log.p || '0') || 0) * log.qty).toFixed(0)}</td>
+                                <td className="px-4 py-3 text-center">
+                                  <button 
+                                    onClick={() => {
+                                      const newLogs = state.diet.logs.filter(l => l.id !== log.id);
+                                      setState({...state, diet: {...state.diet, logs: newLogs}});
+                                    }}
+                                    className="p-1 text-red-400 hover:text-red-655 hover:bg-red-50 rounded transition-all"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                            {state.diet.logs.length === 0 && (
+                              <tr>
+                                <td colSpan={16} className="px-4 py-8 text-center text-slate-400 italic">尚未新增飲食紀錄</td>
+                              </tr>
+                            )}
+                          </tbody>
+                          <tfoot className="bg-blue-50 font-bold text-blue-900">
+                            <tr>
+                              <td className="px-4 py-3">總計</td>
+                              <td className="px-4 py-3">--</td>
+                              <td className="px-4 py-3">--</td>
+                              <td className="px-4 py-3">--</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.carbs.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.protein.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.fat.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.kcal.toFixed(0)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.fiber.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.saturatedFat.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.transFat.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.cholesterol.toFixed(1)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.na.toFixed(0)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.k.toFixed(0)}</td>
+                              <td className="px-4 py-3 text-right">{dietTotals.p.toFixed(0)}</td>
+                              <td className="px-4 py-3 text-center">
+                                <span className="text-xs bg-blue-200 px-2 py-1 rounded-full">{dietTotals.kcal.toFixed(0)} kcal</span>
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </section>
