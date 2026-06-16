@@ -68,6 +68,9 @@ export interface BiochemRecord {
   tc?: string | number;
   uricAcid?: string | number;
   bp?: string | number;
+  hdl?: string | number;
+  ast?: string | number;
+  alt?: string | number;
   other?: string;
 }
 
@@ -82,6 +85,9 @@ export interface MonitoringRecord {
   tc?: string | number;
   uricAcid?: string | number;
   bp?: string | number;
+  hdl?: string | number;
+  ast?: string | number;
+  alt?: string | number;
   other?: string;
 }
 
