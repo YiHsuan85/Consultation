@@ -4,7 +4,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   // 乳品類
   { name: '全脂牛奶 240 cc', category: '全脂乳品類', carbs: 12, protein: 8, fat: 8, kcal: 150, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '統一-營養強化高鈣牛乳 400ml', category: '全脂乳品類', carbs: 29.6, protein: 15.2, fat: 13.6, kcal: 301.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 252, k:'', p: ''},
-  { name: '711優質蛋白奶-無加糖燕麥 375ml', category: '全脂乳品類', carbs: 9.8, protein: 15, fat: 5.6, kcal: 149.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 150, k:'', p: ''},
+  { name: '711優質蛋白奶-無加糖燕麥 375ml', category: '全脂乳品類', carbs: 9.8, protein: 15, fat: 5.6, kcal: 149.6, fiber: 0, saturatedFat: 1.1, transFat: 0, cholesterol: 0, na: 150, k:'', p: ''},
   { name: '統一-營養強化高鈣牛乳 400ml', category: '全脂乳品類', carbs: 29.6, protein: 15.2, fat: 13.6, kcal: 301.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 252, k:'', p: ''},
   { name: '光泉-優質蛋白牛乳 (巧克力口味) 400ml', category: '全脂乳品類', carbs: 28.4, protein: 20, fat: 2, kcal: 211.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 232, k:'', p: ''},
   { name: '福樂-超能蛋白營養牛乳(草莓口味) 375ml', category: '外食類', carbs: 27.8, protein: 21.8, fat: 1.1, kcal: 208, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 229.5, k:'', p: ''},
