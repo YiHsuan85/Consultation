@@ -4,7 +4,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   // 乳品類
   { name: '全脂牛奶 240 cc', category: '全脂乳品類', carbs: 12, protein: 8, fat: 8, kcal: 150, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '統一-營養強化高鈣牛乳 400ml', category: '全脂乳品類', carbs: 29.6, protein: 15.2, fat: 13.6, kcal: 301.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 252, k:'', p: ''},
-  { name: '711優質蛋白奶-無加糖燕麥 375ml', category: '全脂乳品類', carbs: 9.8, protein: 15, fat: 5.6, kcal: 149.6, fiber: 0, saturatedFat: 1.1, transFat: 0, cholesterol: 0, na: 150, k:'', p: ''},
+  { name: '光泉-優質蛋白奶-無加糖燕麥 375ml', category: '全脂乳品類', carbs: 9.8, protein: 15, fat: 5.6, kcal: 149.6, fiber: 0, saturatedFat: 1.1, transFat: 0, cholesterol: 0, na: 150, k:'', p: ''},
+  { name: '光泉-優質蛋白奶-杏仁堅果 375ml', category: '全脂乳品類', carbs: 22.9, protein: 14.2, fat: 9.8, kcal: 236.6, fiber: 0, saturatedFat: 1.5, transFat: 0, cholesterol: 0, na: 98, k:'', p: ''},
   { name: '統一-營養強化高鈣牛乳 400ml', category: '全脂乳品類', carbs: 29.6, protein: 15.2, fat: 13.6, kcal: 301.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 252, k:'', p: ''},
   { name: '光泉-優質蛋白牛乳 (巧克力口味) 400ml', category: '全脂乳品類', carbs: 28.4, protein: 20, fat: 2, kcal: 211.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 232, k:'', p: ''},
   { name: '福樂-超能蛋白營養牛乳(草莓口味) 375ml', category: '外食類', carbs: 27.8, protein: 21.8, fat: 1.1, kcal: 208, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 229.5, k:'', p: ''},
@@ -208,6 +209,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '統一 純喫茶芭樂綠茶 650cc', category: '外食類', carbs: 66.4, protein: 0, fat: 0, kcal: 266, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k: '', p: '' },
   { name: '統一 純喫茶香橙綠茶 650cc', category: '外食類', carbs: 63.6, protein: 0, fat: 0, kcal: 254, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 46, k: '', p: '' },
   { name: '統一 純喫茶青檸綠茶 650cc', category: '外食類', carbs: 63, protein: 0, fat: 0, kcal: 252, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k: '', p: '' },
+  { name: '純在 芒果甘露 400cc', category: '外食類', carbs: 63, protein: 0, fat: 0, kcal: 252, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k: '', p: '' },
   { name: '蘿蔔糕(香菇蝦米) (1塊)', category: '外食類', carbs: 18.8, protein: 2.5, fat: 2.8, kcal: 110, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '柳橙汁(100%)', category: '外食類', carbs: 10.7, protein: 0.6, fat: 0.3, kcal: 48, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 7.8, k: 179.9, p: 12.4 },
   { name: '蘋果汁(100%)', category: '外食類', carbs: 12.2, protein: 0.1, fat: 0.2, kcal: 51, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 1.3, k: 96.2, p: 6.5 },
