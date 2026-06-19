@@ -209,7 +209,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '統一 純喫茶芭樂綠茶 650cc', category: '外食類', carbs: 66.4, protein: 0, fat: 0, kcal: 266, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k: '', p: '' },
   { name: '統一 純喫茶香橙綠茶 650cc', category: '外食類', carbs: 63.6, protein: 0, fat: 0, kcal: 254, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 46, k: '', p: '' },
   { name: '統一 純喫茶青檸綠茶 650cc', category: '外食類', carbs: 63, protein: 0, fat: 0, kcal: 252, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k: '', p: '' },
-  { name: '純在 芒果甘露 400cc', category: '外食類', carbs: 63, protein: 0, fat: 0, kcal: 252, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k: '', p: '' },
+  { name: '純在 芒果甘露 400cc', category: '外食類', carbs: 45.1, protein: 0.7, fat: 0.4, kcal: 184.5, fiber: 0, saturatedFat: 0.3, transFat: 0, cholesterol: 0, na: 8, k: '', p: '' },
   { name: '蘿蔔糕(香菇蝦米) (1塊)', category: '外食類', carbs: 18.8, protein: 2.5, fat: 2.8, kcal: 110, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '柳橙汁(100%)', category: '外食類', carbs: 10.7, protein: 0.6, fat: 0.3, kcal: 48, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 7.8, k: 179.9, p: 12.4 },
   { name: '蘋果汁(100%)', category: '外食類', carbs: 12.2, protein: 0.1, fat: 0.2, kcal: 51, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 1.3, k: 96.2, p: 6.5 },
