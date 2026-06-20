@@ -473,13 +473,15 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '花生醬 5g', category: '醬料類', carbs: 0.9, protein: 1.2, fat: 2.7, kcal: 33, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 15.3, k: 28.6, p: 18.9 },
   
   // 保健品
+  { name: '韓國熊津 不添加糖紅蔘飲 70ml/包', category: '保健品', carbs: 3.6, protein: 0.1, fat: 0, kcal: 14.8, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 6, k: 31.9, p: 0 },
+  { name: '韓國熊津 紅蔘飲 70ml/包', category: '保健品', carbs: 7.4, protein: 0, fat: 0, kcal: 29.7, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 2, k: 0, p: 0 },
   { name: '亞培 腎補納/未洗腎 237ml', category: '保健品', carbs: 46.4, protein: 10.6, fat: 22.7, kcal: 432, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 190, k: 270, p: 170 },
   { name: '艾益生 力增10%/未洗腎 237ml', category: '保健品', carbs: 46.4, protein: 10.6, fat: 22.7, kcal: 432, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 190, k: 200, p: 170 },
   { name: '補體素 慎選/未洗腎 237ml', category: '保健品', carbs: 52.8, protein: 10.8, fat: 22.5, kcal: 457, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 236, k: 300, p: 188 },
   { name: '三多補體康 低蛋白', category: '保健品', carbs: 51.8, protein: 8.5, fat: 21.3, kcal: 433, na: 190, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, k: 240, p: 170 },
   { name: '卡比 倍速力 200ml', category: '保健品', carbs: 55.2, protein: 6, fat: 17.8, kcal: 405, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 136, k: 200, p: 110 },
   { name: '立攝適 盛健 10% 250ml', category: '保健品', carbs: 47.5, protein: 23, fat: 25, kcal: 507, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 235, k: 205, p: 220 },
-  { name: '三多勝補康LPF-N (2平匙,250cc)', category: '保健品', carbs: 36.6, protein: 5.9, fat: 9.7, kcal: 257, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 105, k: 107, p: 74.3 },
+  { name: '三多勝補康LPF-N (2平匙,250cc)', category: '保健品', carbs: 36.6, protein: 5.9, fat: 9.7, kcal: 257, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 105, k: 107, p: 74.3 },
   { name: '益富 益能充 45g/包', category: '保健品', carbs: 31.8, protein: 0.8, fat: 8.2, kcal: 204, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 113, k: 108, p: 42 },
   { name: '補體素 慎選 45g/包', category: '保健品', carbs: 32.2, protein: 0.6, fat: 8.5, kcal: 208, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 44, k: 90.9, p: 38.7 },
   { name: '亞培 葡勝納3重強護 52g/5匙', category: '保健品', carbs: 30.4, protein: 10.2, fat: 8.3, kcal: 237, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 211, k: 370, p: 168 },
