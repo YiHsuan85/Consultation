@@ -102,6 +102,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '南瓜 85g(1/4碗)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 1.3, k: 402.5, p: 43.4 },
   { name: '菱角 8顆', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '綠豆 25g(熟3湯匙)', category: '全榖雜糧類', carbs: 15, protein: 5, fat: 0, kcal: 80, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
+  { name: '鷹嘴豆 25g(熟2湯匙)', category: '全榖雜糧類', carbs: 15, protein: 5, fat: 0, kcal: 91, fiber: 3.1, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: 146.5, p: '' },
   { name: '帶殼栗子 50g (4顆)', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '薄片吐司 1片', category: '全榖雜糧類', carbs: 15, protein: 2, fat: 0, kcal: 70, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '厚片吐司 1片', category: '全榖雜糧類', carbs: 30, protein: 4, fat: 0, kcal: 140, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
