@@ -21,6 +21,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '低脂牛奶 240 cc', category: '低脂乳品類', carbs: 12, protein: 8, fat: 4, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '優格 180g', category: '低脂乳品類', carbs: 32, protein: 8, fat: 4, kcal: 200, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '植物の優-鮮美橘瓣優格 200g', category: '低脂乳品類', carbs: 28.2, protein: 7, fat: 4.4, kcal: 180, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 56, k: '', p: '' },
+  { name: '光泉 頂級優酪-莓果穀物脆片 200g', category: '低脂乳品類', carbs: 14.5, protein: 4.7, fat: 4.6, kcal: 119.1, fiber: 0, saturatedFat: 3, transFat: 0, cholesterol: 0, na: 101, k: 0, p: 0 },
   { name: '無糖優酪乳 200cc', category: '低脂乳品類', carbs: 27, protein: 8, fat: 4, kcal: 180, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '711 AB優洛乳（無加糖） 517ml', category: '低脂乳品類', carbs: 43.4, protein: 16, fat: 6.8, kcal: 298, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 268, k:'', p: ''},
   { name: '711 AB優洛乳（原味） 517ml', category: '低脂乳品類', carbs: 54.8, protein: 15.6, fat: 3.2, kcal: 310, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 268, k:'', p: ''},
