@@ -833,10 +833,6 @@ const DIET_MATRIX_ROW_CATEGORIES = [
   '水果類',
   '油脂與堅果類',
   '外食類',
-  '飲料',
-  '鹹酥雞',
-  '滷味',
-  '火鍋',
   '醬料類',
   '保健品'
 ];
@@ -852,11 +848,7 @@ const getRowCategory = (itemCat: string): string => {
   if (norm.includes('蔬菜')) return '蔬菜類';
   if (norm.includes('水果')) return '水果類';
   if (norm.includes('油脂') || norm.includes('堅果') || norm.includes('油脂與堅果')) return '油脂與堅果類';
-  if (norm.includes('飲料')) return '飲料類';
-  if (norm.includes('鹹酥雞')) return '鹹酥雞';
-  if (norm.includes('滷味')) return '滷味';
-  if (norm.includes('火鍋')) return '火鍋';
-  if (norm.includes('外食')) return '外食類';
+  if (norm.includes('飲料') || norm.includes('鹹酥雞') || norm.includes('咸酥鸡') || norm.includes('火鍋') || norm.includes('火锅') || norm.includes('外食')) return '外食類';
   if (norm.includes('醬料')) return '醬料類';
   if (norm.includes('保健')) return '保健品';
   return '外食類';
@@ -956,8 +948,10 @@ export default function App() {
     if (cellNewFoodName) {
       const food = FOOD_DATABASE.find(f => f.name === cellNewFoodName);
       if (food) {
+        const targetCategory = (food.category === '火鍋' || food.category === '飲料' || food.category === '鹹酥雞') ? '外食類' : food.category;
         addedLog = {
           ...food,
+          category: targetCategory,
           id: Math.random().toString(36).substr(2, 9),
           qty: cellNewFoodQty,
           meal
@@ -4147,11 +4141,12 @@ export default function App() {
                                     key={idx}
                                     type="button"
                                     onClick={() => {
+                                      const targetCategory = (food.category === '火鍋' || food.category === '飲料' || food.category === '鹹酥雞') ? '外食類' : food.category;
                                       setState({
                                         ...state,
                                         diet: {
                                           ...state.diet,
-                                          logs: [...state.diet.logs, { ...food, id: Math.random().toString(36).substr(2, 9), qty: portionInput, meal: selectedMeal }]
+                                          logs: [...state.diet.logs, { ...food, category: targetCategory, id: Math.random().toString(36).substr(2, 9), qty: portionInput, meal: selectedMeal }]
                                         }
                                       });
                                       setSearchQuery('');
@@ -4197,17 +4192,18 @@ export default function App() {
                         onChange={e => {
                           const foodName = e.target.value;
                           setSelectedFoodItem(foodName);
-                          if (foodName) {
-                            const food = FOOD_DATABASE.find(f => f.name === foodName && f.category === selectedFoodCategory);
-                            if (food) {
-                              setState({
-                                ...state,
-                                diet: {
-                                  ...state.diet,
-                                  logs: [...state.diet.logs, { ...food, id: Math.random().toString(36).substr(2, 9), qty: portionInput, meal: selectedMeal }]
-                                }
-                              });
-                              setSelectedFoodItem('');
+                            if (foodName) {
+                              const food = FOOD_DATABASE.find(f => f.name === foodName && f.category === selectedFoodCategory);
+                              if (food) {
+                                const targetCategory = (food.category === '火鍋' || food.category === '飲料' || food.category === '鹹酥雞') ? '外食類' : food.category;
+                                setState({
+                                  ...state,
+                                  diet: {
+                                    ...state.diet,
+                                    logs: [...state.diet.logs, { ...food, category: targetCategory, id: Math.random().toString(36).substr(2, 9), qty: portionInput, meal: selectedMeal }]
+                                  }
+                                });
+                                setSelectedFoodItem('');
                             }
                           }
                         }}
