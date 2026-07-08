@@ -4175,8 +4175,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-2 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm">
-                      <span className="text-sm font-medium text-slate-700 whitespace-nowrap">分類新增飲食：</span>
+                    <div className="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm space-y-2">
+                      <div className="flex flex-col sm:flex-row items-center gap-2">
+                        <span className="text-sm font-medium text-slate-700 whitespace-nowrap">分類新增飲食：</span>
                       <select 
                         value={selectedFoodCategory}
                         onChange={e => {
@@ -4218,6 +4219,10 @@ export default function App() {
                           <option key={f.name} value={f.name}>{f.name}</option>
                         ))}
                       </select>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-medium pl-1">
+                        ※ 滷味、鹹酥雞、火鍋資料取自好食課資料庫
+                      </div>
                     </div>
                   </div>
 
