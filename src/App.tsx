@@ -833,6 +833,10 @@ const DIET_MATRIX_ROW_CATEGORIES = [
   '水果類',
   '油脂與堅果類',
   '外食類',
+  '飲料',
+  '鹹酥雞',
+  '滷味',
+  '火鍋',
   '醬料類',
   '保健品'
 ];
@@ -848,6 +852,10 @@ const getRowCategory = (itemCat: string): string => {
   if (norm.includes('蔬菜')) return '蔬菜類';
   if (norm.includes('水果')) return '水果類';
   if (norm.includes('油脂') || norm.includes('堅果') || norm.includes('油脂與堅果')) return '油脂與堅果類';
+  if (norm.includes('飲料')) return '飲料類';
+  if (norm.includes('鹹酥雞')) return '鹹酥雞';
+  if (norm.includes('滷味')) return '滷味';
+  if (norm.includes('火鍋')) return '火鍋';
   if (norm.includes('外食')) return '外食類';
   if (norm.includes('醬料')) return '醬料類';
   if (norm.includes('保健')) return '保健品';
