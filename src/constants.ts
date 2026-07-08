@@ -1121,7 +1121,7 @@ export const MEALS = ['早餐', '早點', '午餐', '午點', '晚餐', '晚點'
 export const EXERCISE_TYPES = ['排球', '羽毛球', '爬山', '腳踏車', '游泳', '快走', '慢跑', '瑜珈', '肌力訓練'];
 export const ACTIVITY_FACTORS = ['無', '輕度', '中度', '重度'] as const;
 export const INTERVENTION_CATEGORIES = ['低脂乳品類', '全脂乳品類', '全穀雜糧類', '低氮澱粉', '低脂豆魚蛋肉類', '中脂豆魚蛋肉類', '蔬菜類', '水果類', '油脂與堅果類'];
-export const DIET_LOG_CATEGORIES = ['低脂乳品類', '全脂乳品類', '低脂豆魚蛋肉類', '中脂豆魚蛋肉類', '全穀雜糧類', '蔬菜類', '水果類', '油脂與堅果類', '外食類', '飲料', '鹹酥雞', '火鍋', '醬料類', '保健品'];
+export const DIET_LOG_CATEGORIES = ['低脂乳品類', '全脂乳品類', '低脂豆魚蛋肉類', '中脂豆魚蛋肉類', '全穀雜糧類', '蔬菜類', '水果類', '油脂與堅果類', '外食類', '醬料類', '保健品'];
 
 export const BIO_RANGES: Record<string, { min?: number; max?: number; label: string }> = {
   HbA1c: { max: 5.7, label: '< 5.7' },
