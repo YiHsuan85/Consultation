@@ -208,6 +208,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '芝麻醬(1/2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '沙茶醬(1/2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
  
+ 
  // 飲料類
   { name: '統一 木瓜牛奶 478cc', category: '飲料類', carbs: 47.3, protein: 9.1, fat: 8.6, kcal: 303, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 277, k: '', p: '' },
   { name: '統一 純喫茶紅茶 650cc', category: '飲料類', carbs: 71.2, protein: 0, fat: 0, kcal: 284, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 136, k: '', p: '' },
