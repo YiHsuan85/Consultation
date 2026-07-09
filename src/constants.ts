@@ -20,6 +20,9 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '低脂起司片 2片', category: '低脂乳品類', carbs: 12, protein: 8, fat: 4, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '低脂牛奶 240 cc', category: '低脂乳品類', carbs: 12, protein: 8, fat: 4, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '優格 180g', category: '低脂乳品類', carbs: 32, protein: 8, fat: 4, kcal: 200, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
+  { name: '質有3(綜合莓果) 135g', category: '低脂乳品類', carbs: 14.7, protein: 8, fat: 3.9, kcal: 126, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: '', p: '' },
+  { name: '質有3(藍莓葡萄) 135g', category: '低脂乳品類', carbs: 14.3, protein: 8, fat: 3.9, kcal: 124, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: '', p: '' },
+  { name: '質立 希臘式優格(無加糖) 150g', category: '低脂乳品類', carbs: 21, protein: 6.6, fat: 7.4, kcal: 177, fiber: 0, saturatedFat: 5, transFat: 0, cholesterol: 0, na: 86, k: '', p: '' },
   { name: '植物の優-鮮美橘瓣優格 200g', category: '低脂乳品類', carbs: 28.2, protein: 7, fat: 4.4, kcal: 180, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 56, k: '', p: '' },
   { name: '光泉 頂級優酪-莓果穀物脆片 200g', category: '低脂乳品類', carbs: 14.5, protein: 4.7, fat: 4.6, kcal: 119.1, fiber: 0, saturatedFat: 3, transFat: 0, cholesterol: 0, na: 101, k: 0, p: 0 },
   { name: '無糖優酪乳 200cc', category: '低脂乳品類', carbs: 27, protein: 8, fat: 4, kcal: 180, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
@@ -28,7 +31,9 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '馬修嚴選-綜合莓優格百匯 125g', category: '低脂乳品類', carbs: 26.1, protein: 3.4, fat: 3.5, kcal: 150, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 70, k:'', p: ''},
   { name: '鮮乳坊 真優格-豐樂牧場鮮乳優格 450g', category: '低脂乳品類', carbs: 19.8, protein: 15.9, fat: 17.1, kcal: 296.1, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 170, k:'', p: ''},
   { name: '鮮乳坊 真優格-每日爽快 300g', category: '低脂乳品類', carbs: 27.7, protein: 9.3, fat: 11.4, kcal: 226.8, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 120, k:'', p: ''},
-  
+
+
+ 
   // 低脂豆魚蛋肉類
   { name: '一般魚類 30g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '花枝 60g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
@@ -549,6 +554,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '花枝漿(1條/150g)', category: '火鍋', carbs: 0, protein: 20, fat: 18, kcal: 295, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '草蝦(2隻/15cm)', category: '火鍋', carbs: 0, protein: 12, fat: 0, kcal: 55, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '大白蝦(6隻/125g)', category: '火鍋', carbs: 0, protein: 20, fat: 1, kcal: 98, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
+  { name: '石二鍋菜盤', category: '火鍋', carbs: 44.5, protein: 15.1, fat: 5.7, kcal: 268, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
+  { name: '築間菜盤', category: '火鍋', carbs: 35, protein: 24.1, fat: 15.3, kcal: 367, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
  
  // 外食類 
   { name: '蛋塔', category: '外食類', carbs: 41.1, protein: 4.1, fat: 21.7, kcal: 376, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 85.4, k: 116.3, p: 153.7 },
@@ -587,7 +594,6 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '桂冠黃金起司球 30g', category: '外食類', carbs: 3.7, protein: 3.1, fat: 1.8, kcal: 43, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 169, k: '', p: '' },
   { name: '沙威瑪 1份', category: '外食類', carbs: 36.6, protein: 18.3, fat: 9.1, kcal: 300, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: '', p: '' },
   { name: '北海-鱈魚香絲 青花椒辣味 30g', category: '外食類', carbs: 16.3, protein: 7.4, fat: 0.3, kcal: 97.8, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 553.6, k: '', p: '' },
-  
   { name: '純豆花（250g）', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 98, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0},
   { name: '豆花-糖水（150g）', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 105, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0},
   { name: '豆花-牛奶（150g）', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 95, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0},
