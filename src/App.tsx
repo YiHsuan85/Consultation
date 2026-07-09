@@ -23,7 +23,8 @@ import {
   FileText,
   LayoutDashboard,
   Users,
-  Scale
+  Scale,
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -456,6 +457,7 @@ const INITIAL_STATE: AppState = {
     dietType: 'DM',
     customGuidelines: {},
     educationTopics: [],
+    educationNotes: '',
     mealPlan: {},
     referral: '',
     macroConfig: {
@@ -983,6 +985,7 @@ export default function App() {
   const [sarcopeniaExpanded, setSarcopeniaExpanded] = useState(false);
   const [weightChangeExpanded, setWeightChangeExpanded] = useState(false);
   const [biochemHistoryExpanded, setBiochemHistoryExpanded] = useState(false);
+  const [guidelinesExpanded, setGuidelinesExpanded] = useState(false);
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
@@ -4497,7 +4500,7 @@ export default function App() {
               className="space-y-8"
             >
               {/* CURRENT INTAKE VS SUGGESTED TARGETS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
                 {/* 1. 目前飲食攝取總計 */}
                 <div className="bg-slate-50 rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2">
@@ -5251,12 +5254,27 @@ export default function App() {
 
 
                     {/* Guideline Reference Tables */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">飲食指南參考 (Reference Guidelines)</h3>
-                      </div>
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setGuidelinesExpanded(!guidelinesExpanded)}
+                        className="w-full flex items-center justify-between text-slate-800 font-bold hover:text-slate-900 cursor-pointer text-left focus:outline-none"
+                      >
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="w-4 h-4 text-slate-600" />
+                          <span className="text-sm font-bold text-slate-800 uppercase tracking-wider">飲食指南參考 (Reference Guidelines)</span>
+                        </div>
+                        <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200">
+                          {guidelinesExpanded ? '收合 ▲' : '展開 ▼'}
+                        </span>
+                      </button>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {guidelinesExpanded && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-200 mt-2"
+                        >
                         {/* DM Table */}
                         <div className="space-y-3">
                           <div className="flex items-center justify-between border-b border-blue-100 pb-1">
@@ -5317,14 +5335,16 @@ export default function App() {
                                   );
                                 })}
                               </tbody>
-                            </table>
+                              </table>
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        </motion.div>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="space-y-4">
+                    </div>
+
+                    <div className="space-y-4">
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
                       營養教育 (Nutrition Education)
                       <span className="text-xs font-normal text-slate-500">(可複選)</span>
@@ -5362,6 +5382,27 @@ export default function App() {
                         ))}
                       </div>
                     )}
+
+                    {/* 自訂營養教育備註 */}
+                    <div className="pt-2 space-y-1.5">
+                      <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+                        <FileText className="w-4 h-4 text-green-600" />
+                        <span>個別化營養教育備註 (Custom Education Notes)</span>
+                      </label>
+                      <textarea
+                        value={state.intervention.educationNotes || ''}
+                        onChange={e => setState({
+                          ...state,
+                          intervention: {
+                            ...state.intervention,
+                            educationNotes: e.target.value
+                          }
+                        })}
+                        rows={3}
+                        className="w-full p-3 rounded-lg border border-slate-200 text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 outline-none resize-y"
+                        placeholder="在此自由填寫其他個別化的營養教育重點、醫囑或衛教備註..."
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -6732,10 +6773,17 @@ export default function App() {
                           {topic}
                         </span>
                       ))}
-                      {state.intervention.educationTopics.length === 0 && (
-                        <span className="text-slate-400 italic text-sm">尚未選擇衛教主題</span>
+                      {state.intervention.educationTopics.length === 0 && !state.intervention.educationNotes && (
+                        <span className="text-slate-400 italic text-sm">尚未選擇衛教主題或填寫個別化衛教備註</span>
                       )}
                     </div>
+
+                    {state.intervention.educationNotes && (
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 whitespace-pre-line">
+                        <div className="text-xs font-bold text-slate-500 mb-1">個別化衛教備註:</div>
+                        {state.intervention.educationNotes}
+                      </div>
+                    )}
 
                     {state.educationImages.length > 0 && (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
@@ -6998,12 +7046,19 @@ export default function App() {
               <span className="font-bold">建議飲水量:</span> {recommendedWater} ml/d
             </div>
 
-            {state.intervention.educationTopics.length > 0 && (
+            {(state.intervention.educationTopics.length > 0 || state.intervention.educationNotes) && (
               <div>
                 <h3 className="font-bold mt-2">營養教育重點:</h3>
-                <ul className="list-disc list-inside">
-                  {state.intervention.educationTopics.map(t => <li key={t}>{t}</li>)}
-                </ul>
+                {state.intervention.educationTopics.length > 0 && (
+                  <ul className="list-disc list-inside">
+                    {state.intervention.educationTopics.map(t => <li key={t}>{t}</li>)}
+                  </ul>
+                )}
+                {state.intervention.educationNotes && (
+                  <div className="mt-1 text-xs whitespace-pre-line bg-slate-50 p-2 rounded border border-slate-200">
+                    {state.intervention.educationNotes}
+                  </div>
+                )}
               </div>
             )}
           </div>
