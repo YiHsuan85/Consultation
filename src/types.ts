@@ -177,6 +177,7 @@ export interface AppState {
     dietType: 'DM' | 'CKD' | 'Custom';
     customGuidelines?: { [category: string]: number };
     educationTopics: string[];
+    educationNotes?: string;
     mealPlan: {
       [category: string]: {
         breakfast: string;
