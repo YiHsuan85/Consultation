@@ -500,6 +500,9 @@ export const generateWordDoc = async (state: AppState) => {
         }),
         new Paragraph({ text: `飲食計畫類型: ${state.intervention.dietType}` }),
         new Paragraph({ text: `衛教重點: ${state.intervention.educationTopics.join(", ") || "無"}` }),
+        ...(state.intervention.educationNotes ? [
+          new Paragraph({ text: `自訂衛教備註: ${state.intervention.educationNotes}` })
+        ] : []),
         new Paragraph({ text: `轉介建議: ${state.intervention.referral || "無"}` }),
 
         // 新增/加強：建議熱量需求與三大營養素比例
@@ -973,6 +976,9 @@ export const generateReminderWordDoc = async (state: AppState) => {
         // 衛教資訊
         new Paragraph({ text: "五、衛教資訊與附件", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
         new Paragraph({ text: state.intervention.educationTopics.join(", ") || "無" }),
+        ...(state.intervention.educationNotes ? [
+         new Paragraph({ text: `自訂衛教備註: ${state.intervention.educationNotes}` })
+        ] : []),
         ...imageRuns,
 
         new Paragraph({
