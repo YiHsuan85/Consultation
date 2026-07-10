@@ -4499,6 +4499,7 @@ export default function App() {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-8"
             >
+        
               {/* CURRENT INTAKE VS SUGGESTED TARGETS */}
               
                 {/* 1. 目前飲食攝取總計 */}
@@ -4612,8 +4613,6 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-              )}
-            </motion.div>
 
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
