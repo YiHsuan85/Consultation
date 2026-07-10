@@ -4612,7 +4612,7 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-              </div>
+            </motion.div>
 
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
