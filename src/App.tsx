@@ -978,6 +978,43 @@ export default function App() {
     setEditingCell(null);
   };
   const [currentDiagnosis, setCurrentDiagnosis] = useState<PES>({ id: '', domain: '', problem: '', etiology: '', symptom: '' });
+
+  const toggleSymptomCheckbox = (symptomName: string) => {
+    let currentList = currentDiagnosis.symptom 
+      ? currentDiagnosis.symptom.split('、').map(x => x.trim()).filter(Boolean) 
+      : [];
+    if (currentList.includes(symptomName)) {
+      currentList = currentList.filter(x => x !== symptomName);
+    } else {
+      currentList = [...currentList, symptomName];
+    }
+    const joined = currentList.join('、');
+    setCurrentDiagnosis({
+      ...currentDiagnosis,
+      symptom: joined,
+      symptomOther: joined
+    });
+  };
+
+  const selectAllSymptoms = () => {
+    if (!currentDiagnosis.problem || currentDiagnosis.problem === '其他') return;
+    const standardSymptoms = DIAG_DATA[currentDiagnosis.domain as keyof typeof DIAG_DATA]?.problems[currentDiagnosis.problem]?.symptoms || [];
+    const joined = standardSymptoms.join('、');
+    setCurrentDiagnosis({
+      ...currentDiagnosis,
+      symptom: joined,
+      symptomOther: joined
+    });
+  };
+
+  const clearAllSymptoms = () => {
+    setCurrentDiagnosis({
+      ...currentDiagnosis,
+      symptom: '',
+      symptomOther: ''
+    });
+  };
+  
   const [manualPrevWeight, setManualPrevWeight] = useState('');
   const [manualInterval, setManualInterval] = useState<'1w' | '1m' | '6m'>('1m');
   const [bentoRefExpanded, setBentoRefExpanded] = useState(false);
@@ -4698,25 +4735,55 @@ export default function App() {
                           )}
                         </div>
                       </div>
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium text-slate-700">4. 症狀 Symptoms (S)</label>
-                        <div className="space-y-2">
-                          <select 
-                            value={currentDiagnosis.problem && currentDiagnosis.problem !== '其他' && DIAG_DATA[currentDiagnosis.domain as keyof typeof DIAG_DATA]?.problems[currentDiagnosis.problem]?.symptoms.includes(currentDiagnosis.symptom) ? currentDiagnosis.symptom : ''}
-                            disabled={!currentDiagnosis.problem}
-                            onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptom: e.target.value, symptomOther: e.target.value})}
-                            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:bg-slate-50 text-sm"
-                          >
-                            <option value="">從常用清單選擇...</option>
-                            {currentDiagnosis.problem && currentDiagnosis.problem !== '其他' && DIAG_DATA[currentDiagnosis.domain as keyof typeof DIAG_DATA]?.problems[currentDiagnosis.problem]?.symptoms.map(s => <option key={s} value={s}>{s}</option>)}
-                          </select>
+                      <div className="space-y-1 md:col-span-2">
+                        <label className="text-sm font-medium text-slate-700 flex items-center justify-between">
+                          <span>4. 症狀 Symptoms (S) <span className="text-xs font-normal text-slate-500">(可多選常用症狀，或於下方自由編輯)</span></span>
+                          {currentDiagnosis.problem && currentDiagnosis.problem !== '其他' && (
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={selectAllSymptoms}
+                                className="text-xs text-blue-600 hover:text-blue-700 font-bold px-2 py-0.5 rounded hover:bg-blue-50 transition-colors"
+                              >
+                                全選
+                              </button>
+                              <button
+                                type="button"
+                                onClick={clearAllSymptoms}
+                                className="text-xs text-slate-500 hover:text-slate-600 font-bold px-2 py-0.5 rounded hover:bg-slate-50 transition-colors"
+                              >
+                                清除
+                              </button>
+                            </div>
+                          )}
+                        </label>
+                        <div className="space-y-3">
+                          {currentDiagnosis.problem && currentDiagnosis.problem !== '其他' && (
+                            <div className="p-4 bg-white border border-slate-200 rounded-lg max-h-48 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {DIAG_DATA[currentDiagnosis.domain as keyof typeof DIAG_DATA]?.problems[currentDiagnosis.problem]?.symptoms.map(s => {
+                                const isChecked = currentDiagnosis.symptom
+                                  ? currentDiagnosis.symptom.split('、').map(x => x.trim()).includes(s)
+                                  : false;
+                                return (
+                                  <label key={s} className="flex items-start gap-2 p-1.5 hover:bg-slate-50 rounded-md cursor-pointer transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => toggleSymptomCheckbox(s)}
+                                      className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 mt-0.5 cursor-pointer"
+                                    />
+                                    <span className="text-xs text-slate-700 leading-tight">{s}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          )}
                           <input 
                             type="text" 
-                            placeholder="或在此自由填寫 / 自定義修改症狀描述..."
+                            placeholder={currentDiagnosis.problem ? "在此自由填寫 / 自定義修改完整症狀描述..." : "請先選擇問題再填寫症狀..."}
                             value={currentDiagnosis.symptom || ''}
                             disabled={!currentDiagnosis.problem}
-                            onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptom: e.target.value, symptomOther: e.target.value})}
-                            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all disabled:bg-slate-50 text-sm" 
+                            onChange={e => setCurrentDiagnosis({...currentDiagnosis, symptom: e.target.value, symptomOther: e.target.value})}                            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all disabled:bg-slate-50 text-sm" 
                           />
                         </div>
                       </div>
