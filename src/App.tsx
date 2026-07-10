@@ -4612,6 +4612,7 @@ export default function App() {
                     </span>
                   </div>
                 </div>
+              )}
             </motion.div>
 
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
