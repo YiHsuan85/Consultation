@@ -1023,6 +1023,7 @@ export default function App() {
   const [weightChangeExpanded, setWeightChangeExpanded] = useState(false);
   const [biochemHistoryExpanded, setBiochemHistoryExpanded] = useState(false);
   const [guidelinesExpanded, setGuidelinesExpanded] = useState(false);
+  const [biochemRefExpanded, setBiochemRefExpanded] = useState(false);
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
@@ -3603,35 +3604,51 @@ export default function App() {
                     </div>
                   </div>
                   
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3 mt-4">
-                    <div className="flex items-center gap-2 border-b border-slate-105 pb-2">
-                      <div className="w-1.5 h-3.5 bg-blue-600 rounded-full" />
-                      <h4 className="text-sm font-bold text-slate-800">生化數值參考/目標</h4>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
-                        <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">DM參考值 (正常 | 前期 | 確診)</div>
-                        <div className="grid grid-cols-1 gap-y-1">
-                          <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
-                          <div><span className="text-slate-500">PC:</span> &lt;140 | 140-199 | &gt;200</div>
-                          <div><span className="text-slate-500">A1c:</span> 4-5.6 | 5.7-6.4 | &gt;6.5%</div>
-                        </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 shadow-sm mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setBiochemRefExpanded(!biochemRefExpanded)}
+                      className="w-full flex items-center justify-between text-slate-800 font-bold hover:text-slate-900 cursor-pointer text-left focus:outline-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-3.5 bg-blue-600 rounded-full" />
+                        <span className="text-sm font-bold text-slate-800 uppercase tracking-wider">生化數值參考/目標</span>
                       </div>
-                      <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
-                        <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">血脂 ASCVD 預防目標 (LDL | Non-HDL)</div>
-                        <div className="space-y-1">
-                          <div><span className="text-slate-700 font-bold underline">預防:</span> (3–10%): &lt;100 | &lt;130; (≥10%): &lt;70 | &lt;100</div>
-                          <div><span className="text-slate-700 font-bold underline">已病:</span> (非極高): &lt;70 | &lt;100; (極高): &lt;55 | &lt;85</div>
-                          <div className="text-[10px] text-slate-500 pt-1">TG &gt; 400 時 LDL 計算誤差大，建議看 Non-HDL</div>
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200">
+                        {biochemRefExpanded ? '收合 ▲' : '展開 ▼'}
+                      </span>
+                    </button>
+                    
+                    {biochemRefExpanded && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-200 mt-2"
+                      >
+                        <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] leading-relaxed shadow-sm">
+                          <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">DM參考值 (正常 | 前期 | 確診)</div>
+                          <div className="grid grid-cols-1 gap-y-1">
+                            <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
+                            <div><span className="text-slate-500">PC:</span> &lt;140 | 140-199 | &gt;200</div>
+                            <div><span className="text-slate-500">A1c:</span> 4-5.6 | 5.7-6.4 | &gt;6.5%</div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-3 bg-slate-50/50 rounded-lg border border-slate-150 text-[11px] leading-relaxed">
-                        <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級</div>
-                        <div className="space-y-1">
-                          <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
+                        <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] leading-relaxed shadow-sm">
+                          <div className="font-bold text-green-700 mb-1 border-b border-green-50 pb-1">血脂 ASCVD 預防目標 (LDL | Non-HDL)</div>
+                          <div className="space-y-1">
+                            <div><span className="text-slate-700 font-bold underline">預防:</span> (3–10%): &lt;100 | &lt;130; (≥10%): &lt;70 | &lt;100</div>
+                            <div><span className="text-slate-700 font-bold underline">已病:</span> (非極高): &lt;70 | &lt;100; (極高): &lt;55 | &lt;85</div>
+                            <div className="text-[10px] text-slate-500 pt-1">TG &gt; 400 時 LDL 計算誤差大，建議看 Non-HDL</div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                        <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] leading-relaxed shadow-sm">
+                          <div className="font-bold text-orange-700 mb-1 border-b border-orange-50 pb-1">LDL-C 分級</div>
+                          <div className="space-y-1">
+                            <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </section>
