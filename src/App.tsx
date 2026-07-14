@@ -899,7 +899,7 @@ export default function App() {
   const [activePage, setActivePage] = useState<'dashboard' | 'consultation'>('dashboard');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications'>('assessment');
-  const [showDiagTerminology, setShowDiagTerminology] = useState(true);
+  const [showDiagTerminology, setShowDiagTerminology] = useState(false);
   const [diagTerminologyActiveTab, setDiagTerminologyActiveTab] = useState<'NI' | 'NC' | 'NB'>('NI');
   const [searchQuery, setSearchQuery] = useState('');
   const [medicationSearchQuery, setMedicationSearchQuery] = useState('');
@@ -4680,24 +4680,6 @@ export default function App() {
                     <div className="bg-white border border-slate-200 rounded-lg p-2.5 text-center shadow-xs">
                       <div className="text-[10px] text-slate-500 font-semibold mb-0.5">脂肪</div>
                       <div className="text-sm font-black text-slate-700">{dietTotals.fat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-dashed border-slate-200 pt-3">
-                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
-                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">膳食纖維</div>
-                      <div className="text-xs font-bold text-slate-700">{dietTotals.fiber.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
-                    </div>
-                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
-                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">飽和脂肪</div>
-                      <div className="text-xs font-bold text-slate-700">{dietTotals.saturatedFat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
-                    </div>
-                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
-                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">反式脂肪</div>
-                      <div className="text-xs font-bold text-slate-700">{dietTotals.transFat.toFixed(1)} <span className="text-[9px] font-normal">g</span></div>
-                    </div>
-                    <div className="bg-white border border-slate-200 rounded-lg p-1.5 text-center shadow-xs">
-                      <div className="text-[10px] text-slate-500 font-semibold mb-0.5">膽固醇</div>
-                      <div className="text-xs font-bold text-slate-700">{dietTotals.cholesterol.toFixed(1)} <span className="text-[9px] font-normal">mg</span></div>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2 border-t border-dashed border-slate-200 pt-3 text-[11px] text-slate-500">
