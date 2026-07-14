@@ -472,7 +472,7 @@ export const generateWordDoc = async (state: AppState) => {
         }),
 
         new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
-        new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatus.includes("其他") ? ` (${state.clinical.giStatusOther})` : ""}` }),
+        new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatusOther ? ` (${state.clinical.giStatusOther})` : ""}${state.clinical.stoolStatus ? ` (排便狀況: ${state.clinical.stoolStatus})` : ""}` }),
         new Paragraph({ text: `目前服用藥物: ${state.clinical.medications || "無"}` }),
 
         // 2. Diagnosis
