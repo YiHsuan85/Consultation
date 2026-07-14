@@ -1133,7 +1133,6 @@ export const BIO_RANGES: Record<string, { min?: number; max?: number; label: str
   HbA1c: { max: 5.7, label: '< 5.7' },
   AC: { max: 110, label: '< 110' },
   PC: { max: 140, label: '< 140' },
-  FPG: { max: 200, label: '< 200' },
   UPCR: { max: 150, label: '< 150' },
   BUN: { min: 8, max: 26, label: '8-26' },
   Cr: { min: 0.6, max: 1.3, label: '0.6-1.3' },
