@@ -160,7 +160,7 @@ export function NutritionAssessment({ assessment, onChange }: Props) {
               <div className="col-span-full space-y-2">
                 <Label>Medical Hx / Surgical Hx</Label>
                 <div className="flex flex-wrap gap-4">
-                  {['糖尿病', '腎臟病', '心血管', '痛風', '腎結石', '高血脂'].map((item) => (
+                  {['DM', '腎臟病', '心血管', 'HTN', '痛風', '腎結石', 'GORD', '高血脂'].map((item) => (
                     <div key={item} className="flex items-center space-x-2">
                       <Checkbox
                         id={item}
