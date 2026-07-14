@@ -3781,84 +3781,127 @@ export default function App() {
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">飲食型態</label>
-                      <select value={state.diet.type || ''} onChange={e => setState({...state, diet: {...state.diet, type: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
-                        <option>口服</option>
-                        <option>特殊型態飲食</option>
-                        <option>管灌</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">飲食傾向</label>
-                      <select value={state.diet.preference || ''} onChange={e => setState({...state, diet: {...state.diet, preference: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
-                        <option>葷</option>
-                        <option>素</option>
-                        <option>早素</option>
-                        <option>初一.十五素</option>
-                        <option>蛋奶素</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">建議熱量 (Wt+運動)</label>
-                      <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-full min-h-[42px] flex flex-col justify-center py-2">
-                        <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
-                        {recommendedMacros && (
-                          <div className="flex gap-2.5 mt-1 text-[10px] font-medium text-blue-600/80 leading-none">
-                            <span>醣: {recommendedMacros.carbs}g</span>
-                            <span>蛋: {recommendedMacros.protein}g</span>
-                            <span>脂: {recommendedMacros.fat}g</span>
-                          </div>
-                        )}
+                    {/* Left: Diet basics (type, preference, and meals) */}
+                    <div className="md:col-span-2 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">飲食型態</label>
+                          <select value={state.diet.type || ''} onChange={e => setState({...state, diet: {...state.diet, type: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                            <option>口服</option>
+                            <option>特殊型態飲食</option>
+                            <option>管灌</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">飲食傾向</label>
+                          <select value={state.diet.preference || ''} onChange={e => setState({...state, diet: {...state.diet, preference: e.target.value}})} className="w-full px-3 py-2 rounded-lg border border-slate-200">
+                            <option>葷</option>
+                            <option>素</option>
+                            <option>早素</option>
+                            <option>初一.十五素</option>
+                            <option>蛋奶素</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 pt-1">
+                        <label className="text-sm font-medium text-slate-700 font-bold">餐次</label>
+                        <div className="flex flex-wrap gap-x-4 gap-y-2">
+                          {['早餐', '早點', '午餐', '午點', '晚餐', '晚點'].map(item => (
+                            <label key={item} className="flex items-center gap-2 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={state.diet.meals?.includes(item)} 
+                                onChange={e => {
+                                  const newMeals = e.target.checked 
+                                    ? [...(state.diet.meals || []), item]
+                                    : (state.diet.meals || []).filter(m => m !== item);
+                                  setState({...state, diet: {...state.diet, meals: newMeals}});
+                                }}
+                                className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
+                              />
+                              <span className="text-sm text-slate-600 font-medium">{item}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="text-xs text-slate-500 shrink-0">其他餐次或說明:</span>
+                          <input 
+                            type="text" 
+                            placeholder="如：自定義餐次、宵夜、點心..."
+                            value={state.diet.mealsOther || ''}
+                            onChange={e => setState({...state, diet: {...state.diet, mealsOther: e.target.value}})}
+                            className="w-full px-3 py-1.5 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-sm font-medium text-slate-700">建議熱量 (Harris Benedict)</label>
-                      <div className="px-3 py-2 bg-indigo-50/70 text-indigo-900 rounded-lg border border-indigo-100 h-full min-h-[42px] flex flex-col justify-center gap-1.5 shadow-xs">
-                        {recommendedHBKcal.err ? (
-                          <div className="text-[10px] text-slate-500 font-medium leading-tight">{recommendedHBKcal.err}</div>
-                        ) : (
-                          <div className="flex justify-between items-baseline leading-none">
-                            <span className="text-[10px] text-indigo-600 font-mono">BEE: {recommendedHBKcal.bee} kcal</span>
-                            <span className="text-sm font-black text-indigo-700">{recommendedHBKcal.total} <span className="text-[10px] font-bold">kcal/d</span></span>
+
+                    {/* Right: Recommended calories */}
+                    <div className="md:col-span-2 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full">
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">建議熱量 (Wt+運動)</label>
+                          <div className="px-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 h-[104px] flex flex-col justify-center py-2 shadow-xs">
+                            <div className="text-sm font-bold leading-none">{recommendedKcal} kcal/d</div>
+                            {recommendedMacros && (
+                              <div className="flex gap-2.5 mt-1.5 text-[10px] font-medium text-blue-600/80 leading-none">
+                                <span>醣: {recommendedMacros.carbs}g</span>
+                                <span>蛋: {recommendedMacros.protein}g</span>
+                                <span>脂: {recommendedMacros.fat}g</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-indigo-100/50">
-                          <div className="space-y-0.5">
-                            <span className="text-[9px] text-slate-400 font-bold block">活動因子</span>
-                            <select 
-                              value={state.guidelineSelections.hbActivity !== undefined ? state.guidelineSelections.hbActivity : 1.3} 
-                              onChange={e => setState({
-                                ...state, 
-                                guidelineSelections: {
-                                  ...state.guidelineSelections,
-                                  hbActivity: parseFloat(e.target.value)
-                                }
-                              })}
-                              className="w-full text-[10px] px-1 py-0.5 rounded border border-slate-200 bg-white"
-                            >
-                              {HB_ACTIVITY_OPTIONS.map(opt => (
-                                <option key={opt.label} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="space-y-0.5">
-                            <span className="text-[9px] text-slate-400 font-bold block">壓力因子</span>
-                            <select 
-                              value={state.guidelineSelections.hbStress !== undefined ? state.guidelineSelections.hbStress : 1.0} 
-                              onChange={e => setState({
-                                ...state, 
-                                guidelineSelections: {
-                                  ...state.guidelineSelections,
-                                  hbStress: parseFloat(e.target.value)
-                                }
-                              })}
-                              className="w-full text-[10px] px-1 py-0.5 rounded border border-slate-200 bg-white"
-                            >
-                              {HB_STRESS_OPTIONS.map(opt => (
-                                <option key={opt.label} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium text-slate-700">建議熱量 (Harris Benedict)</label>
+                          <div className="px-3 py-2 bg-indigo-50/70 text-indigo-900 rounded-lg border border-indigo-100 h-[104px] flex flex-col justify-center gap-1 shadow-xs">
+                            {recommendedHBKcal.err ? (
+                              <div className="text-[10px] text-slate-500 font-medium leading-tight">{recommendedHBKcal.err}</div>
+                            ) : (
+                              <div className="flex justify-between items-baseline leading-none">
+                                <span className="text-[9px] text-indigo-600 font-mono">BEE: {recommendedHBKcal.bee} kcal</span>
+                                <span className="text-xs font-black text-indigo-700">{recommendedHBKcal.total} <span className="text-[9px] font-bold">kcal/d</span></span>
+                              </div>
+                            )}
+                            <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-indigo-100/50">
+                              <div className="space-y-0.5">
+                                <span className="text-[8px] text-slate-400 font-bold block">活動因子</span>
+                                <select 
+                                  value={state.guidelineSelections.hbActivity !== undefined ? state.guidelineSelections.hbActivity : 1.3} 
+                                  onChange={e => setState({
+                                    ...state, 
+                                    guidelineSelections: {
+                                      ...state.guidelineSelections,
+                                      hbActivity: parseFloat(e.target.value)
+                                    }
+                                  })}
+                                  className="w-full text-[9px] px-1 py-0.5 rounded border border-slate-200 bg-white"
+                                >
+                                  {HB_ACTIVITY_OPTIONS.map(opt => (
+                                    <option key={opt.label} value={opt.value}>{opt.label}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="space-y-0.5">
+                                <span className="text-[8px] text-slate-400 font-bold block">壓力因子</span>
+                                <select 
+                                  value={state.guidelineSelections.hbStress !== undefined ? state.guidelineSelections.hbStress : 1.0} 
+                                  onChange={e => setState({
+                                    ...state, 
+                                    guidelineSelections: {
+                                      ...state.guidelineSelections,
+                                      hbStress: parseFloat(e.target.value)
+                                    }
+                                  })}
+                                  className="w-full text-[9px] px-1 py-0.5 rounded border border-slate-200 bg-white"
+                                >
+                                  {HB_STRESS_OPTIONS.map(opt => (
+                                    <option key={opt.label} value={opt.value}>{opt.label}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -3901,16 +3944,36 @@ export default function App() {
                   <div className="space-y-3">
                     <label className="text-sm font-medium text-slate-700">飲食過敏</label>
                     <div className="flex flex-wrap gap-4">
-                      {['花生', '蝦', '蟹', '牛奶'].map(item => (
+                      {['無', '花生', '蝦', '蟹', '牛奶'].map(item => (
                         <label key={item} className="flex items-center gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
                             checked={state.diet.allergies?.includes(item)} 
                             onChange={e => {
-                              const newAllergies = e.target.checked 
-                                ? [...(state.diet.allergies || []), item]
-                                : (state.diet.allergies || []).filter(h => h !== item);
-                              setState({...state, diet: {...state.diet, allergies: newAllergies}});
+                              let newAllergies = [...(state.diet.allergies || [])];
+                              let newAllergiesOther = state.diet.allergiesOther || '';
+                              if (item === '無') {
+                                if (e.target.checked) {
+                                  newAllergies = ['無'];
+                                  newAllergiesOther = '';
+                                } else {
+                                  newAllergies = [];
+                                }
+                              } else {
+                                if (e.target.checked) {
+                                  newAllergies = [...newAllergies.filter(x => x !== '無'), item];
+                                } else {
+                                  newAllergies = newAllergies.filter(x => x !== item);
+                                }
+                              }
+                              setState({
+                                ...state, 
+                                diet: {
+                                  ...state.diet, 
+                                  allergies: newAllergies,
+                                  allergiesOther: newAllergiesOther
+                                }
+                              });
                             }}
                             className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
                           />
@@ -3927,28 +3990,6 @@ export default function App() {
                           className="w-full px-3 py-1 text-sm rounded border border-slate-200"
                         />
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium text-slate-700">餐次</label>
-                    <div className="flex flex-wrap gap-4">
-                      {['早餐', '早點', '午餐', '午點', '晚餐', '晚點', '大小餐'].map(item => (
-                        <label key={item} className="flex items-center gap-2 cursor-pointer">
-                          <input 
-                            type="checkbox" 
-                            checked={state.diet.meals?.includes(item)} 
-                            onChange={e => {
-                              const newMeals = e.target.checked 
-                                ? [...(state.diet.meals || []), item]
-                                : (state.diet.meals || []).filter(m => m !== item);
-                              setState({...state, diet: {...state.diet, meals: newMeals}});
-                            }}
-                            className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
-                          />
-                          <span className="text-sm text-slate-600 font-medium">{item}</span>
-                        </label>
-                      ))}
                     </div>
                   </div>
 
