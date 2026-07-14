@@ -3673,7 +3673,7 @@ export default function App() {
                   <div className="space-y-4">
                     <label className="text-sm font-medium text-slate-700">既往病史 (Medical Hx / Surgical Hx)</label>
                     <div className="flex flex-wrap gap-4">
-                      {['糖尿病', '腎臟病', '心血管', '高血壓', '痛風', '腎結石', 'GORD', '高血脂'].map(item => (
+                      {['DM', '腎臟病', '心血管', 'HTN', 'Gout', '腎結石', 'GORD', '高血脂'].map(item => (
                         <div key={item} className="flex items-center gap-4">
                           <label className="flex items-center gap-2 cursor-pointer group">
                             <input 
