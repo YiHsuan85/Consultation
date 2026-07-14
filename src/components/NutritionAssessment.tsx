@@ -160,7 +160,7 @@ export function NutritionAssessment({ assessment, onChange }: Props) {
               <div className="col-span-full space-y-2">
                 <Label>Medical Hx / Surgical Hx</Label>
                 <div className="flex flex-wrap gap-4">
-                  {['DM', '腎臟病', '心血管', 'HTN', '痛風', '腎結石', 'GORD', '高血脂'].map((item) => (
+                  {['DM', '腎臟病', '心血管', '痛風', '腎結石', '高血脂'].map((item) => (
                     <div key={item} className="flex items-center space-x-2">
                       <Checkbox
                         id={item}
@@ -234,10 +234,6 @@ export function NutritionAssessment({ assessment, onChange }: Props) {
               <div className="space-y-2">
                 <Label>血壓 (BP)</Label>
                 <Input value={biochemistry.bp} onChange={(e) => onChange('assessment.biochemistry.bp', e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>FPG</Label>
-                <Input value={biochemistry.fpg} onChange={(e) => onChange('assessment.biochemistry.fpg', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>HbA1c (%)</Label>
