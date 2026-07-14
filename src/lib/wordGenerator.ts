@@ -360,7 +360,7 @@ export const generateWordDoc = async (state: AppState) => {
 
         new Paragraph({ text: "4. 飲食史 (Diet Hx)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
         new Paragraph({ text: `飲食型態: ${state.diet.type} / 傾向: ${state.diet.preference}` }),
-        new Paragraph({ text: `餐次: ${state.diet.meals.join(", ") || "未填寫"}` }),
+        new Paragraph({ text: `餐次: ${state.diet.meals.join(", ") || (state.diet.mealsOther ? "" : "未填寫")}${state.diet.mealsOther ? (state.diet.meals.length > 0 ? "、" : "") + state.diet.mealsOther : ""}` }),
         new Paragraph({ text: `飲水量: ${state.diet.currentWater || "0"} ml/d${state.diet.currentWaterNotes ? ` (${state.diet.currentWaterNotes})` : ""}` }),
         new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || (state.diet.allergiesOther ? "" : "無")}${state.diet.allergiesOther ? (state.diet.allergies.length > 0 ? "、" : "") + state.diet.allergiesOther : ""}` }),
         new Paragraph({ text: `保健品: ${state.diet.supplements || "無"}` }),
@@ -977,7 +977,7 @@ export const generateReminderWordDoc = async (state: AppState) => {
         new Paragraph({ text: "五、衛教資訊與附件", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
         new Paragraph({ text: state.intervention.educationTopics.join(", ") || "無" }),
         ...(state.intervention.educationNotes ? [
-         new Paragraph({ text: `自訂衛教備註: ${state.intervention.educationNotes}` })
+          new Paragraph({ text: `自訂衛教備註: ${state.intervention.educationNotes}` })
         ] : []),
         ...imageRuns,
 
