@@ -150,6 +150,7 @@ export interface AppState {
   clinical: {
     giStatus: string[];
     giStatusOther?: string;
+    stoolStatus?: string;
     medicalHx: string[];
     medicalHxOther: string;
     medications: string;
