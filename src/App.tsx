@@ -421,8 +421,8 @@ const INITIAL_STATE: AppState = {
     sarcopeniaResult: ''
   },
   biochemistry: {
-    BP: '', AC: '', PC: '', FPG: '', HbA1c: '', BUN: '', Cr: '', eGFR: '', UPCR: '', 
-    UricAcid: '', Na: '', K: '', P: '', TC: '', HDL: '', LDL: '', 
+    BP: '', AC: '', PC: '', HbA1c: '', BUN: '', Cr: '', eGFR: '', UPCR: '', 
+    UricAcid: '', Na: '', K: '', TC: '', HDL: '', LDL: '', 
     TG: '', AST: '', ALT: '', Alb: ''
   },
   biochemistryNotes: '',
@@ -3729,10 +3729,33 @@ export default function App() {
                             type="checkbox" 
                             checked={state.clinical.giStatus.includes(item)}
                             onChange={e => {
-                              const newStatus = e.target.checked 
-                                ? [...state.clinical.giStatus, item]
-                                : state.clinical.giStatus.filter(h => h !== item);
-                              setState({...state, clinical: {...state.clinical, giStatus: newStatus}});
+                              let newStatus = [...(state.clinical.giStatus || [])];
+                              let newStatusOther = state.clinical.giStatusOther || '';
+                              let newStoolStatus = state.clinical.stoolStatus || '';
+                              if (item === '無') {
+                                if (e.target.checked) {
+                                  newStatus = ['無'];
+                                  newStatusOther = '';
+                                } else {
+                                  newStatus = [];
+                                  newStoolStatus = '';
+                                }
+                              } else {
+                                if (e.target.checked) {
+                                  newStatus = [...newStatus.filter(x => x !== '無'), item];
+                                } else {
+                                  newStatus = newStatus.filter(x => x !== item);
+                                }
+                              }
+                              setState({
+                                ...state, 
+                                clinical: {
+                                  ...state.clinical, 
+                                  giStatus: newStatus,
+                                  giStatusOther: newStatusOther,
+                                  stoolStatus: newStoolStatus
+                                }
+                              });
                             }}
                             className="w-4 h-4 text-blue-600 rounded" 
                           />
@@ -3745,11 +3768,47 @@ export default function App() {
                           type="text" 
                           placeholder="請輸入其他腸胃狀況..."
                           value={state.clinical.giStatusOther || ''}
-                          onChange={e => setState({...state, clinical: {...state.clinical, giStatusOther: e.target.value}})}
+                          onChange={e => {
+                            let newStatus = [...(state.clinical.giStatus || [])].filter(x => x !== '無');
+                            setState({
+                              ...state, 
+                              clinical: {
+                                ...state.clinical, 
+                                giStatus: newStatus,
+                                giStatusOther: e.target.value
+                              }
+                            });
+                          }}
                           className="w-full px-3 py-1 text-sm rounded border border-slate-200"
                         />
                       </div>
                     </div>
+
+                    {state.clinical.giStatus.includes('無') && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-4 bg-slate-50 border border-slate-200/60 rounded-xl space-y-2 mt-2"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                          <label className="text-xs font-bold text-slate-700">排便狀況</label>
+                        </div>
+                        <input 
+                          type="text"
+                          placeholder="請輸入排便狀況 (例如：每日一次、偏軟、正常等)..."
+                          value={state.clinical.stoolStatus || ''}
+                          onChange={e => setState({
+                            ...state,
+                            clinical: {
+                              ...state.clinical,
+                              stoolStatus: e.target.value
+                            }
+                          })}
+                          className="w-full max-w-md px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
+                        />
+                      </motion.div>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium text-slate-700">目前服用藥物</label>
