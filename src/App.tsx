@@ -49,6 +49,7 @@ import {
   orderBy,
   Timestamp,
   deleteDoc,
+  getDocs,
   User as FirebaseUser
 } from './firebase';
 import {
@@ -561,7 +562,8 @@ const Dashboard = ({
   setExpandedPatientNotes,
   handleSaveOverviewNotes,
   handleUpdatePatientNotes,
-  handleUpdatePatientFollowups
+  handleUpdatePatientFollowups,
+  setOriginalPatientName
 }: any) => {
   const [q, setQ] = useState('');
   const [isCalendarExpanded, setIsCalendarExpanded] = useState(false);
@@ -785,6 +787,7 @@ const Dashboard = ({
                                       birthday: p.birthday
                                     }
                                   });
+                                  setOriginalPatientName(p.name);
                                 }
                                 setActivePage('consultation');
                                 setActiveTab('assessment');
@@ -1053,14 +1056,12 @@ const getPatientFollowups = (p: Patient) => {
   }
   return [
     { id: 'fu1', label: '1st f/u', date: format(addDays(base, 14), 'yyyy-MM-dd'), completed: p.checklist?.fu1 || false },
-    { id: 'fu2', label: '2nd f/u', date: format(addDays(base, 28), 'yyyy-MM-dd'), completed: p.checklist?.fu2 || false },
-    { id: 'fu3', label: '3rd f/u', date: format(addDays(base, 56), 'yyyy-MM-dd'), completed: p.checklist?.fu3 || false },
-    { id: 'fu4', label: '4th f/u', date: format(addDays(base, 84), 'yyyy-MM-dd'), completed: p.checklist?.fu4 || false },
   ];
 };
 
 export default function App() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
+  const [originalPatientName, setOriginalPatientName] = useState<string | null>(null);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [loginError, setLoginError] = useState<{ message: string; isWarning?: boolean } | null>(null);
@@ -1960,7 +1961,13 @@ export default function App() {
 
       // Sync patient data to the dashboard automatically
       const patientName = state.clientHx.name || '未命名個案';
-      const matchingPatient = patients.find(p => p.name === patientName);
+      let matchingPatient = null;
+      if (originalPatientName) {
+        matchingPatient = patients.find(p => p.name === originalPatientName);
+      }
+      if (!matchingPatient) {
+        matchingPatient = patients.find(p => p.name === patientName);
+      }
       
       const patientPayload = {
         name: patientName,
@@ -1973,6 +1980,36 @@ export default function App() {
       if (matchingPatient && matchingPatient.id) {
         // Update existing patient record
         await updateDoc(doc(db, 'patients', matchingPatient.id), patientPayload);
+        
+        // If the name actually changed, update all other consultations of this patient to the new name
+        if (originalPatientName && originalPatientName !== patientName) {
+          try {
+            const consultsQuery = query(
+              collection(db, 'consultations'),
+              where('userId', '==', user.uid),
+              where('clientName', '==', originalPatientName)
+            );
+            const querySnapshot = await getDocs(consultsQuery);
+            const batchPromises = querySnapshot.docs.map(async (docSnap) => {
+              const oldData = docSnap.data();
+              // Skip the current one we already updated
+              if (docSnap.id === id) return;
+              
+              const updatedData = { ...(oldData.data || {}) };
+              if (updatedData.clientHx) {
+                updatedData.clientHx = { ...updatedData.clientHx, name: patientName };
+              }
+              await updateDoc(doc(db, 'consultations', docSnap.id), {
+                clientName: patientName,
+                data: updatedData,
+                updatedAt: Timestamp.now()
+              });
+            });
+            await Promise.all(batchPromises);
+          } catch (err) {
+            console.error('Error updating matching consultations:', err);
+          }
+        }
       } else {
         // Create new patient record if not exists
         await addDoc(collection(db, 'patients'), {
@@ -1989,6 +2026,8 @@ export default function App() {
           createdAt: Timestamp.now()
         });
       }
+
+      setOriginalPatientName(patientName);
     } catch (error: any) {
       console.error('Save error details:', error);
       const errorCode = error.code || 'unknown';
@@ -2096,6 +2135,7 @@ export default function App() {
       intervention: { ...INITIAL_STATE.intervention, ...(record.data.intervention || {}) },
       monitoring: { ...INITIAL_STATE.monitoring, ...(record.data.monitoring || {}) }
     });
+    setOriginalPatientName(record.clientName || record.data?.clientHx?.name || null);
     alert(`已載入 ${record.clientName} 的紀錄。`);
   };
 
@@ -2807,6 +2847,7 @@ export default function App() {
             handleSaveOverviewNotes={handleSaveOverviewNotes}
             handleUpdatePatientNotes={handleUpdatePatientNotes}
             handleUpdatePatientFollowups={handleUpdatePatientFollowups}
+            setOriginalPatientName={setOriginalPatientName}
           />
         ) : (
           <div className="space-y-6">
@@ -7798,7 +7839,10 @@ export default function App() {
               <div className="flex gap-4">
                 <button 
                   onClick={() => {
-                    if(confirm('確定要清空所有紀錄嗎？')) setState(INITIAL_STATE);
+                    if(confirm('確定要清空所有紀錄嗎？')) {
+                      setState(INITIAL_STATE);
+                      setOriginalPatientName(null);
+                    }
                   }}
                   className="hover:text-red-500 transition-colors"
                 >
