@@ -2259,6 +2259,8 @@ export default function App() {
   }
 
   if (!user) {
+    const isIframe = typeof window !== 'undefined' && window.self !== window.top;
+
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-blue-100">
         <div className="max-w-md w-full">
@@ -2276,14 +2278,70 @@ export default function App() {
                 <h2 className="text-xl font-bold text-slate-800 mb-1">歡迎回來</h2>
                 <p className="text-sm text-slate-500">請登入您的帳號以開始進行諮詢紀錄</p>
               </div>
+
+              {isIframe && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800 space-y-2">
+                  <p className="font-bold flex items-center gap-1.5 text-amber-900">
+                    <span className="text-sm">⚠️</span> 偵測到預覽框架 (IFrame) 限制
+                  </p>
+                  <p className="leading-relaxed text-[11px]">
+                    由於瀏覽器安全機制與第三方 Cookie 限制，在 AI Studio 預覽視窗內直接點擊 Google 登入會被阻擋。
+                  </p>
+                  <p className="font-medium text-amber-900 leading-relaxed text-[11px]">
+                    請點擊下方按鈕，在新分頁中開啟系統即可正常登入並使用完整功能：
+                  </p>
+                  <a
+                    href={window.location.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98] text-center"
+                  >
+                    在新分頁開啟系統 (解決登入問題)
+                  </a>
+                </div>
+              )}
+
+              {loginError && (
+                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-800 space-y-2">
+                  <p className="font-bold flex items-center gap-1.5 text-rose-900">
+                    <span>❌</span> 登入失敗
+                  </p>
+                  <p className="leading-relaxed text-[11px] font-mono break-all bg-white p-2 rounded border border-rose-100">
+                    {loginError}
+                  </p>
+                  <p className="leading-relaxed text-[11px]">
+                    建議您點擊下方按鈕在新分頁開啟系統以解決此問題：
+                  </p>
+                  <a
+                    href={window.location.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98] text-center"
+                  >
+                    在新分頁開啟系統 (重試登入)
+                  </a>
+                </div>
+              )}
               
-              <button 
-                onClick={handleLogin}
-                className="w-full flex items-center justify-center gap-4 bg-white hover:bg-slate-50 text-slate-700 py-3 px-6 rounded-2xl font-bold border-2 border-slate-100 transition-all active:scale-[0.98] shadow-sm"
-              >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 pointer-events-none" referrerPolicy="no-referrer" />
-                使用 Google 帳號登入
-              </button>
+              <div className="space-y-4">
+                <button 
+                  onClick={handleLogin}
+                  className="w-full flex items-center justify-center gap-4 bg-white hover:bg-slate-50 text-slate-700 py-3 px-6 rounded-2xl font-bold border-2 border-slate-100 transition-all active:scale-[0.98] shadow-sm cursor-pointer"
+                >
+                  <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 pointer-events-none" referrerPolicy="no-referrer" />
+                  {isIframe ? '在新分頁開啟並登入' : '使用 Google 帳號登入'}
+                </button>
+
+                {!isIframe && (
+                  <button 
+                    type="button"
+                    onClick={handleLoginRedirect}
+                    className="w-full text-center text-slate-400 hover:text-slate-600 transition-colors text-xs hover:underline cursor-pointer py-1"
+                  >
+                    嘗試使用轉址 (Redirect) 方式登入
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -7908,6 +7966,40 @@ export default function App() {
           </div>
         </section>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 border border-slate-100">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">確定要登出嗎？</h3>
+              <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                您即將登出此系統。若有未儲存的諮詢紀錄，建議先進行儲存，以免資料遺失。
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-all cursor-pointer text-xs"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={executeLogout}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-all shadow-sm cursor-pointer text-xs"
+              >
+                確認登出
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
