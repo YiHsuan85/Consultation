@@ -1,11 +1,27 @@
+// src/firebase.ts
+
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, collection, addDoc, updateDoc, setDoc, doc, query, where, onSnapshot, orderBy, Timestamp, deleteDoc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
 
+// 1. 匯入原本的 JSON
+import firebaseConfigData from '../firebase-applet-config.json';
+
+// 2. 使用 import.meta.env 覆蓋需要從環境變數讀取的欄位
+const firebaseConfig = {
+  ...firebaseConfigData,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+};
+
+// 3. 初始化 Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId); // 這裡維持使用原本 JSON 裡的 ID
 export const googleProvider = new GoogleAuthProvider();
 
 // Test connection
