@@ -40,15 +40,6 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "name", "birthday", "gender"]
-    },
-    "UserSetting": {
-      "title": "UserSetting",
-      "description": "User specific settings, like dashboard notes",
-      "type": "object",
-      "properties": {
-        "notes": { "type": "string" }
-      },
-      "required": []
     }
   },
   "firestore": {
@@ -59,10 +50,6 @@
     "/patients/{patientId}": {
       "schema": "Patient",
       "description": "Collection of patients"
-    },
-    "/users/{userId}/settings/{settingsId}": {
-      "schema": "UserSetting",
-      "description": "Collection of user custom settings"
     }
   }
 }
