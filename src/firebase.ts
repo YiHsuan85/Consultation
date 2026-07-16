@@ -2,7 +2,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { getFirestore, collection, addDoc, updateDoc, setDoc, doc, query, where, onSnapshot, orderBy, Timestamp, deleteDoc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, updateDoc, setDoc, doc, query, where, onSnapshot, orderBy, Timestamp, deleteDoc, getDocFromServer, getDocs } from 'firebase/firestore';
 
 // 1. 匯入原本的 JSON
 import firebaseConfigData from '../firebase-applet-config.json';
@@ -98,6 +98,7 @@ export {
   onSnapshot, 
   orderBy, 
   Timestamp,
-  deleteDoc
+  deleteDoc,
+  getDocs
 };
 export type { User };
