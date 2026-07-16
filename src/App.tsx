@@ -758,7 +758,7 @@ const Dashboard = ({
                             ⚙️
                           </button>
                         </div>
-                      </td>>
+                      </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         {(() => {
