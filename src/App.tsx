@@ -35,6 +35,7 @@ import {
   db,
   googleProvider,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   onAuthStateChanged,
   collection,
@@ -1062,6 +1063,8 @@ export default function App() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const calculateCKDEPI2021 = useCallback(() => {
     const scr = parseFloat(state.biochemistry.Cr);
     const age = calculateAge(state.clientHx.birthday);
@@ -1998,16 +2001,55 @@ export default function App() {
   };
 
   const handleLogin = async () => {
+    setLoginError(null);
     try {
       await signInWithPopup(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      const errCode = error?.code || 'unknown-error';
+      const errMsg = error?.message || '';
+      let userFriendlyMessage = `登入失敗 (${errCode}): `;
+      if (errCode === 'auth/popup-blocked') {
+        userFriendlyMessage += '彈出式登入視窗已被瀏覽器封鎖。請點擊允許瀏覽器的彈出式視窗，或點擊下方「在新分頁開啟系統」登入。';
+      } else if (errCode === 'auth/iframe-start-fail' || errCode === 'auth/web-storage-unsupported' || errMsg.includes('iframe') || errMsg.includes('storage')) {
+        userFriendlyMessage += '由於瀏覽器安全政策，預覽框架 (IFrame) 不支援 Google 登入。請點擊下方「在新分頁開啟系統」按鈕登入。';
+      } else if (errCode === 'auth/cancelled-popup-request') {
+        userFriendlyMessage += '登入程序已被取消。請再次點擊登入。';
+      } else {
+        userFriendlyMessage += `${errMsg || '請確認您的網路連線，或使用下方「在新分頁開啟系統」按鈕登入。'}`;
+      }
+      setLoginError(userFriendlyMessage);
     }
   };
 
-  const handleLogout = async () => {
-    if (confirm('確定要登出嗎？')) {
+  const handleLoginRedirect = async () => {
+    setLoginError(null);
+    try {
+      await signInWithRedirect(auth, googleProvider);
+    } catch (error: any) {
+      console.error('Redirect login error:', error);
+      const errCode = error?.code || 'unknown-error';
+      const errMsg = error?.message || '';
+      let userFriendlyMessage = `轉址登入失敗 (${errCode}): `;
+      if (errCode === 'auth/iframe-start-fail' || errCode === 'auth/web-storage-unsupported' || errMsg.includes('iframe') || errMsg.includes('storage')) {
+        userFriendlyMessage += '預覽框架 (IFrame) 限制，請點擊下方「在新分頁開啟系統」按鈕。';
+      } else {
+        userFriendlyMessage += `${errMsg || '請點擊下方「在新分頁開啟系統」按鈕登入。'}`;
+      }
+      setLoginError(userFriendlyMessage);
+    }
+  };
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const executeLogout = async () => {
+    setShowLogoutModal(false);
+    try {
       await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
