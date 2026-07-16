@@ -172,6 +172,13 @@ export interface AppState {
     notes: string;
     intakeNotes?: string;
     logs: (FoodItem & { id: string; qty: number; meal: string })[];
+    dietDate?: string;
+    dietHistory?: {
+      id: string;
+      date: string;
+      logs: (FoodItem & { id: string; qty: number; meal: string })[];
+      intakeNotes: string;
+    }[];
   };
   diagnoses: PES[];
   intervention: {
@@ -230,6 +237,8 @@ export interface Patient {
     fu4: boolean;
   };
   consultDate?: string;
+  notes?: string;
+  followups?: { id: string; label: string; date: string; completed: boolean }[];
   createdAt: any;
   updatedAt: any;
 }
