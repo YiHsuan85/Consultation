@@ -1063,7 +1063,7 @@ export default function App() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<{ message: string; isWarning?: boolean } | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const calculateCKDEPI2021 = useCallback(() => {
     const scr = parseFloat(state.biochemistry.Cr);
@@ -2008,17 +2008,25 @@ export default function App() {
       console.error('Login error:', error);
       const errCode = error?.code || 'unknown-error';
       const errMsg = error?.message || '';
-      let userFriendlyMessage = `登入失敗 (${errCode}): `;
-      if (errCode === 'auth/popup-blocked') {
-        userFriendlyMessage += '彈出式登入視窗已被瀏覽器封鎖。請點擊允許瀏覽器的彈出式視窗，或點擊下方「在新分頁開啟系統」登入。';
-      } else if (errCode === 'auth/iframe-start-fail' || errCode === 'auth/web-storage-unsupported' || errMsg.includes('iframe') || errMsg.includes('storage')) {
-        userFriendlyMessage += '由於瀏覽器安全政策，預覽框架 (IFrame) 不支援 Google 登入。請點擊下方「在新分頁開啟系統」按鈕登入。';
-      } else if (errCode === 'auth/cancelled-popup-request') {
-        userFriendlyMessage += '登入程序已被取消。請再次點擊登入。';
+      if (errCode === 'auth/popup-closed-by-user' || errCode === 'auth/cancelled-popup-request') {
+        setLoginError({
+          message: '您已取消或關閉登入視窗。請點擊按鈕再次嘗試。',
+          isWarning: true
+        });
       } else {
-        userFriendlyMessage += `${errMsg || '請確認您的網路連線，或使用下方「在新分頁開啟系統」按鈕登入。'}`;
+        let userFriendlyMessage = `登入失敗 (${errCode}): `;
+        if (errCode === 'auth/popup-blocked') {
+          userFriendlyMessage += '彈出式登入視窗已被瀏覽器封鎖。請點擊允許瀏覽器的彈出式視窗，或點擊下方「在新分頁開啟系統」登入。';
+        } else if (errCode === 'auth/iframe-start-fail' || errCode === 'auth/web-storage-unsupported' || errMsg.includes('iframe') || errMsg.includes('storage')) {
+          userFriendlyMessage += '由於瀏覽器安全政策，預覽框架 (IFrame) 不支援 Google 登入。請點擊下方「在新分頁開啟系統」按鈕登入。';
+        } else {
+          userFriendlyMessage += `${errMsg || '請確認您的網路連線，或使用下方「在新分頁開啟系統」按鈕登入。'}`;
+        }
+        setLoginError({
+          message: userFriendlyMessage,
+          isWarning: false
+        });
       }
-      setLoginError(userFriendlyMessage);
     }
   };
 
@@ -2036,7 +2044,10 @@ export default function App() {
       } else {
         userFriendlyMessage += `${errMsg || '請點擊下方「在新分頁開啟系統」按鈕登入。'}`;
       }
-      setLoginError(userFriendlyMessage);
+      setLoginError({
+        message: userFriendlyMessage,
+        isWarning: false
+      });
     }
   };
 
@@ -2280,15 +2291,37 @@ export default function App() {
               </div>
 
               {loginError && (
-                <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-800 space-y-2">
-                  <p className="font-bold flex items-center gap-1.5 text-rose-900">
-                    <span>❌</span> 登入失敗
-                  </p>
-                  <p className="leading-relaxed text-[11px] font-mono break-all bg-white p-2 rounded border border-rose-100">
-                    {loginError}
-                  </p>
-                  <p className="leading-relaxed text-[11px]">
-                    建議您點擊下方按鈕在新分頁開啟系統以解決此問題：
+                loginError.isWarning ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800 relative">
+                    <button 
+                      onClick={() => setLoginError(null)}
+                      className="absolute right-3 top-3 text-amber-500 hover:text-amber-700 font-bold text-sm cursor-pointer"
+                    >
+                      ×
+                    </button>
+                    <p className="font-bold flex items-center gap-1.5 text-amber-900 mb-1">
+                      <span>⚠️</span> 登入已取消
+                    </p>
+                    <p className="leading-relaxed text-[11px]">
+                      {loginError.message}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-800 space-y-2 relative">
+                    <button 
+                      onClick={() => setLoginError(null)}
+                      className="absolute right-3 top-3 text-rose-500 hover:text-rose-700 font-bold text-sm cursor-pointer"
+                    >
+                      ×
+                    </button>
+                    <p className="font-bold flex items-center gap-1.5 text-rose-900">
+                      <span>❌</span> 登入失敗
+                    </p>
+                    <p className="leading-relaxed text-[11px] font-mono break-all bg-white p-2 rounded border border-rose-100">
+                      {loginError.message}
+                    </p>
+                    <p className="leading-relaxed text-[11px]">
+                      建議您點擊下方按鈕在新分頁開啟系統以解決此問題：
                   </p>
                   <a
                     href={window.location.href}
@@ -2299,6 +2332,7 @@ export default function App() {
                     在新分頁開啟系統 (重試登入)
                   </a>
                 </div>
+                )
               )}
               
               <div className="space-y-4">
