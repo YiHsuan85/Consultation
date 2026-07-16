@@ -2279,28 +2279,6 @@ export default function App() {
                 <p className="text-sm text-slate-500">請登入您的帳號以開始進行諮詢紀錄</p>
               </div>
 
-              {isIframe && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-800 space-y-2">
-                  <p className="font-bold flex items-center gap-1.5 text-amber-900">
-                    <span className="text-sm">⚠️</span> 偵測到預覽框架 (IFrame) 限制
-                  </p>
-                  <p className="leading-relaxed text-[11px]">
-                    由於瀏覽器安全機制與第三方 Cookie 限制，在 AI Studio 預覽視窗內直接點擊 Google 登入會被阻擋。
-                  </p>
-                  <p className="font-medium text-amber-900 leading-relaxed text-[11px]">
-                    請點擊下方按鈕，在新分頁中開啟系統即可正常登入並使用完整功能：
-                  </p>
-                  <a
-                    href={window.location.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98] text-center"
-                  >
-                    在新分頁開啟系統 (解決登入問題)
-                  </a>
-                </div>
-              )}
-
               {loginError && (
                 <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-800 space-y-2">
                   <p className="font-bold flex items-center gap-1.5 text-rose-900">
@@ -2329,7 +2307,7 @@ export default function App() {
                   className="w-full flex items-center justify-center gap-4 bg-white hover:bg-slate-50 text-slate-700 py-3 px-6 rounded-2xl font-bold border-2 border-slate-100 transition-all active:scale-[0.98] shadow-sm cursor-pointer"
                 >
                   <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 pointer-events-none" referrerPolicy="no-referrer" />
-                  {isIframe ? '在新分頁開啟並登入' : '使用 Google 帳號登入'}
+                  使用 Google 帳號登入
                 </button>
 
                 {!isIframe && (
