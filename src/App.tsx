@@ -40,6 +40,7 @@ import {
   collection,
   addDoc,
   updateDoc,
+  setDoc,
   doc,
   query,
   where,
@@ -450,7 +451,9 @@ const INITIAL_STATE: AppState = {
     mealsOther: '',
     notes: '',
     intakeNotes: '',
-    logs: []
+    logs: [],
+    dietDate: new Date().toISOString().split('T')[0],
+    dietHistory: []
   },
   diagnoses: [],
   intervention: {
@@ -546,7 +549,18 @@ const Dashboard = ({
   calculateAge,
   currentMonth,
   setCurrentMonth,
-  INITIAL_STATE
+  INITIAL_STATE,
+  selectedFollowupPatient,
+  setSelectedFollowupPatient,
+  overviewNotes,
+  setOverviewNotes,
+  isOverviewNotesExpanded,
+  setIsOverviewNotesExpanded,
+  expandedPatientNotes,
+  setExpandedPatientNotes,
+  handleSaveOverviewNotes,
+  handleUpdatePatientNotes,
+  handleUpdatePatientFollowups
 }: any) => {
   const [q, setQ] = useState('');
   const filteredPatients = patients.filter((p: Patient) => p.name.toLowerCase().includes(q.toLowerCase()));
@@ -560,26 +574,19 @@ const Dashboard = ({
   const upcomingEvents = useMemo(() => {
     const events: any[] = [];
     patients.forEach((p: Patient) => {
-      if (!p.consultDate) return;
-      let base;
-      try {
-        base = parseISO(p.consultDate);
-      } catch (e) {
-        return;
-      }
-      const schedule = [
-        { label: '1st f/u', days: 14, key: 'fu1' },
-        { label: '2nd f/u', days: 28, key: 'fu2' },
-        { label: '3rd f/u', days: 56, key: 'fu3' },
-        { label: '4th f/u', days: 84, key: 'fu4' },
-      ];
-      schedule.forEach(s => {
-        if (!p.checklist[s.key as keyof Patient['checklist']]) {
-          const date = addDays(base, s.days);
+      const followups = getPatientFollowups(p);
+      followups.forEach((f: any) => {
+        if (!f.completed) {
+          let date;
+          try {
+            date = parseISO(f.date);
+          } catch (e) {
+            return;
+          }
           events.push({
             name: p.name,
-            label: s.label,
-            fullLabel: `${p.name} - ${s.label}`,
+            label: f.label,
+            fullLabel: `${p.name} - ${f.label}`,
             date,
             patientId: p.id
           });
@@ -618,6 +625,41 @@ const Dashboard = ({
       </header>
 
       <div className="space-y-6">
+        {/* Collapsible General Board Note */}
+        <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 space-y-2 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setIsOverviewNotesExpanded(!isOverviewNotesExpanded)}
+            className="w-full flex items-center justify-between text-amber-800 font-bold hover:text-amber-900 cursor-pointer text-left focus:outline-none"
+          >
+            <div className="flex items-center gap-2 text-sm">
+              <FileText className="w-4 h-4 text-amber-700" />
+              <span>📌 團隊公用備註 / 貼心叮嚀 (點擊展開/收合)</span>
+            </div>
+            <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 text-amber-800 rounded border border-amber-200">
+              {isOverviewNotesExpanded ? '收合 ▲' : '展開 ▼'}
+            </span>
+          </button>
+          
+          {isOverviewNotesExpanded && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="pt-2 space-y-2"
+            >
+              <textarea
+                value={overviewNotes}
+                onChange={e => {
+                  setOverviewNotes(e.target.value);
+                  handleSaveOverviewNotes(e.target.value);
+                }}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-amber-200 h-28 bg-white/80 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-amber-950"
+                placeholder="在此輸入所有團隊人員皆可看見的公用備註或重要事項，內容將即時儲存於雲端資料庫..."
+              />
+            </motion.div>
+          )}
+        </div>
+
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -632,40 +674,90 @@ const Dashboard = ({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredPatients.map((p: Patient) => (
-                  <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800">{p.name}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-slate-600">{p.birthday || '--'}</div>
-                      <div className="text-xs text-slate-400">{p.birthday ? calculateAge(p.birthday) : '--'} 歲</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{p.gender}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        {[
-                          { key: 'consultation', label: '諮', title: '諮詢' },
-                          { key: 'personalizedMsg', label: '框', title: '個人化' },
-                          { key: 'fu1', label: '1', title: '1st f/u' },
-                          { key: 'fu2', label: '2', title: '2nd f/u' },
-                          { key: 'fu3', label: '3', title: '3rd f/u' },
-                          { key: 'fu4', label: '4', title: '4th f/u' },
-                        ].map(item => (
+                  <React.Fragment key={p.id}>
+                    <tr className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="font-bold text-slate-800">{p.name}</div>
+                          <button
+                            title="查看/編輯個別備註"
+                            onClick={() => {
+                              setExpandedPatientNotes({
+                                ...expandedPatientNotes,
+                                [p.id!]: !expandedPatientNotes[p.id!]
+                              });
+                            }}
+                            className={`p-1 rounded transition-all text-xs flex items-center gap-0.5 cursor-pointer ${p.notes ? 'bg-amber-50 text-amber-600 border border-amber-200 font-medium' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'}`}
+                          >
+                            <span>📝</span>
+                            {p.notes && <span className="text-[10px] scale-90">有備註</span>}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-600">{p.birthday || '--'}</div>
+                        <div className="text-xs text-slate-400">{p.birthday ? calculateAge(p.birthday) : '--'} 歲</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">{p.gender}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {/* 諮詢 */}
                           <button 
-                            key={item.key}
-                            title={item.title}
-                            onClick={() => handlePatientAction(p.id!, item.key as any, !p.checklist[item.key as keyof Patient['checklist']])}
+                            title="諮詢"
+                            onClick={() => handlePatientAction(p.id!, 'consultation', !p.checklist?.consultation)}
                             className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all ${
-                              p.checklist[item.key as keyof Patient['checklist']]
+                              p.checklist?.consultation
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
                             }`}
                           >
-                            {item.label}
+                            諮
                           </button>
-                        ))}
-                      </div>
-                    </td>
+                          {/* 個人化訊息 */}
+                          <button 
+                            title="個人化訊息"
+                            onClick={() => handlePatientAction(p.id!, 'personalizedMsg', !p.checklist?.personalizedMsg)}
+                            className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all ${
+                              p.checklist?.personalizedMsg
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                            }`}
+                          >
+                            框
+                          </button>
+                          
+                          {/* Dynamic follow-ups */}
+                          {getPatientFollowups(p).map((f: any, index: number) => (
+                            <button 
+                              key={f.id || index}
+                              title={`${f.label} (${f.date}) - ${f.completed ? '已完成' : '未完成'}`}
+                              onClick={async () => {
+                                const followups = getPatientFollowups(p);
+                                const updated = followups.map((item: any, idx: number) => 
+                                  (item.id === f.id || idx === index) ? { ...item, completed: !item.completed } : item
+                                );
+                                await handleUpdatePatientFollowups(p.id!, updated);
+                              }}
+                              className={`px-1.5 min-w-[24px] h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all truncate max-w-[64px] ${
+                                f.completed
+                                  ? 'bg-blue-600 text-white shadow-sm'
+                                  : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                              }`}
+                            >
+                              {f.label.replace(' f/u', '').replace('st', '').replace('nd', '').replace('rd', '').replace('th', '')}
+                            </button>
+                          ))}
+
+                          {/* Settings Button */}
+                          <button
+                            title="自訂追蹤行程與次數"
+                            onClick={() => setSelectedFollowupPatient(p)}
+                            className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600 border border-dashed border-slate-200 hover:border-blue-200 transition-all cursor-pointer"
+                          >
+                            ⚙️
+                          </button>
+                        </div>
+                      </td>>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         {(() => {
@@ -715,6 +807,54 @@ const Dashboard = ({
                       </div>
                     </td>
                   </tr>
+
+                    {/* Expandable Individual Notes row */}
+                    {expandedPatientNotes[p.id!] && (
+                      <tr className="bg-slate-50/50">
+                        <td colSpan={5} className="px-6 py-4 border-t border-slate-100">
+                          <div className="flex flex-col gap-2 max-w-2xl bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                            <label className="text-xs font-bold text-slate-600 flex items-center gap-1">
+                              <span>📝 患者個別備註 ({p.name})</span>
+                            </label>
+                            <textarea
+                              defaultValue={p.notes || ''}
+                              id={`notes-textarea-${p.id}`}
+                              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 h-20 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800 bg-white"
+                              placeholder="輸入有關此患者的特殊狀況、偏好、需要特別叮嚀之處..."
+                            />
+                            <div className="flex justify-end gap-2 mt-1">
+                              <button
+                                onClick={() => {
+                                  setExpandedPatientNotes({
+                                    ...expandedPatientNotes,
+                                    [p.id!]: false
+                                  });
+                                }}
+                                className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
+                              >
+                                取消
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const el = document.getElementById(`notes-textarea-${p.id}`) as HTMLTextAreaElement;
+                                  if (el) {
+                                    await handleUpdatePatientNotes(p.id!, el.value);
+                                    setExpandedPatientNotes({
+                                      ...expandedPatientNotes,
+                                      [p.id!]: false
+                                    });
+                                  }
+                                }}
+                                className="px-3 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-xs"
+                              >
+                                儲存備註
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
                 {filteredPatients.length === 0 && (
                   <tr>
@@ -856,6 +996,24 @@ const getRowCategory = (itemCat: string): string => {
   return '外食類';
 };
 
+const getPatientFollowups = (p: Patient) => {
+  if (p.followups && p.followups.length > 0) {
+    return p.followups;
+  }
+  let base = new Date();
+  if (p.consultDate) {
+    try { base = parseISO(p.consultDate); } catch (e) {}
+  } else if (p.createdAt) {
+    try { base = p.createdAt.toDate(); } catch (e) {}
+  }
+  return [
+    { id: 'fu1', label: '1st f/u', date: format(addDays(base, 14), 'yyyy-MM-dd'), completed: p.checklist?.fu1 || false },
+    { id: 'fu2', label: '2nd f/u', date: format(addDays(base, 28), 'yyyy-MM-dd'), completed: p.checklist?.fu2 || false },
+    { id: 'fu3', label: '3rd f/u', date: format(addDays(base, 56), 'yyyy-MM-dd'), completed: p.checklist?.fu3 || false },
+    { id: 'fu4', label: '4th f/u', date: format(addDays(base, 84), 'yyyy-MM-dd'), completed: p.checklist?.fu4 || false },
+  ];
+};
+
 export default function App() {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -900,6 +1058,21 @@ export default function App() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications'>('assessment');
   const [showDiagTerminology, setShowDiagTerminology] = useState(false);
+  const [selectedFollowupPatient, setSelectedFollowupPatient] = useState<Patient | null>(null);
+  const [modalFollowups, setModalFollowups] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (selectedFollowupPatient) {
+      setModalFollowups(getPatientFollowups(selectedFollowupPatient));
+    } else {
+      setModalFollowups([]);
+    }
+  }, [selectedFollowupPatient]);
+  const [overviewNotes, setOverviewNotes] = useState('');
+  const [isOverviewNotesExpanded, setIsOverviewNotesExpanded] = useState(false);
+  const [expandedPatientNotes, setExpandedPatientNotes] = useState<Record<string, boolean>>({});
+  const [clickedDietHistoryDate, setClickedDietHistoryDate] = useState<string | null>(null);
+  const [dietHistoryExpanded, setDietHistoryExpanded] = useState(false);
   const [diagTerminologyActiveTab, setDiagTerminologyActiveTab] = useState<'NI' | 'NC' | 'NB'>('NI');
   const [searchQuery, setSearchQuery] = useState('');
   const [medicationSearchQuery, setMedicationSearchQuery] = useState('');
@@ -1090,6 +1263,43 @@ export default function App() {
     });
     return () => unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      setOverviewNotes('');
+      return;
+    }
+    const docRef = doc(db, 'users', user.uid, 'settings', 'dashboard_notes');
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setOverviewNotes(docSnap.data().notes || '');
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  const handleSaveOverviewNotes = async (newNotes: string) => {
+    if (!user) return;
+    const docRef = doc(db, 'users', user.uid, 'settings', 'dashboard_notes');
+    await setDoc(docRef, { notes: newNotes }, { merge: true });
+  };
+
+  const handleUpdatePatientNotes = async (patientId: string, notes: string) => {
+    const patientRef = doc(db, 'patients', patientId);
+    await updateDoc(patientRef, {
+      notes,
+      updatedAt: Timestamp.now()
+    });
+  };
+
+  const handleUpdatePatientFollowups = async (patientId: string, followups: any[], extraFields: any = {}) => {
+    const patientRef = doc(db, 'patients', patientId);
+    await updateDoc(patientRef, {
+      followups,
+      ...extraFields,
+      updatedAt: Timestamp.now()
+    });
+  };
 
   const handlePatientAction = async (patientId: string, action: keyof Patient['checklist'], value: boolean) => {
     const patientRef = doc(db, 'patients', patientId);
@@ -2044,6 +2254,160 @@ export default function App() {
           </div>
         )}
 
+        {selectedFollowupPatient && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col max-h-[90vh]">
+              <div className="flex justify-between items-start border-b border-slate-100 pb-4 mb-4">
+                <div>
+                  <h2 className="text-lg md:text-xl font-black text-slate-800 flex items-center gap-2">
+                    <span className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                      <Calendar className="w-5 h-5" />
+                    </span>
+                    自訂追蹤行程 - {selectedFollowupPatient.name}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    您可以自由增減追蹤的次數、自訂名稱以及追蹤的特定日期。
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setSelectedFollowupPatient(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all font-bold text-lg cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Consultation / Base date settings */}
+              <div className="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between gap-4">
+                <span className="text-sm font-bold text-slate-700">首診日期 (起算日期)：</span>
+                <input 
+                  type="date"
+                  value={selectedFollowupPatient.consultDate || ''}
+                  onChange={async (e) => {
+                    const updatedPatient = { ...selectedFollowupPatient, consultDate: e.target.value };
+                    setSelectedFollowupPatient(updatedPatient);
+                  }}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white"
+                />
+              </div>
+
+              {/* Followup Rows */}
+              <div className="flex-1 overflow-y-auto pr-1 space-y-3 py-2">
+                <div className="flex justify-between items-center pb-2">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">自訂追蹤排程：</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextNum = modalFollowups.length + 1;
+                      // Calculate default date offset
+                      let baseDate = new Date();
+                      if (selectedFollowupPatient.consultDate) {
+                        try { baseDate = parseISO(selectedFollowupPatient.consultDate); } catch (e) {}
+                      }
+                      const defaultOffset = nextNum * 14;
+                      const nextDateStr = format(addDays(baseDate, defaultOffset), 'yyyy-MM-dd');
+                      setModalFollowups([
+                        ...modalFollowups,
+                        {
+                          id: Date.now().toString() + '-custom-fu',
+                          label: `${nextNum}nd f/u`,
+                          date: nextDateStr,
+                          completed: false
+                        }
+                      ]);
+                    }}
+                    className="px-2.5 py-1 text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> 增加追蹤次數
+                  </button>
+                </div>
+
+                {modalFollowups.length === 0 ? (
+                  <div className="text-center py-8 border border-dashed border-slate-200 rounded-2xl bg-slate-50 text-slate-400 text-xs">
+                    目前無任何自訂追蹤排程。
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {modalFollowups.map((f, idx) => (
+                      <div key={f.id || idx} className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        {/* Completed toggle checkbox */}
+                        <input 
+                          type="checkbox"
+                          checked={f.completed || false}
+                          onChange={(e) => {
+                            const updated = [...modalFollowups];
+                            updated[idx] = { ...updated[idx], completed: e.target.checked };
+                            setModalFollowups(updated);
+                          }}
+                          className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer"
+                        />
+
+                        {/* Label input */}
+                        <input 
+                          type="text"
+                          value={f.label || ''}
+                          onChange={(e) => {
+                            const updated = [...modalFollowups];
+                            updated[idx] = { ...updated[idx], label: e.target.value };
+                            setModalFollowups(updated);
+                          }}
+                          placeholder="e.g. 1st f/u 或 抽血檢查"
+                          className="flex-1 min-w-[100px] px-2.5 py-1 text-sm bg-white border border-slate-200 rounded-lg"
+                        />
+
+                        {/* Date input */}
+                        <input 
+                          type="date"
+                          value={f.date || ''}
+                          onChange={(e) => {
+                            const updated = [...modalFollowups];
+                            updated[idx] = { ...updated[idx], date: e.target.value };
+                            setModalFollowups(updated);
+                          }}
+                          className="px-2 py-1 text-sm bg-white border border-slate-200 rounded-lg w-[125px]"
+                        />
+
+                        {/* Delete row */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setModalFollowups(modalFollowups.filter((_, i) => i !== idx));
+                          }}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-slate-100 mt-4">
+                <button 
+                  onClick={() => setSelectedFollowupPatient(null)} 
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors cursor-pointer"
+                >
+                  取消
+                </button>
+                <button 
+                  onClick={async () => {
+                    await handleUpdatePatientFollowups(selectedFollowupPatient.id!, modalFollowups, {
+                      consultDate: selectedFollowupPatient.consultDate || ''
+                    });
+                    setSelectedFollowupPatient(null);
+                    alert(`已成功儲存 ${selectedFollowupPatient.name} 的自訂追蹤排程！`);
+                  }} 
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors shadow-sm cursor-pointer"
+                >
+                  儲存自訂設定
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {editingCell && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
             <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col max-h-[90vh]">
@@ -2254,6 +2618,17 @@ export default function App() {
             currentMonth={currentMonth}
             setCurrentMonth={setCurrentMonth}
             INITIAL_STATE={INITIAL_STATE}
+            selectedFollowupPatient={selectedFollowupPatient}
+            setSelectedFollowupPatient={setSelectedFollowupPatient}
+            overviewNotes={overviewNotes}
+            setOverviewNotes={setOverviewNotes}
+            isOverviewNotesExpanded={isOverviewNotesExpanded}
+            setIsOverviewNotesExpanded={setIsOverviewNotesExpanded}
+            expandedPatientNotes={expandedPatientNotes}
+            setExpandedPatientNotes={setExpandedPatientNotes}
+            handleSaveOverviewNotes={handleSaveOverviewNotes}
+            handleUpdatePatientNotes={handleUpdatePatientNotes}
+            handleUpdatePatientFollowups={handleUpdatePatientFollowups}
           />
         ) : (
           <div className="space-y-6">
@@ -4114,6 +4489,187 @@ export default function App() {
                         </div>
                       </motion.div>
                     )}
+                  </div>
+
+                  {/* 飲食記錄日期與同步 (Diet Record Date & History Sync) */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 shadow-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-bold text-slate-700 flex items-center gap-1">
+                          <Calendar className="w-4 h-4 text-blue-600" />
+                          <span>飲食紀錄日期：</span>
+                        </label>
+                        <input 
+                          type="date"
+                          value={state.diet.dietDate || ''}
+                          onChange={e => setState({
+                            ...state,
+                            diet: {
+                              ...state.diet,
+                              dietDate: e.target.value
+                            }
+                          })}
+                          className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const selectedDate = state.diet.dietDate || new Date().toISOString().split('T')[0];
+                          let updatedHistory = [...(state.diet.dietHistory || [])];
+                          
+                          if (clickedDietHistoryDate && clickedDietHistoryDate !== selectedDate) {
+                            updatedHistory = updatedHistory.filter(h => h.date !== clickedDietHistoryDate);
+                          }
+
+                          const existingIdx = updatedHistory.findIndex(h => h.date === selectedDate);
+                          const newRecord = {
+                            id: Date.now().toString() + '-diet',
+                            date: selectedDate,
+                            logs: [...state.diet.logs],
+                            intakeNotes: state.diet.intakeNotes || ''
+                          };
+
+                          if (existingIdx > -1) {
+                            updatedHistory[existingIdx] = newRecord;
+                          } else {
+                            updatedHistory.push(newRecord);
+                          }
+
+                          // Sort history descending by date
+                          updatedHistory.sort((a, b) => b.date.localeCompare(a.date));
+
+                          setState({
+                            ...state,
+                            diet: {
+                              ...state.diet,
+                              dietHistory: updatedHistory
+                            }
+                          });
+                          setClickedDietHistoryDate(selectedDate);
+                          alert(`已儲存 ${selectedDate} 的飲食紀錄與備註至歷史紀錄。`);
+                        }}
+                        className="px-4 py-1.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                      >
+                        <Save className="w-3.5 h-3.5" /> 儲存/同步此日飲食至歷史紀錄
+                      </button>
+                    </div>
+
+                    {/* Collapsible Diet History List */}
+                    <div className="border-t border-slate-200 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => setDietHistoryExpanded(!dietHistoryExpanded)}
+                        className="w-full flex items-center justify-between text-slate-700 font-bold hover:text-slate-900 cursor-pointer text-left focus:outline-none"
+                      >
+                        <div className="flex items-center gap-2 text-xs">
+                          <History className="w-4 h-4 text-blue-600" />
+                          <span>飲食攝取歷史紀錄 (共 {(state.diet.dietHistory || []).length} 筆)</span>
+                        </div>
+                        <span className="text-[11px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200">
+                          {dietHistoryExpanded ? '收合 ▲' : '展開 ▼'}
+                        </span>
+                      </button>
+
+                      {dietHistoryExpanded && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="pt-2"
+                        >
+                          {(state.diet.dietHistory || []).length === 0 ? (
+                            <div className="text-center py-4 text-slate-400 text-xs italic">
+                              尚無已儲存的飲食歷史紀錄
+                            </div>
+                          ) : (
+                            <div className="overflow-x-auto rounded-lg border border-slate-100 bg-white">
+                              <table className="w-full text-xs text-left text-slate-700">
+                                <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                                  <tr>
+                                    <th className="px-3 py-2">紀錄日期</th>
+                                    <th className="px-3 py-2 text-right">熱量 (kcal)</th>
+                                    <th className="px-3 py-2 text-right">醣 (g)</th>
+                                    <th className="px-3 py-2 text-right">蛋 (g)</th>
+                                    <th className="px-3 py-2 text-right">脂 (g)</th>
+                                    <th className="px-3 py-2">飲食攝取備註</th>
+                                    <th className="px-3 py-2 text-center">操作</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                  {(state.diet.dietHistory || []).map((record) => {
+                                    // Calculate dynamic totals for this record
+                                    const recTotals = (record.logs || []).reduce((acc, log) => {
+                                      const factor = (log.qty || 0);
+                                      return {
+                                        carbs: acc.carbs + ((log.carbs || 0) * factor),
+                                        protein: acc.protein + ((log.protein || 0) * factor),
+                                        fat: acc.fat + ((log.fat || 0) * factor),
+                                        kcal: acc.kcal + ((log.kcal || 0) * factor)
+                                      };
+                                    }, { carbs: 0, protein: 0, fat: 0, kcal: 0 });
+
+                                    return (
+                                      <tr key={record.id || record.date} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-3 py-2 font-mono">
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setClickedDietHistoryDate(record.date);
+                                              setState({
+                                                ...state,
+                                                diet: {
+                                                  ...state.diet,
+                                                  dietDate: record.date,
+                                                  logs: record.logs || [],
+                                                  intakeNotes: record.intakeNotes || ''
+                                                }
+                                              });
+                                              alert(`已載入 ${record.date} 的飲食紀錄。`);
+                                            }}
+                                            title="點擊此日期, 即可將該次飲食與備註帶入目前的編輯狀態"
+                                            className="font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer focus:outline-none transition-all text-left inline-flex items-center gap-1"
+                                          >
+                                            {record.date} 📥
+                                          </button>
+                                        </td>
+                                        <td className="px-3 py-2 text-right font-semibold text-slate-800">{recTotals.kcal.toFixed(0)}</td>
+                                        <td className="px-3 py-2 text-right text-slate-600">{recTotals.carbs.toFixed(1)}</td>
+                                        <td className="px-3 py-2 text-right text-slate-600">{recTotals.protein.toFixed(1)}</td>
+                                        <td className="px-3 py-2 text-right text-slate-600">{recTotals.fat.toFixed(1)}</td>
+                                        <td className="px-3 py-2 text-slate-500 truncate max-w-[120px]" title={record.intakeNotes}>
+                                          {record.intakeNotes || '--'}
+                                        </td>
+                                        <td className="px-3 py-2 text-center">
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              if (confirm('確定要刪除此筆飲食歷史紀錄嗎？')) {
+                                                const updatedHist = (state.diet.dietHistory || []).filter(h => h.id !== record.id && h.date !== record.date);
+                                                setState({
+                                                  ...state,
+                                                  diet: {
+                                                    ...state.diet,
+                                                    dietHistory: updatedHist
+                                                  }
+                                                });
+                                              }
+                                            }}
+                                            className="p-1 text-red-500 hover:bg-red-50 rounded transition-all cursor-pointer"
+                                            title="刪除紀錄"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
 
                   {/* 飲食攝取營養素統計 (Diet Intake Nutrient Summary) */}
