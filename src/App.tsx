@@ -564,7 +564,7 @@ const Dashboard = ({
   handleUpdatePatientFollowups
 }: any) => {
   const [q, setQ] = useState('');
-  const [isCalendarExpanded, setIsCalendarExpanded] = useState(true);
+  const [isCalendarExpanded, setIsCalendarExpanded] = useState(false);
   const filteredPatients = patients.filter((p: Patient) => p.name.toLowerCase().includes(q.toLowerCase()));
 
   const calendarDays = useMemo(() => {
