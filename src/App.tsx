@@ -2005,10 +2005,10 @@ export default function App() {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
-      console.error('Login error:', error);
       const errCode = error?.code || 'unknown-error';
       const errMsg = error?.message || '';
       if (errCode === 'auth/popup-closed-by-user' || errCode === 'auth/cancelled-popup-request') {
+        console.error('Login error:', error);
         setLoginError({
           message: '您已取消或關閉登入視窗。請點擊按鈕再次嘗試。',
           isWarning: true
@@ -2035,7 +2035,7 @@ export default function App() {
     try {
       await signInWithRedirect(auth, googleProvider);
     } catch (error: any) {
-      console.error('Redirect login error:', error);
+      console.warn('Redirect login error details:', error);
       const errCode = error?.code || 'unknown-error';
       const errMsg = error?.message || '';
       let userFriendlyMessage = `轉址登入失敗 (${errCode}): `;
@@ -2060,7 +2060,7 @@ export default function App() {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.warn('Logout error details:', error);
     }
   };
 
