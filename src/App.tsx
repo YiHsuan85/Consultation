@@ -563,6 +563,7 @@ const Dashboard = ({
   handleUpdatePatientFollowups
 }: any) => {
   const [q, setQ] = useState('');
+  const [isCalendarExpanded, setIsCalendarExpanded] = useState(true);
   const filteredPatients = patients.filter((p: Patient) => p.name.toLowerCase().includes(q.toLowerCase()));
 
   const calendarDays = useMemo(() => {
@@ -576,21 +577,21 @@ const Dashboard = ({
     patients.forEach((p: Patient) => {
       const followups = getPatientFollowups(p);
       followups.forEach((f: any) => {
-        if (!f.completed) {
-          let date;
-          try {
-            date = parseISO(f.date);
-          } catch (e) {
-            return;
-          }
-          events.push({
-            name: p.name,
-            label: f.label,
-            fullLabel: `${p.name} - ${f.label}`,
-            date,
-            patientId: p.id
-          });
+        let date;
+        try {
+          date = parseISO(f.date);
+        } catch (e) {
+          return;
         }
+        events.push({
+          id: f.id,
+          name: p.name,
+          label: f.label,
+          fullLabel: `${p.name} - ${f.label}`,
+          date,
+          patientId: p.id,
+          completed: f.completed || false
+        });
       });
     });
     return events.sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -870,31 +871,49 @@ const Dashboard = ({
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b pb-4">
-            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsCalendarExpanded(!isCalendarExpanded)}
+              className="flex items-center gap-2 text-left hover:text-blue-600 transition-colors focus:outline-none cursor-pointer"
+            >
               <Calendar className="w-5 h-5 text-blue-600" />
-              追蹤行程行事曆 (Follow-up Calendar)
-            </h2>
-            <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
-              <button 
-                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
-              >
-                <ArrowRight className="w-4 h-4 rotate-180" />
-              </button>
-              <div className="text-sm font-black text-slate-700 min-w-[100px] text-center uppercase tracking-widest">
-                {format(currentMonth, 'yyyy年 M月')}
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                追蹤行程行事曆 (Follow-up Calendar)
+                <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200">
+                  {isCalendarExpanded ? '收合 ▲' : '展開 ▼'}
+                </span>
+              </h2>
+            </button>
+            {isCalendarExpanded && (
+              <div className="flex items-center gap-3 bg-slate-50 p-1 rounded-xl border border-slate-100">
+                <button 
+                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180" />
+                </button>
+                <div className="text-sm font-black text-slate-700 min-w-[100px] text-center uppercase tracking-widest">
+                  {format(currentMonth, 'yyyy年 M月')}
+                </div>
+                <button 
+                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                  className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
+                >
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-              <button 
-                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-400 hover:text-blue-600"
-              >
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-7 border-t border-l border-slate-100 mb-2">
-            {['週日', '週一', '週二', '週三', '週四', '週五', '週六'].map(d => (
+          {isCalendarExpanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-7 border-t border-l border-slate-100 mb-2">
+                {['週日', '週一', '週二', '週三', '週四', '週五', '週六'].map(d => (
               <div key={d} className="py-2 text-center text-[10px] font-bold text-slate-400 border-r border-b border-slate-100 bg-slate-50/50">
                 {d}
               </div>
@@ -907,7 +926,7 @@ const Dashboard = ({
               return (
                 <div 
                   key={i} 
-                  className={`min-h-[100px] p-1 border-r border-b border-slate-100 transition-colors ${
+                  className={`min-h-[110px] p-1 border-r border-b border-slate-100 transition-colors ${
                     isCurrentMonth ? 'bg-white' : 'bg-slate-50/30'
                   } ${isToday ? 'ring-1 ring-blue-500 ring-inset relative z-10' : ''}`}
                 >
@@ -921,31 +940,56 @@ const Dashboard = ({
                   </div>
                   <div className="space-y-1">
                     {dayEvents.map((ev, idx) => (
-                      <div 
-                        key={idx}
-                        className="text-[9px] p-1 rounded bg-blue-50 text-blue-700 font-bold border border-blue-100 truncate flex items-center gap-1 group cursor-pointer hover:bg-blue-600 hover:text-white transition-colors"
-                        title={ev.fullLabel}
-                      >
-                        <div className="w-1 h-1 rounded-full bg-blue-400 group-hover:bg-white shrink-0" />
-                        {ev.fullLabel}
+                          <button 
+                            key={idx}
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const p = patients.find((pat: Patient) => pat.id === ev.patientId);
+                              if (!p) return;
+                              const followups = getPatientFollowups(p);
+                              const updated = followups.map((item: any) => 
+                                (item.id === ev.id) ? { ...item, completed: !item.completed } : item
+                              );
+                              await handleUpdatePatientFollowups(p.id!, updated);
+                            }}
+                            className={`text-[9px] p-1 rounded font-bold border transition-colors w-full text-left truncate flex items-center gap-1 group cursor-pointer ${
+                              ev.completed 
+                                ? 'bg-slate-100 text-slate-400 border-slate-200 line-through hover:bg-slate-200' 
+                                : 'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-600 hover:text-white'
+                            }`}
+                            title={`${ev.fullLabel} (${ev.completed ? '已完成' : '未完成'}，點擊切換狀態)`}
+                          >
+                            <div className={`w-1 h-1 rounded-full shrink-0 ${
+                              ev.completed 
+                                ? 'bg-slate-300 group-hover:bg-slate-400' 
+                                : 'bg-blue-400 group-hover:bg-white'
+                            }`} />
+                            {ev.fullLabel}
+                          </button>
+                        ))}
                       </div>
-                    ))}
                   </div>
-                </div>
               );
             })}
           </div>
           
           <div className="mt-4 flex flex-wrap gap-4">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-[10px] text-slate-500 font-medium">預定追蹤</span>
-            </div>
-            <div className="flex items-center gap-1.5 ml-auto text-[10px] text-slate-400 italic">
-              <Info className="w-3 h-3" />
-              點擊病人姓名可快速查看狀態
-            </div>
-          </div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                  <span className="text-[10px] text-slate-500 font-medium">預定追蹤 (未完成)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-200 border border-slate-300" />
+                  <span className="text-[10px] text-slate-500 font-medium">已完成追蹤</span>
+                </div>
+                <div className="flex items-center gap-1.5 ml-auto text-[10px] text-slate-400 italic">
+                  <Info className="w-3 h-3 text-slate-400" />
+                  點擊行事曆中的行程，可直接切換「已完成/未完成」狀態
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
@@ -997,7 +1041,7 @@ const getRowCategory = (itemCat: string): string => {
 };
 
 const getPatientFollowups = (p: Patient) => {
-  if (p.followups && p.followups.length > 0) {
+  if (p.followups !== undefined && p.followups !== null) {
     return p.followups;
   }
   let base = new Date();
