@@ -638,7 +638,7 @@ const Dashboard = ({
           >
             <div className="flex items-center gap-2 text-sm">
               <FileText className="w-4 h-4 text-amber-700" />
-              <span>📌 團隊公用備註 / 貼心叮嚀 (點擊展開/收合)</span>
+              <span>📌 備註 / 貼心叮嚀</span>
             </div>
             <span className="text-xs font-semibold px-2 py-0.5 bg-amber-100 text-amber-800 rounded border border-amber-200">
               {isOverviewNotesExpanded ? '收合 ▲' : '展開 ▼'}
