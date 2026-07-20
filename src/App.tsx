@@ -1059,7 +1059,9 @@ const getPatientFollowups = (p: Patient) => {
     try { base = p.createdAt.toDate(); } catch (e) {}
   }
   return [
-    };
+    { id: 'fu1', label: '1st f/u', date: format(addDays(base, 14), 'yyyy-MM-dd'), completed: p.checklist?.fu1 || false },
+  ];
+};
 
 const CALCIUM_TYPES = {
   carbonate: {
