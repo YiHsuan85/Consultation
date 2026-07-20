@@ -1163,11 +1163,6 @@ export default function App() {
   const [isTentativeUnlocked, setIsTentativeUnlocked] = useState(false);
   const [tentativeError, setTentativeError] = useState('');
   const [tentativeSubTab, setTentativeSubTab] = useState<'frax' | 'heart'>('frax');
-  const [calcType, setCalcType] = useState<'carbonate' | 'citrate' | 'algae' | 'lactate' | 'gluconate' | 'chelate'>('carbonate');
-  const [calcWeight, setCalcWeight] = useState<number>(500);
-  const [calcInputType, setCalcInputType] = useState<'tablet' | 'elemental'>('elemental');
-  const [calcFreq, setCalcFreq] = useState<number>(1);
-  const [calcDiet, setCalcDiet] = useState<number>(450);
   const [calcGroup, setCalcGroup] = useState<'child_small' | 'child_mid' | 'child_large' | 'teenager' | 'adult' | 'pregnant'>('adult');
   const [showDiagTerminology, setShowDiagTerminology] = useState(false);
   const [selectedFollowupPatient, setSelectedFollowupPatient] = useState<Patient | null>(null);
@@ -7963,19 +7958,8 @@ export default function App() {
               ) : (
                 /* Unlocked Calculators Screen */
                 (() => {
-                  const selectedTypeData = CALCIUM_TYPES[calcType];
-                  const elementalPerTablet = calcInputType === 'elemental' 
-                    ? calcWeight 
-                    : Math.round(calcWeight * selectedTypeData.percentage);
-
-                  const dailyElementalSupplement = elementalPerTablet * calcFreq;
-                  const dailyAbsorbedSupplement = Math.round(dailyElementalSupplement * selectedTypeData.absorption);
-
                   const selectedGroupData = CALCIUM_DRI_GROUPS[calcGroup];
                   const driValue = selectedGroupData.dri;
-
-                  const totalElementalIntake = calcDiet + dailyElementalSupplement;
-                  const remainingGap = Math.max(0, driValue - totalElementalIntake);
 
                   return (
                     <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -8016,7 +8000,7 @@ export default function App() {
                               </span>
                               <h3 className="font-extrabold text-slate-800 text-lg">FRAX® Plus 骨質疏鬆骨折風險評估工具</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
-                                評估個案未來 10 年內發生主要骨質疏鬆性骨折及髖關節骨折的機率，整合多項臨床危險因子（CRFs）及骨密度（BMD），為臨床診斷、介入與追蹤提供專業精準的科學依據。
+                                評估未來10年骨質疏鬆性骨折及髖部骨折風險，整合臨床危險因子（CRFs）與骨密度（BMD）
                               </p>
                             </div>
                             <a
@@ -8038,7 +8022,7 @@ export default function App() {
                               </span>
                               <h3 className="font-extrabold text-slate-800 text-lg">AHA PREVENT™ Cardiovascular Disease Risk Calculator</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
-                                由美國心臟協會（AHA）開發的 PREVENT 計算機。用以估算 10 年和 30 年心血管疾病（CVD）發生風險，完美融合了心臟、腎臟和代謝（CKM）健康指標，協助制定臨床防治策略。
+                                由AHA開發的 PREVENT 計算器，評估10年及30年CVD風險，整合心臟、腎臟與代謝（CKM）健康指標，協助制定精準防治策略
                               </p>
                             </div>
                             <a
@@ -8054,7 +8038,7 @@ export default function App() {
 
                         </div>
 
-                        {/* Card 3: Calcium Supplement Calculator (Interactive Full Width) */}
+                        {/* Card 3: Calcium Supplement Clinical Guide (Full Width) */}
                         <div className="pt-8 border-t border-slate-200 space-y-6">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
@@ -8062,9 +8046,9 @@ export default function App() {
                                 <Pill className="w-5 h-5" />
                               </div>
                               <div>
-                                <h3 className="text-lg font-black text-slate-800">補鈣與鈣片精準計算機</h3>
-                                <p className="text-xs text-slate-500">
-                                  依據台灣膳食營養素參考攝取量（DRIs）設計，精準換算元素鈣與實際吸收量
+                                <h3 className="text-lg font-black text-slate-800">補鈣與鈣片精準臨床指引</h3>
+                                <p className="text-xs text-slate-500 font-medium">
+                                  依據台灣膳食營養素參考攝取量（DRIs）設計，提供多種臨床鈣片、吸收率與服用指引
                                 </p>
                               </div>
                             </div>
@@ -8080,213 +8064,124 @@ export default function App() {
                             </a>
                           </div>
 
-                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-slate-50/60 p-6 rounded-3xl border border-slate-200/60">
-                            {/* Left Side: Inputs */}
-                            <div className="lg:col-span-5 space-y-4">
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">1. 選擇個案群組 (DRI 建議量)</label>
+                          <div className="space-y-6">
+                            {/* Group Selection (DRI Recommendation) */}
+                            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                              <div className="space-y-2 max-w-md w-full">
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider block">
+                                  選擇個案群組（查詢每日建議攝取量 DRI）
+                                </label>
                                 <select
                                   value={calcGroup}
                                   onChange={(e) => setCalcGroup(e.target.value as any)}
-                                  className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
-                                >
-                                  {Object.entries(CALCIUM_DRI_GROUPS).map(([key, group]) => (
-                                    <option key={key} value={key}>{group.name} (建議：{group.dri} mg/天)</option>
-                                  ))}
-                                </select>
-                              </div>
-
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">2. 每日飲食鈣質估算</label>
-                                <div className="relative">
-                                  <input
-                                    type="number"
-                                    value={calcDiet}
-                                    onChange={(e) => setCalcDiet(Math.max(0, parseInt(e.target.value) || 0))}
-                                    className="w-full text-sm border border-slate-200 rounded-xl pl-3.5 pr-12 py-2.5 bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
-                                  />
-                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">mg/天</span>
-                                </div>
-                                <p className="text-[10px] text-slate-400 font-medium">※ 台灣成人平均每日由日常飲食中攝取約 400-500 mg 鈣</p>
-                              </div>
-
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">3. 選擇補鈣產品(鈣片)種類</label>
-                                <select
-                                  value={calcType}
-                                  onChange={(e) => setCalcType(e.target.value as any)}
                                   className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 font-bold text-slate-700"
                                 >
-                                  {Object.entries(CALCIUM_TYPES).map(([key, val]) => (
-                                    <option key={key} value={key}>{val.name}</option>
+                                  {Object.entries(CALCIUM_DRI_GROUPS).map(([key, group]) => (
+                                    <option key={key} value={key}>{group.name}</option>
                                   ))}
                                 </select>
                               </div>
 
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">4. 鈣片標示輸入模式</label>
-                                <div className="grid grid-cols-2 gap-2 bg-slate-200/60 p-1 rounded-xl">
-                                  <button
-                                    type="button"
-                                    onClick={() => setCalcInputType('elemental')}
-                                    className={`py-1.5 text-xs font-bold rounded-lg transition-all ${calcInputType === 'elemental' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                  >
-                                    直接輸入「元素鈣量」
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setCalcInputType('tablet')}
-                                    className={`py-1.5 text-xs font-bold rounded-lg transition-all ${calcInputType === 'tablet' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
-                                  >
-                                    輸入「化合物總重」
-                                  </button>
+                              <div className="bg-white border border-slate-200/60 rounded-xl p-4 flex items-center gap-4 shadow-sm md:min-w-[280px]">
+                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-black text-lg shadow-sm">
+                                  DRI
                                 </div>
-                              </div>
-
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider">
-                                    {calcInputType === 'elemental' ? '單顆元素鈣 (mg)' : '單顆化合物重 (mg)'}
-                                  </label>
-                                  <div className="relative">
-                                    <input
-                                      type="number"
-                                      value={calcWeight}
-                                      onChange={(e) => setCalcWeight(Math.max(0, parseInt(e.target.value) || 0))}
-                                      className="w-full text-sm border border-slate-200 rounded-xl pl-3.5 pr-12 py-2.5 bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">mg</span>
+                                <div>
+                                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">每日建議攝取量 (DRI)</div>
+                                  <div className="text-lg font-black text-blue-600">
+                                    {driValue} <span className="text-xs font-bold text-slate-500">mg / 天</span>
                                   </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider">每日服用顆數</label>
-                                  <select
-                                    value={calcFreq}
-                                    onChange={(e) => setCalcFreq(Math.max(1, parseInt(e.target.value) || 1))}
-                                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 bg-white shadow-sm focus:ring-2 focus:ring-blue-500"
-                                  >
-                                    {[1, 2, 3, 4, 5, 6].map(num => (
-                                      <option key={num} value={num}>每日 {num} 顆</option>
-                                    ))}
-                                  </select>
+                                  <div className="text-[10px] text-slate-400 font-medium">台灣成人及特定群組官方參考標準</div>
                                 </div>
                               </div>
                             </div>
 
-                            {/* Right Side: Calculation & Advice */}
-                            <div className="lg:col-span-7 bg-white border border-slate-200/80 rounded-2xl p-5 md:p-6 flex flex-col justify-between space-y-6 shadow-sm">
-                              <div className="space-y-5">
-                                <h4 className="text-sm font-extrabold text-slate-700 pb-2 border-b border-slate-100 flex items-center justify-between">
-                                  <span>精準計算結果</span>
-                                  <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
-                                    標示吸收率：{(selectedTypeData.absorption * 100).toFixed(0)}%
-                                  </span>
+                            {/* Calcium Types Table */}
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-black text-slate-700 flex items-center gap-2">
+                                  <span className="w-1.5 h-4 bg-amber-500 rounded-full" />
+                                  臨床常用鈣片種類、吸收率及服用指引對照表
                                 </h4>
-
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wide">單顆實際元素鈣</div>
-                                    <div className="text-lg font-black text-slate-800 mt-1">{elementalPerTablet} <span className="text-xs font-bold text-slate-500">mg</span></div>
-                                    <div className="text-[9px] text-slate-400 font-medium mt-0.5">
-                                      {calcInputType === 'tablet' && `(純鈣佔 ${(selectedTypeData.percentage * 100).toFixed(0)}%)`}
-                                      {calcInputType === 'elemental' && '(直接標示)'}
-                                    </div>
-                                  </div>
-
-                                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wide">每日補充元素鈣</div>
-                                    <div className="text-lg font-black text-blue-600 mt-1">{dailyElementalSupplement} <span className="text-xs font-bold text-slate-500">mg</span></div>
-                                    <div className="text-[9px] text-slate-400 font-medium mt-0.5">每日鈣片總純鈣</div>
-                                  </div>
-
-                                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 col-span-2 sm:col-span-1">
-                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wide">實際估計吸收量</div>
-                                    <div className="text-lg font-black text-emerald-600 mt-1">{dailyAbsorbedSupplement} <span className="text-xs font-bold text-slate-500">mg</span></div>
-                                    <div className="text-[9px] text-slate-400 font-medium mt-0.5">小腸預估吸收量</div>
-                                  </div>
-                                </div>
-
-                                {/* DRI Target Progress */}
-                                <div className="space-y-2">
-                                  <div className="flex justify-between text-xs font-bold">
-                                    <span className="text-slate-500">每日鈣質總攝取進度 (飲食 + 鈣片)</span>
-                                    <span className="text-slate-800">{totalElementalIntake} / {driValue} mg ({Math.min(100, Math.round((totalElementalIntake / driValue) * 100))}% DRI)</span>
-                                  </div>
-                                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full transition-all duration-500 ${
-                                        totalElementalIntake >= driValue * 1.5 
-                                          ? 'bg-amber-500' 
-                                          : totalElementalIntake >= driValue 
-                                            ? 'bg-emerald-500' 
-                                            : 'bg-blue-500'
-                                      }`}
-                                      style={{ width: `${Math.min(100, (totalElementalIntake / driValue) * 100)}%` }}
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* Diagnostics message */}
-                                <div className={`p-3.5 rounded-xl text-xs flex gap-2.5 border ${
-                                  totalElementalIntake >= driValue * 1.5
-                                    ? 'bg-amber-50 border-amber-100 text-amber-800'
-                                    : totalElementalIntake >= driValue
-                                      ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
-                                      : 'bg-blue-50 border-blue-100 text-blue-800'
-                                }`}>
-                                  <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                                  <div className="space-y-1">
-                                    <div className="font-extrabold text-sm">
-                                      {totalElementalIntake >= driValue * 1.5 
-                                        ? '⚠️ 注意：每日總鈣質攝取過量' 
-                                        : totalElementalIntake >= driValue 
-                                          ? '✅ 鈣質攝取已達到每日建議量！' 
-                                          : `💡 鈣質攝取仍有缺口：還差 ${remainingGap} mg`}
-                                    </div>
-                                    <p className="leading-relaxed font-medium">
-                                      {totalElementalIntake >= driValue * 1.5 
-                                        ? '目前結合日常飲食與補充劑之鈣攝取量已顯著大於每日建議量（過多通常會由腸道排出，但長期超高劑量可能增加腎結石、高血鈣、或消化道便秘負擔），建議調降服用頻率。' 
-                                        : totalElementalIntake >= driValue 
-                                          ? '太棒了！您的每日飲食與鈣片補充已充分滿足該群組的臨床參考建議攝取量（DRI），有助於骨質保健。' 
-                                          : `每日攝取距離 DRI 建議量仍有 ${remainingGap} mg 差距。建議可在諮詢中引導個案增加高鈣食物（如乳製品、豆干、芥藍菜、芝麻）的攝取比例，或增加鈣片服用頻率。`}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {/* Warnings for single dose */}
-                                {elementalPerTablet > 500 && (
-                                  <div className="bg-rose-50 border border-rose-100 p-3.5 rounded-xl text-xs text-rose-800 leading-relaxed font-bold">
-                                    ⚠️ 臨床提醒：本產品單顆含元素鈣 ({elementalPerTablet} mg) 已大於人體小腸單次主動吸收上限 (約 500 mg)。單次吞服超過 500 mg 元素鈣將導致多餘的鈣無法吸收並自大腸排出。建議「分次、分餐服用」（例如：早晚餐後各一顆）以達最大利用率。
-                                  </div>
-                                )}
-
-                                {/* Type Specific Tip */}
-                                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-xl space-y-2">
-                                  <div className="flex items-center gap-1.5 text-xs font-black text-slate-700">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                                    {selectedTypeData.name} - 臨床服用指引
-                                  </div>
-                                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                                    {selectedTypeData.tip}
-                                  </p>
-                                  <div className="text-[10px] text-slate-400 font-bold flex gap-2 pt-1 border-t border-slate-100">
-                                    <span>【常見副作用】：{selectedTypeData.sideEffect}</span>
-                                  </div>
-                                </div>
                               </div>
 
-                              <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
-                                <a
-                                  href="http://www.cacalculator.com.tw/cainfo/9.html"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center justify-center gap-2 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all shadow-sm"
-                                >
-                                  瀏覽官方「鈣片選擇指南」 (cacalculator.com.tw/cainfo/9.html)
-                                  <ArrowRight className="w-3.5 h-3.5" />
-                                </a>
+                              {/* Desktop / Tablet Table View */}
+                              <div className="hidden md:block overflow-hidden border border-slate-200 rounded-2xl bg-white shadow-sm">
+                                <table className="w-full text-left border-collapse">
+                                  <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200">
+                                      <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-wider w-1/4">鈣片種類 (主要化合物)</th>
+                                      <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-wider text-center w-[12%]">鈣含量比率</th>
+                                      <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-wider text-center w-[12%]">人體吸收率</th>
+                                      <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-wider w-[36%]">臨床服用指引與特性</th>
+                                      <th className="px-5 py-4 text-xs font-black text-slate-500 uppercase tracking-wider w-[16%]">常見副作用</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {Object.entries(CALCIUM_TYPES).map(([key, type]) => (
+                                      <tr key={key} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-5 py-4">
+                                          <div className="font-extrabold text-slate-800 text-sm">{type.name.split(' (')[0]}</div>
+                                          <div className="text-[10px] text-slate-400 font-medium mt-0.5">{type.name.split(' (')[1]?.replace(')', '') || ''}</div>
+                                        </td>
+                                        <td className="px-5 py-4 text-center">
+                                          <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 font-black text-xs rounded-lg border border-amber-100">
+                                            {(type.percentage * 100).toFixed(0)}%
+                                          </span>
+                                        </td>
+                                        <td className="px-5 py-4 text-center">
+                                          <span className="inline-block px-2.5 py-1 bg-emerald-50 text-emerald-700 font-black text-xs rounded-lg border border-emerald-100">
+                                            {(type.absorption * 100).toFixed(0)}%
+                                          </span>
+                                        </td>
+                                        <td className="px-5 py-4 text-xs text-slate-600 leading-relaxed font-medium">
+                                          {type.tip}
+                                        </td>
+                                        <td className="px-5 py-4 text-xs text-slate-500 font-bold">
+                                          {type.sideEffect}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
+
+                              {/* Mobile List View */}
+                              <div className="md:hidden space-y-4">
+                                {Object.entries(CALCIUM_TYPES).map(([key, type]) => (
+                                  <div key={key} className="border border-slate-200 rounded-2xl p-5 bg-white space-y-3.5 shadow-sm">
+                                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                                      <h5 className="font-extrabold text-slate-800 text-sm">{type.name}</h5>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 text-center">
+                                      <div className="bg-amber-50/60 border border-amber-100 rounded-xl p-2.5">
+                                        <div className="text-[9px] font-black text-amber-800 uppercase tracking-wider">鈣含量比率</div>
+                                        <div className="text-sm font-black text-amber-700 mt-0.5">{(type.percentage * 100).toFixed(0)}%</div>
+                                      </div>
+                                      <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-2.5">
+                                        <div className="text-[9px] font-black text-emerald-800 uppercase tracking-wider">人體吸收率</div>
+                                        <div className="text-sm font-black text-emerald-700 mt-0.5">{(type.absorption * 100).toFixed(0)}%</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                                      <div className="font-extrabold text-slate-700 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                        臨床服用指引：
+                                      </div>
+                                      <p className="text-slate-500 leading-relaxed font-medium">
+                                        {type.tip}
+                                      </p>
+                                    </div>
+
+                                    <div className="text-[11px] text-slate-500 font-bold bg-slate-50/50 px-3 py-2 rounded-xl">
+                                      副作用：{type.sideEffect}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
                             </div>
                           </div>
                         </div>
