@@ -26,7 +26,9 @@ import {
   Scale,
   BookOpen,
   Lock,
-  Unlock
+  Unlock,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -1164,6 +1166,7 @@ export default function App() {
   const [tentativeError, setTentativeError] = useState('');
   const [tentativeSubTab, setTentativeSubTab] = useState<'frax' | 'heart'>('frax');
   const [calcGroup, setCalcGroup] = useState<'child_small' | 'child_mid' | 'child_large' | 'teenager' | 'adult' | 'pregnant'>('adult');
+  const [isCalciumExpanded, setIsCalciumExpanded] = useState(false);
   const [showDiagTerminology, setShowDiagTerminology] = useState(false);
   const [selectedFollowupPatient, setSelectedFollowupPatient] = useState<Patient | null>(null);
   const [modalFollowups, setModalFollowups] = useState<any[]>([]);
@@ -8040,32 +8043,47 @@ export default function App() {
 
                         {/* Card 3: Calcium Supplement Clinical Guide (Full Width) */}
                         <div className="pt-8 border-t border-slate-200 space-y-6">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div 
+                            onClick={() => setIsCalciumExpanded(!isCalciumExpanded)}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 p-2 -m-2 rounded-2xl transition-all"
+                          >
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-sm">
                                 <Pill className="w-5 h-5" />
                               </div>
                               <div>
-                                <h3 className="text-lg font-black text-slate-800">補鈣與鈣片精準臨床指引</h3>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-lg font-black text-slate-800">補鈣與鈣片精準臨床指引</h3>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${isCalciumExpanded ? 'bg-slate-200 text-slate-700' : 'bg-amber-100 text-amber-800 animate-pulse'}`}>
+                                    {isCalciumExpanded ? '點擊收合' : '點擊展開'}
+                                  </span>
+                                </div>
                                 <p className="text-xs text-slate-500 font-medium">
                                   依據台灣膳食營養素參考攝取量（DRIs）設計，提供多種臨床鈣片、吸收率與服用指引
                                 </p>
                               </div>
                             </div>
                             
-                            <a
-                              href="http://www.cacalculator.com.tw/cainfo/9.html"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 text-xs font-bold rounded-xl transition-all shadow-sm shrink-0"
-                            >
-                              開啟官方補鈣指南
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </a>
+                            <div className="flex items-center gap-2 self-start sm:self-center">
+                              <a
+                                href="http://www.cacalculator.com.tw/cainfo/9.html"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200 hover:border-blue-300 text-slate-600 hover:text-blue-600 hover:bg-blue-50/50 text-xs font-bold rounded-xl transition-all shadow-sm shrink-0"
+                              >
+                                開啟官方補鈣指南
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </a>
+                              <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-all">
+                                {isCalciumExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </button>
+                            </div>
                           </div>
 
-                          <div className="space-y-6">
-                            {/* Group Selection (DRI Recommendation) */}
+                          {isCalciumExpanded && (
+                            <div className="space-y-6 pt-2">
+                              {/* Group Selection (DRI Recommendation) */}
                             <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-6">
                               <div className="space-y-2 max-w-md w-full">
                                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider block">
@@ -8176,14 +8194,15 @@ export default function App() {
                                     </div>
 
                                     <div className="text-[11px] text-slate-500 font-bold bg-slate-50/50 px-3 py-2 rounded-xl">
-                                      副作用：{type.sideEffect}
+                                        副作用：{type.sideEffect}
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
+                                  ))}
+                                </div>
 
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
 
                       </div>
