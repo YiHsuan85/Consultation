@@ -8027,7 +8027,7 @@ export default function App() {
                               </span>
                               <h3 className="font-extrabold text-slate-800 text-lg">AHA PREVENT™ Cardiovascular Disease Risk Calculator</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
-                                由AHA開發的 PREVENT 計算器，評估10年及30年CVD風險
+                                由AHA開發，評估10年及30年CVD風險
                               </p>
                             </div>
                             <a
