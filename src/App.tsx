@@ -8041,6 +8041,50 @@ export default function App() {
                             </a>
                           </div>
 
+                          {/* Card 3: Health2Sync Wellness */}
+                          <div className="border border-slate-200 rounded-2xl p-6 bg-slate-50/50 hover:bg-white hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                            <div className="space-y-3">
+                              <span className="inline-block px-3 py-1 bg-teal-50 text-teal-700 text-[10px] font-black rounded-full uppercase tracking-wider">
+                                糖尿病照護管理
+                              </span>
+                              <h3 className="font-extrabold text-slate-800 text-lg">智抗醣醫療管理後台 (Health2Sync Wellness)</h3>
+                              <p className="text-sm text-slate-500 leading-relaxed">
+                                智抗醣雲端照護管理平台，整合個案血糖數據、飲食記錄與臨床照護資訊，協助醫療團隊即時掌握控糖狀況與評估照護成效。
+                              </p>
+                            </div>
+                            <a
+                              href="https://www.health2sync.com/wellness/index"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 w-full py-3 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 transition-all shadow-sm group"
+                            >
+                              在新分頁開啟 智抗醣後台
+                              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </a>
+                          </div>
+
+                          {/* Card 4: Rightest Care CGM */}
+                          <div className="border border-slate-200 rounded-2xl p-6 bg-slate-50/50 hover:bg-white hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                            <div className="space-y-3">
+                              <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black rounded-full uppercase tracking-wider">
+                                連續血糖監測 (CGM)
+                              </span>
+                              <h3 className="font-extrabold text-slate-800 text-lg">華廣生技 CGM 醫療管理系統 (Rightest Care)</h3>
+                              <p className="text-sm text-slate-500 leading-relaxed">
+                                華廣連續血糖監測 (CGM) 醫療照護管理平台，提供即時血糖趨勢、AGP 分析圖表與目標範圍內時間 (TIR) 評估，支援精準控糖處方。
+                              </p>
+                            </div>
+                            <a
+                              href="https://care.rightest.com/CHIMEIPM"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center gap-2 w-full py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-sm group"
+                            >
+                              在新分頁開啟 華廣CGM後台
+                              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </a>
+                          </div>
+
                         </div>
 
                         {/* Card 3: Calcium Supplement Clinical Guide (Full Width) */}
