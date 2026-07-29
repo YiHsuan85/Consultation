@@ -8027,7 +8027,7 @@ export default function App() {
                               </span>
                               <h3 className="font-extrabold text-slate-800 text-lg">AHA PREVENT™ Cardiovascular Disease Risk Calculator</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
-                                由AHA開發的 PREVENT 計算器，評估10年及30年CVD風險，整合心臟、腎臟與代謝（CKM）健康指標，協助制定精準防治策略
+                                由AHA開發的 PREVENT 計算器，評估10年及30年CVD風險
                               </p>
                             </div>
                             <a
@@ -8049,7 +8049,7 @@ export default function App() {
                               </span>
                               <h3 className="font-extrabold text-slate-800 text-lg">智抗醣醫療管理後台 (Health2Sync Wellness)</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
-                                智抗醣雲端照護管理平台，整合個案血糖數據、飲食記錄與臨床照護資訊，協助醫療團隊即時掌握控糖狀況與評估照護成效。
+                                整合個案血糖數據、飲食記錄與臨床照護資訊
                               </p>
                             </div>
                             <a
@@ -8071,7 +8071,7 @@ export default function App() {
                               </span>
                               <h3 className="font-extrabold text-slate-800 text-lg">華廣生技 CGM 醫療管理系統 (Rightest Care)</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
-                                華廣連續血糖監測 (CGM) 醫療照護管理平台，提供即時血糖趨勢、AGP 分析圖表與目標範圍內時間 (TIR) 評估，支援精準控糖處方。
+                                提供即時血糖趨勢、AGP 分析圖表與目標範圍內時間 (TIR) 
                               </p>
                             </div>
                             <a
