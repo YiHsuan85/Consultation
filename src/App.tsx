@@ -8047,7 +8047,7 @@ export default function App() {
                               <span className="inline-block px-3 py-1 bg-teal-50 text-teal-700 text-[10px] font-black rounded-full uppercase tracking-wider">
                                 糖尿病照護管理
                               </span>
-                              <h3 className="font-extrabold text-slate-800 text-lg">智抗醣醫療管理後台 (Health2Sync Wellness)</h3>
+                              <h3 className="font-extrabold text-slate-800 text-lg">智抗醣後台</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
                                 整合個案血糖數據、飲食記錄與臨床照護資訊
                               </p>
@@ -8069,7 +8069,7 @@ export default function App() {
                               <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black rounded-full uppercase tracking-wider">
                                 連續血糖監測 (CGM)
                               </span>
-                              <h3 className="font-extrabold text-slate-800 text-lg">華廣生技 CGM 醫療管理系統 (Rightest Care)</h3>
+                              <h3 className="font-extrabold text-slate-800 text-lg">華廣生技 CGM (Rightest Care)</h3>
                               <p className="text-sm text-slate-500 leading-relaxed">
                                 提供即時血糖趨勢、AGP 分析圖表與目標範圍內時間 (TIR) 
                               </p>
