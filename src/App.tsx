@@ -440,6 +440,7 @@ const INITIAL_STATE: AppState = {
     giStatusOther: '',
     medicalHx: [],
     medicalHxOther: '',
+    kidneyStage: '',
     medications: ''
   },
   diet: {
@@ -4349,7 +4350,11 @@ export default function App() {
                                 const newHx = e.target.checked 
                                   ? [...state.clinical.medicalHx, item]
                                   : state.clinical.medicalHx.filter(h => h !== item);
-                                setState({...state, clinical: {...state.clinical, medicalHx: newHx}});
+                                const updatedClinical = { ...state.clinical, medicalHx: newHx };
+                                if (item === '腎臟病' && !e.target.checked) {
+                                  updatedClinical.kidneyStage = '';
+                                }
+                                setState({...state, clinical: updatedClinical});
                               }}
                               className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" 
                             />
@@ -4357,27 +4362,21 @@ export default function App() {
                           </label>
                           {item === '腎臟病' && state.clinical.medicalHx.includes('腎臟病') && (
                             <select 
-                              value={state.clinical.medicalHxOther.includes('期') ? state.clinical.medicalHxOther.split('期')[0] : ''}
+                              value={state.clinical.kidneyStage || ''}
                               onChange={e => {
-                                const stage = e.target.value ? e.target.value + '期' : '';
-                                const current = state.clinical.medicalHxOther || '';
-                                const hasStage = /第[一二三四五]期/.test(current);
-                                let updated = current;
-                                if (hasStage) {
-                                  updated = stage ? current.replace(/第[一二三四五]期/, stage) : current.replace(/第[一二三四五]期\s*/, '');
-                                } else {
-                                  updated = stage ? (current ? `${stage} ${current}` : stage) : current;
-                                }
-                                setState({...state, clinical: {...state.clinical, medicalHxOther: updated}});
+                                setState({
+                                  ...state, 
+                                  clinical: { ...state.clinical, kidneyStage: e.target.value }
+                                });
                               }}
-                              className="px-2 py-1 text-xs rounded border border-slate-200"
+                              className="px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-white font-medium text-slate-700 focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="">選擇期數</option>
-                              <option value="第一">第一期</option>
-                              <option value="第二">第二期</option>
-                              <option value="第三">第三期</option>
-                              <option value="第四">第四期</option>
-                              <option value="第五">第五期</option>
+                              <option value="第一期">第一期</option>
+                              <option value="第二期">第二期</option>
+                              <option value="第三期">第三期</option>
+                              <option value="第四期">第四期</option>
+                              <option value="第五期">第五期</option>
                             </select>
                           )}
                         </div>
