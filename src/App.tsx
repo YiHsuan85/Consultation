@@ -4486,7 +4486,7 @@ export default function App() {
                           })}
                           className="w-full max-w-md px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
                         />
-                      ()}
+                      }
 
                     {/* Editable Text Area (保留可以填寫與修改的區域) */}
                     <textarea 
