@@ -4485,17 +4485,168 @@ export default function App() {
                           })}
                           className="w-full max-w-md px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
                         />
-                      
+                      </motion.div>
+                    )}
+                  </div>
+                  <div className="space-y-3 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                        <Pill className="w-4 h-4 text-blue-600" />
+                        目前服用藥物 (Current Medications)
+                      </label>
+                      <span className="text-xs text-slate-400 font-medium">
+                        ※ 可搜尋藥物資料庫快速新增，點擊藥物標籤可跳轉至衛教資訊
+                      </span>
+                    </div>
+
+                    {/* Search and Add from Database */}
+                    <div className="relative">
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Search className="h-4 w-4 text-slate-400" />
+                        </div>
+                        <input 
+                          type="text"
+                          value={medSearchInput}
+                          onChange={e => {
+                            setMedSearchInput(e.target.value);
+                            setIsMedDropdownOpen(true);
+                          }}
+                          onFocus={() => setIsMedDropdownOpen(true)}
+                          placeholder="搜尋藥物資料庫 (例如：Lipitor, Glucophage, 降血壓...)"
+                          className="w-full pl-9 pr-8 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50/60 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                        />
+                        {medSearchInput && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMedSearchInput('');
+                              setIsMedDropdownOpen(false);
+                            }}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Dropdown Suggestions */}
+                      {isMedDropdownOpen && medSearchInput.trim() !== '' && (
+                        <div className="absolute z-30 left-0 right-0 mt-1 bg-white rounded-xl shadow-xl border border-slate-200 max-h-60 overflow-y-auto divide-y divide-slate-100">
+                          {MEDICATIONS.filter(med => {
+                            const q = medSearchInput.toLowerCase().trim();
+                            return med.name.toLowerCase().includes(q) ||
+                              (med.genericName && med.genericName.toLowerCase().includes(q)) ||
+                              med.indication.toLowerCase().includes(q);
+                          }).length > 0 ? (
+                            MEDICATIONS.filter(med => {
+                              const q = medSearchInput.toLowerCase().trim();
+                              return med.name.toLowerCase().includes(q) ||
+                                (med.genericName && med.genericName.toLowerCase().includes(q)) ||
+                                med.indication.toLowerCase().includes(q);
+                            }).map((med, idx) => {
+                              const cleanName = getCleanMedName(med.name);
+                              const medFormatted = `${cleanName} (${med.indication})`;
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    const currentMeds = state.clinical.medications || '';
+                                    const updated = currentMeds.trim()
+                                      ? `${currentMeds.trim()}\n${medFormatted}`
+                                      : medFormatted;
+                                    setState({
+                                      ...state,
+                                      clinical: { ...state.clinical, medications: updated }
+                                    });
+                                    setMedSearchInput('');
+                                    setIsMedDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 hover:bg-blue-50/80 transition-colors flex items-center justify-between group cursor-pointer"
+                                >
+                                  <div>
+                                    <div className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                      <span>{med.name}</span>
+                                      <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100 font-bold">
+                                        {med.indication}
+                                      </span>
+                                    </div>
+                                    {med.genericName && (
+                                      <div className="text-xs text-slate-400 mt-0.5">{med.genericName} • 劑量：{med.dosage}</div>
+                                    )}
+                                  </div>
+                                  <span className="text-xs font-bold text-blue-600 bg-blue-100 group-hover:bg-blue-600 group-hover:text-white px-2.5 py-1 rounded-lg transition-colors shrink-0 flex items-center gap-1">
+                                    <Plus className="w-3.5 h-3.5" />
+                                    新增
+                                  </span>
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <div className="p-4 text-center text-xs text-slate-400">
+                              未找到與「{medSearchInput}」符合的資料庫藥物
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Display Matched Medication Badges for direct jump to Medication Info */}
+                    {(() => {
+                      const currentMedsText = state.clinical.medications || '';
+                      const matchedMeds = MEDICATIONS.filter(med => {
+                        const cleanName = getCleanMedName(med.name);
+                        return cleanName && currentMedsText.toLowerCase().includes(cleanName.toLowerCase());
+                      });
+
+                      if (matchedMeds.length === 0) return null;
+
+                      return (
+                        <div className="flex flex-wrap items-center gap-2 p-2.5 bg-blue-50/40 rounded-xl border border-blue-100/80">
+                          <span className="text-xs font-bold text-slate-600 flex items-center gap-1 shrink-0">
+                            <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                            已關聯資料庫藥物 (點擊跳轉衛教頁面)：
+                          </span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {matchedMeds.map((med, idx) => {
+                              const cleanName = getCleanMedName(med.name);
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    setMedicationSearchQuery(cleanName);
+                                    setActiveTab('medications');
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-blue-200 text-blue-900 rounded-xl text-xs font-bold shadow-xs hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all group cursor-pointer"
+                                  title={`點擊跳轉查看 ${cleanName} 的藥物衛教`}
+                                >
+                                  <span>{med.name}</span>
+                                  <span className="text-[10px] text-blue-600 group-hover:text-blue-100 font-semibold bg-blue-50 group-hover:bg-blue-700 px-1.5 py-0.2 rounded border border-blue-100 group-hover:border-blue-500">
+                                    {med.indication}
+                                  </span>
+                                  <span className="text-[10px] text-blue-600 group-hover:text-white underline ml-0.5 flex items-center gap-0.5 font-bold">
+                                    藥物資訊
+                                    <ExternalLink className="w-3 h-3" />
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* Editable Text Area (保留可以填寫與修改的區域) */}
                     <textarea 
                       value={state.clinical.medications || ''}
                       onChange={e => setState({...state, clinical: {...state.clinical, medications: e.target.value}})}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 h-24 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
-                      placeholder="列出目前服用的藥物..."
+                      placeholder="列出目前服用的藥物，可自由填寫、修改或輸入用法劑量 (例如：Lipitor (高膽固醇、心血管預防) 10mg QD)..."
                     ></textarea>
-                    </motion.div>
-                  )} {/* 👈 補上了這個關鍵的 )} */}
+                  </div>
                 </div>
               </section>
 
