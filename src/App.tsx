@@ -28,7 +28,8 @@ import {
   Lock,
   Unlock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -1188,6 +1189,12 @@ export default function App() {
   const [diagTerminologyActiveTab, setDiagTerminologyActiveTab] = useState<'NI' | 'NC' | 'NB'>('NI');
   const [searchQuery, setSearchQuery] = useState('');
   const [medicationSearchQuery, setMedicationSearchQuery] = useState('');
+  const [medSearchInput, setMedSearchInput] = useState('');
+  const [isMedDropdownOpen, setIsMedDropdownOpen] = useState(false);
+
+  const getCleanMedName = useCallback((name: string) => {
+    return name.replace(/^[^\w\u4e00-\u9fa5]+/g, '').trim();
+  }, []);
   const [selectedFoodCategory, setSelectedFoodCategory] = useState<string>('');
   const [selectedFoodItem, setSelectedFoodItem] = useState<string>('');
   const [selectedMeal, setSelectedMeal] = useState('早餐');
@@ -4351,7 +4358,18 @@ export default function App() {
                           {item === '腎臟病' && state.clinical.medicalHx.includes('腎臟病') && (
                             <select 
                               value={state.clinical.medicalHxOther.includes('期') ? state.clinical.medicalHxOther.split('期')[0] : ''}
-                              onChange={e => setState({...state, clinical: {...state.clinical, medicalHxOther: e.target.value + '期'}})}
+                              onChange={e => {
+                                const stage = e.target.value ? e.target.value + '期' : '';
+                                const current = state.clinical.medicalHxOther || '';
+                                const hasStage = /第[一二三四五]期/.test(current);
+                                let updated = current;
+                                if (hasStage) {
+                                  updated = stage ? current.replace(/第[一二三四五]期/, stage) : current.replace(/第[一二三四五]期\s*/, '');
+                                } else {
+                                  updated = stage ? (current ? `${stage} ${current}` : stage) : current;
+                                }
+                                setState({...state, clinical: {...state.clinical, medicalHxOther: updated}});
+                              }}
                               className="px-2 py-1 text-xs rounded border border-slate-200"
                             >
                               <option value="">選擇期數</option>
@@ -4364,18 +4382,20 @@ export default function App() {
                           )}
                         </div>
                       ))}
-                      <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                        <span className="text-xs text-slate-400">其他:</span>
-                        <input 
-                          type="text" 
-                          placeholder="其他病史內容..." 
-                          value={state.clinical.medicalHxOther || ''}
-                          onChange={e => {
-                            setState({...state, clinical: {...state.clinical, medicalHxOther: e.target.value}});
-                          }}
-                          className="w-full px-3 py-1 text-sm rounded border border-slate-200"
-                        />
-                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 pt-1">
+                      <label className="text-xs font-semibold text-slate-500">其他既往病史與手術史說明 (Other Medical / Surgical Hx):</label>
+                      <textarea 
+                        rows={3}
+                        placeholder="請輸入其他既往病史、手術史或詳細補充說明..." 
+                        value={state.clinical.medicalHxOther || ''}
+                        onChange={e => {
+                          setState({...state, clinical: {...state.clinical, medicalHxOther: e.target.value}});
+                        }}
+                        className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white resize-y min-h-[80px]"
+                      />
+                    </div>
                     </div>
                   </div>
 
@@ -4466,16 +4486,14 @@ export default function App() {
                           })}
                           className="w-full max-w-md px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none transition-all"
                         />
-                      </motion.div>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium text-slate-700">目前服用藥物</label>
+                      ()}
+
+                    {/* Editable Text Area (保留可以填寫與修改的區域) */}
                     <textarea 
                       value={state.clinical.medications || ''}
                       onChange={e => setState({...state, clinical: {...state.clinical, medications: e.target.value}})}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 h-20"
-                      placeholder="列出目前服用的藥物..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 h-24 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+                      placeholder="列出目前服用的藥物，可自由填寫、修改或輸入用法劑量 (例如：Lipitor (高膽固醇、心血管預防) 10mg QD)..."
                     ></textarea>
                   </div>
                 </div>
@@ -7829,10 +7847,22 @@ export default function App() {
             >
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                  <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <Pill className="w-5 h-5 text-indigo-600" />
-                    藥物查詢與衛教 (Medications)
-                  </h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                      <Pill className="w-5 h-5 text-indigo-600" />
+                      藥物查詢與衛教 (Medications)
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('assessment');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      ← 返回營養評估
+                    </button>
+                  </div>
                   <div className="relative max-w-xs w-full">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Search className="h-4 w-4 text-slate-400" />
