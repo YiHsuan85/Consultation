@@ -4395,7 +4395,6 @@ export default function App() {
                         className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white resize-y min-h-[80px]"
                       />
                     </div>
-                    </div>
                   </div>
 
                   <div className="pt-4 border-t border-slate-100 space-y-3">
@@ -4645,10 +4644,10 @@ export default function App() {
                       onChange={e => setState({...state, clinical: {...state.clinical, medications: e.target.value}})}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 h-24 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
                       placeholder="列出目前服用的藥物，可自由填寫、修改或輸入用法劑量 (例如：Lipitor (高膽固醇、心血管預防) 10mg QD)..."
-                    ></textarea>
-                  </div>
-                </motion.div>
-            </section>
+                   ></textarea>
+                 </div> {/* 👈 對應藥物區塊的 <div> */}
+               </div> {/* 👈 對應整張卡片內容的 <div className="p-6 space-y-6"> */}
+             </section>
 
               {/* Diet History */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
