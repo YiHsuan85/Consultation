@@ -231,7 +231,11 @@ export const generateWordDoc = async (state: AppState) => {
             }),
             new TableRow({
               children: [
-                createHeaderCell("既往病史"), createValueCell(state.clinical.medicalHx.join(", ") + (state.clinical.medicalHxOther ? ` (${state.clinical.medicalHxOther})` : "")),
+                createHeaderCell("既往病史"), createValueCell(
+                  state.clinical.medicalHx
+                    .map(h => (h === '腎臟病' && state.clinical.kidneyStage ? `腎臟病(${state.clinical.kidneyStage})` : h))
+                    .join(", ") + (state.clinical.medicalHxOther ? ` (${state.clinical.medicalHxOther})` : "")
+                ),
                 createHeaderCell("家族史"), createValueCell(state.clientHx.familyHx),
               ],
             }),
