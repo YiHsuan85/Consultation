@@ -4384,7 +4384,7 @@ export default function App() {
                     </div>
 
                     <div className="space-y-1.5 pt-1">
-                      <label className="text-xs font-semibold text-slate-500">其他既往病史與手術史說明 (Other Medical / Surgical Hx):</label>
+                      <label className="text-xs font-semibold text-slate-500">其他 (Other Medical Hx):</label>
                       <textarea 
                         rows={3}
                         placeholder="請輸入其他既往病史、手術史或詳細補充說明..." 
@@ -4492,7 +4492,7 @@ export default function App() {
                       value={state.clinical.medications || ''}
                       onChange={e => setState({...state, clinical: {...state.clinical, medications: e.target.value}})}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 h-24 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
-                      placeholder="列出目前服用的藥物，可自由填寫、修改或輸入用法劑量 (例如：Lipitor (高膽固醇、心血管預防) 10mg QD)..."
+                      placeholder="列出目前服用的藥物..."
                     ></textarea>
                     </motion.div>
                   )} {/* 👈 補上了這個關鍵的 )} */}
