@@ -153,6 +153,7 @@ export interface AppState {
     stoolStatus?: string;
     medicalHx: string[];
     medicalHxOther: string;
+    kidneyStage?: string;
     medications: string;
   };
   diet: {
