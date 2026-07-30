@@ -4495,7 +4495,7 @@ export default function App() {
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 h-24 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
                       placeholder="列出目前服用的藥物，可自由填寫、修改或輸入用法劑量 (例如：Lipitor (高膽固醇、心血管預防) 10mg QD)..."
                     ></textarea>
-                  </div>
+                  </motion.div>
                 </div>
               </section>
 
