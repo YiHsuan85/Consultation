@@ -4647,8 +4647,7 @@ export default function App() {
                       placeholder="列出目前服用的藥物，可自由填寫、修改或輸入用法劑量 (例如：Lipitor (高膽固醇、心血管預防) 10mg QD)..."
                     ></textarea>
                   </div>
-                </div>
-              </div>
+                </motion.div>
             </section>
 
               {/* Diet History */}
