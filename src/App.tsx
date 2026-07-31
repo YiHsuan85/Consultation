@@ -1172,6 +1172,7 @@ export default function App() {
   const [tentativeSubTab, setTentativeSubTab] = useState<'frax' | 'heart'>('frax');
   const [calcGroup, setCalcGroup] = useState<'child_small' | 'child_mid' | 'child_large' | 'teenager' | 'adult' | 'pregnant'>('adult');
   const [isCalciumExpanded, setIsCalciumExpanded] = useState(false);
+  const [isLiverGuideExpanded, setIsLiverGuideExpanded] = useState(true);
   const [showDiagTerminology, setShowDiagTerminology] = useState(false);
   const [selectedFollowupPatient, setSelectedFollowupPatient] = useState<Patient | null>(null);
   const [modalFollowups, setModalFollowups] = useState<any[]>([]);
@@ -4271,37 +4272,97 @@ export default function App() {
                       ></textarea>
                     </div>
 
-                    <div className="w-full md:w-72 p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <h4 className="text-xs font-black text-slate-800 flex items-center gap-1">
-                          <Calculator className="w-3.5 h-3.5 text-blue-600" />
-                          CKD-EPI 2021 計算器
-                        </h4>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-slate-500">Creatinine (Cr):</span>
-                          <span className="font-bold text-slate-700">{state.biochemistry.Cr || '--'} mg/dL</span>
+                    <div className="w-full md:w-[500px] grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* CKD-EPI 2021 Calculator */}
+                      <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                          <h4 className="text-xs font-black text-slate-800 flex items-center gap-1">
+                            <Calculator className="w-3.5 h-3.5 text-blue-600" />
+                            CKD-EPI 2021 計算器
+                          </h4>
                         </div>
-                        <div className="flex justify-between text-[11px]">
-                          <span className="text-slate-500">年齡/性別:</span>
-                          <span className="font-bold text-slate-700">{calculateAge(state.clientHx.birthday)}歲 / {state.clientHx.gender}</span>
-                        </div>
-                        <div className="pt-2 border-t border-slate-50">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-[11px] font-bold text-blue-600">預估 GFR:</span>
-                            <span className="text-lg font-black text-blue-700">{calculateCKDEPI2021() || '--'}</span>
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-slate-500">Cr:</span>
+                            <span className="font-bold text-slate-700">{state.biochemistry.Cr || '--'} mg/dL</span>
                           </div>
-                          <button 
-                            onClick={updateEGFR}
-                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold rounded-lg transition-colors shadow-sm"
-                          >
-                            自動填入 eGFR
+                          <div className="flex justify-between text-[11px]">
+                            <span className="text-slate-500">年齡/性別:</span>
+                            <span className="font-bold text-slate-700">{calculateAge(state.clientHx.birthday)}歲 / {state.clientHx.gender}</span>
+                          </div>
+                          <div className="pt-1.5 border-t border-slate-50">
+                            <div className="flex justify-between items-center mb-1.5">
+                              <span className="text-[11px] font-bold text-blue-600">預估 GFR:</span>
+                              <span className="text-base font-black text-blue-700">{calculateCKDEPI2021() || '--'}</span>
+                            </div>
+                            <button 
+                              onClick={updateEGFR}
+                              className="w-full py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-lg transition-colors shadow-xs"
+                            >
+                              自動填入 eGFR
                           </button>
                         </div>
                         <p className="text-[9px] text-slate-400 leading-tight">
                           公式: 142 x min(Scr/κ, 1)ᵅ x max(Scr/κ, 1)⁻¹.²⁰⁰ x 0.9938ᵃᵍᵉ x 1.012 [女]
                         </p>
+                        </div>
+                      </div>
+
+                      {/* AST / ALT Ratio & Liver Injury Evaluation */}
+                      <div className="p-3.5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                          <h4 className="text-xs font-black text-slate-800 flex items-center gap-1">
+                            <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                            AST/ALT 肝受損評估
+                          </h4>
+                        </div>
+                        {(() => {
+                          const astNum = parseFloat(state.biochemistry.AST);
+                          const altNum = parseFloat(state.biochemistry.ALT);
+                          const hasAst = !isNaN(astNum) && astNum > 0;
+                          const hasAlt = !isNaN(altNum) && altNum > 0;
+                          const ratio = hasAst && hasAlt ? (astNum / altNum).toFixed(2) : null;
+                          const ratioVal = ratio ? parseFloat(ratio) : null;
+
+                          return (
+                            <div className="space-y-1.5 text-[11px]">
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">AST (GOT):</span>
+                                <span className="font-bold text-slate-700">{hasAst ? `${astNum} U/L` : '--'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">ALT (GPT):</span>
+                                <span className="font-bold text-slate-700">{hasAlt ? `${altNum} U/L` : '--'}</span>
+                              </div>
+                              <div className="pt-1.5 border-t border-slate-50 flex justify-between items-center">
+                                <span className="font-bold text-emerald-700">AST / ALT 比值:</span>
+                                <span className="text-base font-black text-emerald-800">{ratio ?? '--'}</span>
+                              </div>
+                              {ratioVal !== null && (
+                                <div className="text-[10px] font-bold p-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded leading-tight">
+                                  {ratioVal >= 2
+                                    ? '⚠️ Ratio ≥ 2：高度懷疑酒精性肝病 (常見約2:1)'
+                                    : ratioVal < 1
+                                    ? '🔍 Ratio < 1：脂肪肝、病毒性肝炎較常見'
+                                    : 'ℹ️ Ratio 1~2：需結合臨床綜合評估'}
+                                </div>
+                              )}
+                              {hasAlt && (
+                                <div className="text-[9px] text-slate-600 leading-tight">
+                                  {altNum > 500 ? (
+                                    <span className="text-red-600 font-bold">⚠️ ALT &gt; 500：屬急性肝損傷，請立即就醫檢查</span>
+                                  ) : altNum >= 100 ? (
+                                    <span className="text-amber-700 font-bold">⚡ ALT 100–300：中度上升（評估肝炎/藥物/酒精/代謝）</span>
+                                  ) : altNum > 40 ? (
+                                    <span className="text-blue-700 font-bold">🔍 ALT 40–100：輕度上升（常見脂肪肝/肥胖/胰島素阻抗）</span>
+                                  ) : (
+                                    <span className="text-emerald-600 font-bold">✓ ALT 正常範圍 (≤40 U/L)</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -4325,9 +4386,10 @@ export default function App() {
                       <motion.div 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-200 mt-2"
+                        className="space-y-4 pt-3 border-t border-slate-200 mt-2"
                       >
-                        <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] leading-relaxed shadow-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] leading-relaxed shadow-sm">
                           <div className="font-bold text-blue-700 mb-1 border-b border-blue-50 pb-1">DM參考值 (正常 | 前期 | 確診)</div>
                           <div className="grid grid-cols-1 gap-y-1">
                             <div><span className="text-slate-500">AC:</span> &lt;110 | 110-125 | ≧126</div>
@@ -8191,7 +8253,7 @@ export default function App() {
                           </div>
                           <div>
                             <h2 className="text-lg font-black text-slate-800">臨床計算</h2>
-                            <p className="text-xs text-slate-500">提供骨質疏鬆、心血管風險與鈣質補充之專業臨床評估計算工具</p>
+                            <p className="text-xs text-slate-500">提供骨質疏鬆、心血管風險、肝細胞受損判讀與鈣質補充之專業臨床評估計算工具</p>
                           </div>
                         </div>
 
@@ -8302,9 +8364,113 @@ export default function App() {
 
                         </div>
 
-                        {/* Card 3: Calcium Supplement Clinical Guide (Full Width) */}
+                        {/* Liver Injury Indicators AST / ALT Clinical Reference Block (CMUH) */}
                         <div className="pt-8 border-t border-slate-200 space-y-6">
                           <div 
+                            onClick={() => setIsLiverGuideExpanded(!isLiverGuideExpanded)}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 p-2 -m-2 rounded-2xl transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
+                                <Activity className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-lg font-black text-slate-800">肝臟損傷指標 GOT (AST) 與 GPT (ALT) 判讀重點</h3>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${isLiverGuideExpanded ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800 animate-pulse'}`}>
+                                    {isLiverGuideExpanded ? '點擊收合' : '點擊展開'}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 font-medium">
+                                  參考中國醫藥大學附設醫院衛教指南：肝細胞受損指標判讀、AST/ALT ratio 比值分析與營養師臨床防護建議
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 self-start sm:self-center">
+                              <a
+                                href="https://www.cmuh.cmu.edu.tw/NewsInfo/NewsArticle?no=4269"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200 hover:border-emerald-300 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50/50 text-xs font-bold rounded-xl transition-all shadow-sm shrink-0"
+                              >
+                                開啟中醫大衛教文章
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </a>
+                              <button className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl transition-all">
+                                {isLiverGuideExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </button>
+                            </div>
+                          </div>
+
+                          {isLiverGuideExpanded && (
+                            <div className="p-5 bg-white rounded-2xl border border-emerald-200 text-xs leading-relaxed shadow-sm space-y-4">
+                              <div className="flex items-center justify-between border-b border-emerald-100 pb-2.5">
+                                <div className="font-bold text-emerald-800 text-sm flex items-center gap-1.5">
+                                  <Activity className="w-4.5 h-4.5 text-emerald-600" />
+                                  <span>肝細胞受損指標觀念（非肝功能本身）</span>
+                                </div>
+                                <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                  中國醫藥大學附設醫院衛教彙整
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* GOT vs GPT Specificity */}
+                                <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 space-y-2">
+                                  <div className="font-bold text-emerald-900 text-xs">① GOT (AST) 與 GPT (ALT) 專一性比較</div>
+                                  <div className="space-y-1.5 text-slate-700">
+                                    <div>• <span className="font-bold text-emerald-800">ALT (GPT)：</span>丙胺酸轉胺酶，主要存在於肝細胞，較專一反映肝細胞受損。</div>
+                                    <div>• <span className="font-bold text-emerald-800">AST (GOT)：</span>天門冬胺酸轉胺酶，存在於肝臟、心肌、骨骼肌、腎臟，心肌梗塞、劇烈運動、肌肉受傷亦會升高。</div>
+                                  </div>
+                                </div>
+
+                                {/* AST/ALT Ratio Table */}
+                                <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 space-y-2">
+                                  <div className="font-bold text-emerald-900 text-xs">② AST / ALT 比值 (Ratio) 臨床意義推測</div>
+                                  <div className="space-y-1.5 text-slate-700">
+                                    <div>• <span className="font-bold text-emerald-800">小於 1 (ALT &gt; AST)：</span>脂肪肝、病毒性肝炎較常見</div>
+                                    <div>• <span className="font-bold text-emerald-800">大於 2 (AST 明顯高於 ALT)：</span>酒精性肝病高度懷疑 (常見約 2:1)</div>
+                                    <div>• <span className="font-bold text-red-700">AST、ALT 均極高 (數百至上千)：</span>急性肝炎、藥物性肝損傷、缺血性肝炎</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                                {/* Dietitian Clinical Judgement */}
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                                  <div className="font-bold text-slate-800 text-xs">③ 營養師臨床實用判讀 (ALT 數值分級)</div>
+                                  <ul className="list-disc list-inside space-y-1 text-slate-700">
+                                    <li><span className="font-bold">ALT 輕度上升 (40–100 U/L)：</span>常見於脂肪肝、肥胖、胰島素阻抗。</li>
+                                    <li><span className="font-bold">ALT 中度上升 (100–300 U/L)：</span>需評估肝炎、藥物、酒精、代謝疾病。</li>
+                                    <li><span className="font-bold text-red-600">ALT/AST &gt; 500–1000 U/L：</span>屬急性肝損傷，應立即由醫師進一步檢查。</li>
+                                  </ul>
+                                </div>
+
+                                {/* Nutrition Interventions */}
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                                  <div className="font-bold text-slate-800 text-xs">④ 營養介入與防護 6 大重點</div>
+                                  <ul className="list-disc list-inside space-y-1 text-slate-700">
+                                    <li>減少/避免酒精攝取</li>
+                                    <li>控制體重（減重 5–10% 可顯著改善脂肪肝）</li>
+                                    <li>降低精製糖與含糖飲料</li>
+                                    <li>採用地中海型飲食</li>
+                                    <li>足量蛋白質（1.0–1.2 g/kg，無肝性腦病變時）</li>
+                                    <li>避免來路不明保健品與草藥</li>
+                                  </ul>
+                                </div>
+                              </div>
+
+                              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+                                <div className="font-bold text-amber-950">⚠️ 衛教重要提醒（為什麼 GOT/GPT 正常也不能完全放心？）</div>
+                                <div> GOT/GPT 是「肝細胞受損指標」，不是肝功能本身。晚期肝硬化患者因肝細胞大量壞死萎縮，酵素釋放反而可能不高。臨床評估肝臟機能必須結合膽紅素 (Bilirubin)、白蛋白 (Albumin)、凝血機能 (PT/INR)、腹部超音波及病毒性肝炎檢查。</div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="pt-8 border-t border-slate-200 space-y-6">
+                          <div
                             onClick={() => setIsCalciumExpanded(!isCalciumExpanded)}
                             className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 p-2 -m-2 rounded-2xl transition-all"
                           >
@@ -8313,6 +8479,7 @@ export default function App() {
                                 <Pill className="w-5 h-5" />
                               </div>
                               <div>
+                                {/* Calcium Supplement Clinical Guide (Full Width) */}
                                 <div className="flex items-center gap-2">
                                   <h3 className="text-lg font-black text-slate-800">補鈣與鈣片精準臨床指引</h3>
                                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${isCalciumExpanded ? 'bg-slate-200 text-slate-700' : 'bg-amber-100 text-amber-800 animate-pulse'}`}>
