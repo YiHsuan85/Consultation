@@ -4410,12 +4410,13 @@ export default function App() {
                           <div className="space-y-1">
                             <div><span className="text-slate-700 font-medium underline">LDL:</span> &lt;100(理想) | 130-159 | 160-189(高) | ≧190</div>
                           </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              </section>
+                        </div> {/* 👈 1. 補上：關閉 LDL-C 卡片 */}
+                      </div>   {/* 👈 2. 補上：關閉 <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> */}
+                    </motion.div>
+                  )}
+                </div>     {/* 👈 對應 <div className="bg-slate-50 border..."> */}
+              </div>       {/* 👈 對應 <div className="p-6 space-y-6"> */}
+            </section>
 
               {/* Clinical */}
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
