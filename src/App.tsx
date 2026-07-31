@@ -29,7 +29,8 @@ import {
   Unlock,
   ChevronDown,
   ChevronUp,
-  ExternalLink
+  ExternalLink,
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -3983,13 +3984,38 @@ export default function App() {
                     const val = state.biochemistry[key];
                     const num = parseFloat(val);
                     let isAbnormal = false;
-                    if (range && val && !isNaN(num)) {
-                      if (range.min !== undefined && range.max !== undefined) {
-                        isAbnormal = num < range.min || num > range.max;
-                      } else if (range.max !== undefined) {
-                        isAbnormal = num >= range.max;
-                      } else if (range.min !== undefined) {
-                        isAbnormal = num <= range.min;
+                    if (val && !isNaN(num)) {
+                      if (key === 'HDL') {
+                        const gender = state.clientHx.gender;
+                        if (gender === '女') {
+                          isAbnormal = num < 50;
+                        } else {
+                          // '男' or unselected default
+                          isAbnormal = num < 40;
+                        }
+                      } else if (range) {
+                        if (range.min !== undefined && range.max !== undefined) {
+                          isAbnormal = num < range.min || num > range.max;
+                        } else if (range.max !== undefined) {
+                          isAbnormal = num >= range.max;
+                        } else if (range.min !== undefined) {
+                          isAbnormal = num <= range.min;
+                        }
+                      }
+                    }
+
+                    let warningNote = '';
+                    if (!isNaN(num)) {
+                      if (key === 'TG' && num >= 150) {
+                        warningNote = '注意水果、精緻糖、麵包、超市咖啡';
+                      } else if (key === 'UricAcid' && num > 7.7) {
+                        warningNote = '注意水分太少、鹽分、蛋白質量、蔗糖/果糖(飲料)';
+                      } else if (key === 'TC' && num >= 200) {
+                        warningNote = '注意蔬菜、睡眠';
+                      } else if (key === 'BUN' && num > 26) {
+                        warningNote = '與檢驗前的飲水量有關';
+                      } else if (key === 'Cr' && num > 1.3) {
+                        warningNote = '與檢驗前的飲水量有關';
                       }
                     }
 
@@ -4008,13 +4034,88 @@ export default function App() {
                         />
                         {range && (
                           <div className="text-[10px] text-slate-400 font-medium">
-                            標準: {range.label}
+                            標準: {key === 'HDL' 
+                              ? (state.clientHx.gender === '女' ? '> 50' : (state.clientHx.gender === '男' ? '> 40' : range.label))
+                              : range.label}
+                          </div>
+                        )}
+                        {warningNote && (
+                          <div className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 rounded p-1 mt-1 leading-tight flex items-start gap-0.5">
+                            <span className="shrink-0">⚠️</span>
+                            <span>{warningNote}</span>
                           </div>
                         )}
                       </div>
                     );
                   })}
                 </div>
+
+                {/* Active Biochemistry Red-Value Warnings Summary Banner */}
+                {(() => {
+                  const warnings: { label: string; text: string }[] = [];
+
+                  const tgNum = parseFloat(state.biochemistry.TG);
+                  if (!isNaN(tgNum) && tgNum >= 150) {
+                    warnings.push({ label: `TG (${state.biochemistry.TG})`, text: '注意水果、精緻糖、麵包、超市咖啡' });
+                  }
+
+                  const uaNum = parseFloat(state.biochemistry.UricAcid);
+                  if (!isNaN(uaNum) && uaNum > 7.7) {
+                    warnings.push({ label: `尿酸 (${state.biochemistry.UricAcid})`, text: '注意水分太少、鹽分、蛋白質量、蔗糖/果糖(飲料)' });
+                  }
+
+                  const tcNum = parseFloat(state.biochemistry.TC);
+                  if (!isNaN(tcNum) && tcNum >= 200) {
+                    warnings.push({ label: `總膽固醇 (${state.biochemistry.TC})`, text: '注意蔬菜、睡眠' });
+                  }
+
+                  const bunNum = parseFloat(state.biochemistry.BUN);
+                  const crNum = parseFloat(state.biochemistry.Cr);
+                  const isBunHigh = !isNaN(bunNum) && bunNum > 26;
+                  const isCrHigh = !isNaN(crNum) && crNum > 1.3;
+                  if (isBunHigh || isCrHigh) {
+                    const bunCrParts: string[] = [];
+                    if (isBunHigh) bunCrParts.push(`BUN: ${state.biochemistry.BUN}`);
+                    if (isCrHigh) bunCrParts.push(`Cr: ${state.biochemistry.Cr}`);
+                    warnings.push({ label: bunCrParts.join('、'), text: '與檢驗前的飲水量有關' });
+                  }
+
+                  if (warnings.length === 0) return null;
+
+                  return (
+                    <div className="p-4 bg-red-50/90 border-b border-red-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5 font-bold text-red-800 text-xs">
+                          <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                          <span>生化指標異常 (紅字) 臨床提醒：</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {warnings.map((w, idx) => (
+                            <div key={idx} className="inline-flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-red-200 shadow-2xs text-xs">
+                              <span className="font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded text-[10px]">
+                                {w.label}
+                              </span>
+                              <span className="text-slate-800 font-medium">{w.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const notesToAdd = warnings.map(w => `• ${w.label}異常: ${w.text}`).join('\n');
+                          const current = state.biochemistryNotes || '';
+                          const updated = current ? `${current}\n${notesToAdd}` : notesToAdd;
+                          setState({ ...state, biochemistryNotes: updated });
+                        }}
+                        className="shrink-0 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer self-start sm:self-center"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        帶入數據備註
+                      </button>
+                    </div>
+                  );
+                })()}
                 <div className="p-6 bg-slate-50/50 space-y-4">
                   {/* Historical Biochemistry Trend Comparison Block */}
                   {sortedBioHistory && sortedBioHistory.length > 0 && (
