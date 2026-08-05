@@ -27,6 +27,7 @@ import {
   BookOpen,
   Lock,
   Unlock,
+  Key,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -1163,6 +1164,23 @@ export default function App() {
     }
   };
 
+  const [entrancePassword, setEntrancePassword] = useState('');
+  const [isEntrancePwdVerified, setIsEntrancePwdVerified] = useState(() => {
+    return sessionStorage.getItem('ncp_entrance_pwd_verified') === 'true';
+  });
+  const [entrancePwdError, setEntrancePwdError] = useState('');
+
+  const handleVerifyEntrancePassword = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (entrancePassword.trim() === '0808') {
+      setIsEntrancePwdVerified(true);
+      sessionStorage.setItem('ncp_entrance_pwd_verified', 'true');
+      setEntrancePwdError('');
+    } else {
+      setEntrancePwdError('密碼錯誤，請重新輸入 (預設密碼：0808)');
+    }
+  };
+
   const [activePage, setActivePage] = useState<'dashboard' | 'consultation'>('dashboard');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [activeTab, setActiveTab] = useState<'assessment' | 'diagnosis' | 'intervention' | 'monitoring' | 'reminder' | 'medications' | 'tentative'>('assessment');
@@ -2172,6 +2190,8 @@ export default function App() {
     setShowLogoutModal(false);
     try {
       await signOut(auth);
+      setIsEntrancePwdVerified(false);
+      sessionStorage.removeItem('ncp_entrance_pwd_verified');
     } catch (error) {
       console.warn('Logout error details:', error);
     }
@@ -2383,6 +2403,67 @@ export default function App() {
     );
   }
 
+  // Step 1: System entrance password verification (0808)
+  if (!isEntrancePwdVerified) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 selection:bg-blue-100">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl shadow-xl flex items-center justify-center mx-auto mb-6 transform -rotate-6">
+              <Stethoscope className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">NCP 助理紀錄系統</h1>
+            <p className="text-slate-500 text-sm">專業營養師的數位諮詢助理</p>
+          </div>
+
+          <div className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-200">
+            <form onSubmit={handleVerifyEntrancePassword} className="space-y-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-800 mb-1">系統安全驗證</h2>
+                <p className="text-xs text-slate-500">請先輸入系統存取密碼以進行 Google 帳號登入</p>
+              </div>
+
+              {entrancePwdError && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                  <span className="font-medium">{entrancePwdError}</span>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-700">系統密碼</label>
+                <input
+                  type="password"
+                  value={entrancePassword}
+                  onChange={(e) => {
+                    setEntrancePassword(e.target.value);
+                    setEntrancePwdError('');
+                  }}
+                  placeholder="請輸入密碼"
+                  className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none text-slate-800 text-sm font-mono tracking-widest transition-all"
+                  autoFocus
+                />
+                <p className="text-[11px] text-slate-400">提示：請輸入 <span className="font-bold text-slate-600">0808</span> 解鎖系統</p>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer text-sm"
+              >
+                <Key className="w-4 h-4" />
+                驗證密碼並前往登入
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 2: Google Account Authentication
   if (!user) {
     const isIframe = typeof window !== 'undefined' && window.self !== window.top;
 
@@ -2489,6 +2570,20 @@ export default function App() {
                     嘗試使用轉址 (Redirect) 方式登入
                   </button>
                 )}
+
+                <div className="pt-2 border-t border-slate-100 flex justify-center">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setIsEntrancePwdVerified(false);
+                      sessionStorage.removeItem('ncp_entrance_pwd_verified');
+                    }}
+                    className="text-slate-400 hover:text-slate-600 transition-colors text-xs flex items-center gap-1 cursor-pointer py-1"
+                  >
+                    <Lock className="w-3 h-3" />
+                    返回系統密碼驗證
+                  </button>
+                </div>
               </div>
             </div>
           </div>
