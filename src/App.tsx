@@ -1177,7 +1177,7 @@ export default function App() {
       sessionStorage.setItem('ncp_entrance_pwd_verified', 'true');
       setEntrancePwdError('');
     } else {
-      setEntrancePwdError('密碼錯誤，請重新輸入 (預設密碼：0808)');
+      setEntrancePwdError('密碼錯誤，請重新輸入');
     }
   };
 
