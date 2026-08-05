@@ -167,5 +167,62 @@ export const MEDICATIONS: Medication[] = [
     nutritionInteraction: [
       "低鉀、低鎂"
     ]
+  },
+  {
+    name: "💊 Pioglitazone (Pioglit) 順醣錠",
+    genericName: "Pioglitazone",
+    indication: "第2型糖尿病",
+    dosage: "30 mg",
+    precautions: [
+      "可於飯前或隨餐服用",
+      "立刻回診：尿液顏色變黑、皮膚及眼白變黃、胃痛且噁心嘔吐無食慾、呼吸困難"
+    ],
+    nutritionInteraction: [
+      "可於飯前或隨餐服用，需注意規律飲食"
+    ]
+  },
+  {
+    name: "💊 Soma Cap (舒肌膠囊)",
+    genericName: "Carisoprodol",
+    indication: "肌肉痙攣、骨骼肌肉疾病引起之疼痛",
+    dosage: "每日 3–4 次，每次 1 粒（飯後或睡前）",
+    precautions: [
+      "顯著嗜睡、頭暈、注意力不集中，避免開車或操作機械",
+      "不可與酒精、鎮靜安眠藥併用（加重中樞抑制）",
+      "長期連續使用可能具依賴性，應遵循醫囑"
+    ],
+    nutritionInteraction: [
+      "❌ 嚴禁飲酒（酒精會大幅增強中樞神經抑制與嗜睡效果）",
+      "飯後或隨餐服用可減少胃部不適"
+    ]
+  },
+  {
+    name: "💊 Acarbose (Glucobay 醣祿錠)",
+    genericName: "Acarbose",
+    indication: "第2型糖尿病（延緩碳水化合物消化吸收）",
+    dosage: "50–100 mg，每日 3 次（隨第一口飯併服）",
+    precautions: [
+      "常見腸胃道反應：腹脹、腸胃排氣增加、腹瀉",
+      "發生低血糖時，必須使用「葡萄糖 (Glucose)」矯正，蔗糖或澱粉無法迅速升糖"
+    ],
+    nutritionInteraction: [
+      "🍚 必須於用餐時與「第一口飯」一同咬碎吞服，才能有效延緩碳水化合物分解",
+      "⚠️ 若與其他降血糖藥併用引發低血糖，需補充葡萄糖錠或含葡萄糖飲料，食用蔗糖/一般糖果無效"
+    ]
+  },
+  {
+    name: "💊 Glimepiride (Amaryl 亞莫利錠)",
+    genericName: "Glimepiride",
+    indication: "第2型糖尿病（刺激胰島素分泌）",
+    dosage: "1–8 mg/day（早餐前或當日第一主餐前）",
+    precautions: [
+      "低血糖風險（延遲用餐、劇烈運動或未按時進食）",
+      "可能導致體重增加",
+      "嚴重肝腎功能不全者慎用"
+    ],
+    nutritionInteraction: [
+      "🍽️ 需配合規律三餐時間，切勿漏餐或延遲進食，以防發生低血糖",
+      "隨身攜帶方糖、果汁或含糖飲料，出現低血糖徵兆（心悸、冒冷汗、手抖）時立即補充"
+    ]
   }
 ];
