@@ -2446,7 +2446,6 @@ export default function App() {
                   className="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-200 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none text-slate-800 text-sm font-mono tracking-widest transition-all"
                   autoFocus
                 />
-                <p className="text-[11px] text-slate-400">提示：請輸入 <span className="font-bold text-slate-600">密碼</span> 解鎖系統</p>
               </div>
 
               <button
