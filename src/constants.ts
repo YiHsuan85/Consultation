@@ -518,6 +518,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '番茄鍋', category: '火鍋', carbs: 36, protein: 5, fat: 28, kcal: 417, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '牛奶起司鍋', category: '火鍋', carbs: 28, protein: 16, fat: 14, kcal: 306, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '沙茶鍋', category: '火鍋', carbs: 7, protein: 9, fat: 25, kcal: 285, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
+  { name: '大腸臭臭鍋', category: '火鍋', carbs: 0, protein: 0, fat: 0, kcal: 301, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '泰式酸辣鍋(不含料)', category: '火鍋', carbs: 19, protein: 4, fat: 14, kcal: 218, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '牛奶鍋', category: '火鍋', carbs: 24, protein: 7, fat: 10, kcal: 209, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '黃金泡菜鍋', category: '火鍋', carbs: 12, protein: 4, fat: 12, kcal: 170, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
