@@ -62,7 +62,11 @@ export interface BiochemRecord {
   date: string;
   ac?: string | number;
   hba1c?: string | number;
+  cgm?: string | number;
   egfr?: string | number;
+  cr?: string | number;
+  bun?: string | number;
+  upcr?: string | number;
   tg?: string | number;
   ldl?: string | number;
   tc?: string | number;
@@ -79,7 +83,11 @@ export interface MonitoringRecord {
   weight: string | number;
   ac?: string | number;
   hba1c?: string | number;
+  cgm?: string | number;
   egfr?: string | number;
+  cr?: string | number;
+  bun?: string | number;
+  upcr?: string | number;
   tg?: string | number;
   ldl?: string | number;
   tc?: string | number;
@@ -211,6 +219,7 @@ export interface AppState {
     biochemHistory?: BiochemRecord[];
     nextDate: string;
     plan: string;
+    selectedIndicators?: string[];
   };
   id?: string;
   userId?: string;
