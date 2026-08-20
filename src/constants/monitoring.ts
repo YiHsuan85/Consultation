@@ -39,11 +39,11 @@ export const MONITORING_GROUPS: MonitoringGroup[] = [
       checkboxActive: 'bg-emerald-600 border-emerald-600 text-white'
     },
     items: [
-      { id: '體重', label: '體重', fullName: '體重 (Weight)', unit: 'kg', category: 'anthropometry' },
-      { id: 'BMI', label: 'BMI', fullName: '身體質量指數 (BMI)', unit: 'kg/m²', category: 'anthropometry' },
-      { id: '體脂率', label: '體脂率', fullName: '體脂率 (Body Fat %)', unit: '%', category: 'anthropometry' },
+      { id: '體重', label: '體重', fullName: '體重 (Weight)', category: 'anthropometry' },
+      { id: 'BMI', label: 'BMI', fullName: '身體質量指數 (BMI)', category: 'anthropometry' },
+      { id: '體脂率', label: '體脂率', fullName: '體脂率 (Body Fat %)', category: 'anthropometry' },
       { id: 'InBody', label: 'InBody', fullName: 'InBody / 身體組成分析', category: 'anthropometry' },
-      { id: '腰圍', label: '腰圍', fullName: '腰圍 (Waist Circumference)', unit: 'cm', category: 'anthropometry' }
+      { id: '腰圍', label: '腰圍', fullName: '腰圍', category: 'anthropometry' }
     ]
   },
   {
@@ -61,9 +61,9 @@ export const MONITORING_GROUPS: MonitoringGroup[] = [
       checkboxActive: 'bg-amber-500 border-amber-500 text-white'
     },
     items: [
-      { id: 'AC', label: 'AC', fullName: '空腹血糖 (AC / Fasting Glucose)', unit: 'mg/dL', category: 'glycemia' },
-      { id: 'HbA1c', label: 'HbA1c', fullName: '糖化血色素 (HbA1c)', unit: '%', category: 'glycemia' },
-      { id: 'CGM', label: 'CGM', fullName: '連續血糖監測 (Continuous Glucose Monitoring)', category: 'glycemia' }
+      { id: 'AC', label: 'AC', fullName: '空腹血糖 (AC / Fasting Glucose)', category: 'glycemia' },
+      { id: 'HbA1c', label: 'HbA1c', fullName: '糖化血色素 (HbA1c)', category: 'glycemia' },
+      { id: 'CGM', label: 'CGM', fullName: '連續血糖監測', category: 'glycemia' }
     ]
   },
   {
@@ -81,10 +81,10 @@ export const MONITORING_GROUPS: MonitoringGroup[] = [
       checkboxActive: 'bg-rose-500 border-rose-500 text-white'
     },
     items: [
-      { id: 'TC', label: 'TC', fullName: '總膽固醇 (Total Cholesterol)', unit: 'mg/dL', category: 'lipids' },
-      { id: 'HDL', label: 'HDL', fullName: '高密度脂蛋白膽固醇 (HDL-C)', unit: 'mg/dL', category: 'lipids' },
-      { id: 'LDL', label: 'LDL', fullName: '低密度脂蛋白膽固醇 (LDL-C)', unit: 'mg/dL', category: 'lipids' },
-      { id: 'TG', label: 'TG', fullName: '三酸甘油酯 (Triglycerides)', unit: 'mg/dL', category: 'lipids' }
+      { id: 'TC', label: 'TC', fullName: '總膽固醇 (Total Cholesterol)', category: 'lipids' },
+      { id: 'HDL', label: 'HDL', fullName: '高密度脂蛋白膽固醇 (HDL-C)', category: 'lipids' },
+      { id: 'LDL', label: 'LDL', fullName: '低密度脂蛋白膽固醇 (LDL-C)', category: 'lipids' },
+      { id: 'TG', label: 'TG', fullName: '三酸甘油酯 (Triglycerides)', category: 'lipids' }
     ]
   },
   {
@@ -102,7 +102,7 @@ export const MONITORING_GROUPS: MonitoringGroup[] = [
       checkboxActive: 'bg-purple-600 border-purple-600 text-white'
     },
     items: [
-      { id: 'BP', label: 'BP', fullName: '血壓 (Blood Pressure)', unit: 'mmHg', category: 'bloodPressure' }
+      { id: 'BP', label: 'BP', fullName: '血壓 (Blood Pressure)', category: 'bloodPressure' }
     ]
   },
   {
@@ -120,10 +120,10 @@ export const MONITORING_GROUPS: MonitoringGroup[] = [
       checkboxActive: 'bg-blue-600 border-blue-600 text-white'
     },
     items: [
-      { id: 'UPCR', label: 'UPCR', fullName: '尿蛋白/肌酸酐比值 (Urine Protein/Cr Ratio)', unit: 'mg/g', category: 'renal' },
-      { id: 'Cr', label: 'Cr', fullName: '血清肌酸酐 (Serum Creatinine)', unit: 'mg/dL', category: 'renal' },
-      { id: 'eGFR', label: 'eGFR', fullName: '腎絲球過濾率 (Estimated GFR)', unit: 'mL/min/1.73m²', category: 'renal' },
-      { id: 'BUN', label: 'BUN', fullName: '血尿素氮 (Blood Urea Nitrogen)', unit: 'mg/dL', category: 'renal' }
+      { id: 'UPCR', label: 'UPCR', fullName: '尿蛋白/肌酸酐比值 (Urine Protein/Cr Ratio)', category: 'renal' },
+      { id: 'Cr', label: 'Cr', fullName: '血清肌酸酐 (Serum Creatinine)', category: 'renal' },
+      { id: 'eGFR', label: 'eGFR', fullName: '腎絲球過濾率 (Estimated GFR)', category: 'renal' },
+      { id: 'BUN', label: 'BUN', fullName: '血尿素氮 (Blood Urea Nitrogen)', category: 'renal' }
     ]
   }
 ];
