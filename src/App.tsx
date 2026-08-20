@@ -31,11 +31,20 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
-  AlertCircle
+  AlertCircle,
+  CheckSquare,
+  Square,
+  Check,
+  ListChecks,
+  HeartPulse,
+  Droplet,
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
 import { generateWordDoc, generateReminderWordDoc } from './lib/wordGenerator';
+import { MONITORING_GROUPS, MONITORING_PRESETS, ALL_MONITORING_INDICATOR_IDS } from './constants/monitoring';
 import { addDays, format, parseISO, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, addMonths, subMonths } from 'date-fns';
 import {
   auth,
@@ -495,9 +504,10 @@ const INITIAL_STATE: AppState = {
     weightHistory: [],
     biochemHistory: [],
     nextDate: '',
-    plan: ''
+    plan: '',
+    selectedIndicators: []
   },
-  dietitian: '巫宜諼營養師',
+  dietitian: '營養師',
   counselingType: '糖尿病營養方針',
   reminderNotes: '',
   educationImages: [],
@@ -1339,7 +1349,101 @@ export default function App() {
   const [biochemRefExpanded, setBiochemRefExpanded] = useState(false);
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
-  const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'weight' | 'biochem'>('all');
+  const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'checklist' | 'weight' | 'biochem'>('all');
+  
+  const toggleMonitoringIndicator = useCallback((id: string) => {
+    setState(prev => {
+      const current = prev.monitoring?.selectedIndicators || [];
+      const updated = current.includes(id)
+        ? current.filter(item => item !== id)
+        : [...current, id];
+      return {
+        ...prev,
+        monitoring: {
+          ...prev.monitoring,
+          selectedIndicators: updated
+        }
+      };
+    });
+  }, []);
+
+  const toggleGroupIndicators = useCallback((groupId: string) => {
+    const group = MONITORING_GROUPS.find(g => g.id === groupId);
+    if (!group) return;
+    const groupItemIds = group.items.map(i => i.id);
+    setState(prev => {
+      const current = prev.monitoring?.selectedIndicators || [];
+      const allSelected = groupItemIds.every(id => current.includes(id));
+      const updated = allSelected
+        ? current.filter(id => !groupItemIds.includes(id))
+        : Array.from(new Set([...current, ...groupItemIds]));
+      return {
+        ...prev,
+        monitoring: {
+          ...prev.monitoring,
+          selectedIndicators: updated
+        }
+      };
+    });
+  }, []);
+
+  const applyMonitoringPreset = useCallback((presetItems: string[]) => {
+    setState(prev => ({
+      ...prev,
+      monitoring: {
+        ...prev.monitoring,
+        selectedIndicators: [...presetItems]
+      }
+    }));
+  }, []);
+
+  const selectAllMonitoringIndicators = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      monitoring: {
+        ...prev.monitoring,
+        selectedIndicators: [...ALL_MONITORING_INDICATOR_IDS]
+      }
+    }));
+  }, []);
+
+  const clearMonitoringIndicators = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      monitoring: {
+        ...prev.monitoring,
+        selectedIndicators: []
+      }
+    }));
+  }, []);
+
+  const insertSelectedIndicatorsToPlan = useCallback(() => {
+    const selected = state.monitoring?.selectedIndicators || [];
+    if (selected.length === 0) {
+      alert('請先勾選至少一項監測指標。');
+      return;
+    }
+    
+    const lines: string[] = [];
+    MONITORING_GROUPS.forEach(group => {
+      const selectedInGroup = group.items.filter(i => selected.includes(i.id)).map(i => i.label);
+      if (selectedInGroup.length > 0) {
+        lines.push(`• ${group.categoryTitle}：${selectedInGroup.join('、')}`);
+      }
+    });
+    
+    const formattedText = `【追蹤監測重點項目】\n${lines.join('\n')}`;
+    const currentPlan = state.monitoring.plan ? state.monitoring.plan.trim() : '';
+    const newPlan = currentPlan ? `${currentPlan}\n\n${formattedText}` : formattedText;
+    
+    setState(prev => ({
+      ...prev,
+      monitoring: {
+        ...prev.monitoring,
+        plan: newPlan
+      }
+    }));
+  }, [state.monitoring?.selectedIndicators, state.monitoring?.plan]);
   const [currentMonitoring, setCurrentMonitoring] = useState<MonitoringRecord>({
     date: new Date().toISOString().split('T')[0],
     weight: '',
@@ -6813,7 +6917,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setMonitoringSubView('all')}
-                      className={`px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                      className={`px-3 sm:px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                         monitoringSubView === 'all'
                           ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
                           : 'text-slate-600 hover:text-slate-800'
@@ -6823,8 +6927,20 @@ export default function App() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => setMonitoringSubView('checklist')}
+                      className={`px-3 sm:px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+                        monitoringSubView === 'checklist'
+                          ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
+                          : 'text-slate-600 hover:text-slate-800'
+                      }`}
+                    >
+                      <ListChecks className="w-3.5 h-3.5" />
+                      監測指標勾選 ({state.monitoring.selectedIndicators?.length || 0})
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setMonitoringSubView('weight')}
-                      className={`px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                      className={`px-3 sm:px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                         monitoringSubView === 'weight'
                           ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
                           : 'text-slate-600 hover:text-slate-800'
@@ -6835,7 +6951,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setMonitoringSubView('biochem')}
-                      className={`px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                      className={`px-3 sm:px-4 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                         monitoringSubView === 'biochem'
                           ? 'bg-white text-purple-700 shadow-xs border border-purple-50/50'
                           : 'text-slate-600 hover:text-slate-800'
@@ -6848,6 +6964,206 @@ export default function App() {
 
                 <div className="p-6 space-y-8">
                   
+                  {/* Part 0: Monitoring Indicators Checklist Panel */}
+                  {(monitoringSubView === 'all' || monitoringSubView === 'checklist') && (
+                    <motion.div
+                      key="monitoring-checklist-section"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-purple-50/30 p-5 sm:p-6 rounded-2xl border border-purple-100/80 space-y-6"
+                    >
+                      {/* Section Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-100 pb-3">
+                        <div className="flex items-center gap-2 text-purple-900 font-bold">
+                          <ListChecks className="w-5 h-5 text-purple-600" />
+                          <div>
+                            <span className="text-base font-bold">① 營養監測與追蹤重點項目勾選 (Monitoring Checklist)</span>
+                            <p className="text-xs text-slate-500 font-normal mt-0.5">
+                              勾選本次追蹤之體位測量與各項生化指標，可自動格式化匯入下方追蹤計畫
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Counter Badge & Fast Actions */}
+                        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${
+                            (state.monitoring.selectedIndicators?.length || 0) > 0
+                              ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}>
+                            已選取 {state.monitoring.selectedIndicators?.length || 0} / {ALL_MONITORING_INDICATOR_IDS.length} 項
+                          </span>
+                          <button
+                            type="button"
+                            onClick={selectAllMonitoringIndicators}
+                            className="px-2.5 py-1 text-xs font-bold text-purple-700 bg-purple-100/80 hover:bg-purple-200/80 rounded-lg transition-colors cursor-pointer"
+                          >
+                            全部勾選
+                          </button>
+                          <button
+                            type="button"
+                            onClick={clearMonitoringIndicators}
+                            className="px-2.5 py-1 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+                          >
+                            全部清除
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Presets Toolbar */}
+                      <div className="bg-white/90 p-3 rounded-xl border border-purple-100/70 flex flex-wrap items-center gap-2 text-xs">
+                        <span className="font-bold text-slate-600 flex items-center gap-1">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                          常用臨床組合:
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {MONITORING_PRESETS.map(preset => {
+                            const isExactMatch = preset.items.every(id => state.monitoring.selectedIndicators?.includes(id)) &&
+                              state.monitoring.selectedIndicators?.length === preset.items.length;
+                            return (
+                              <button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => applyMonitoringPreset(preset.items)}
+                                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                                  isExactMatch
+                                    ? 'bg-purple-600 text-white shadow-xs font-bold'
+                                    : 'bg-slate-100 hover:bg-purple-50 text-slate-700 hover:text-purple-700 border border-slate-200/60'
+                                }`}
+                              >
+                                {preset.name}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Categorized Checkbox Panels Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {MONITORING_GROUPS.map(group => {
+                          const groupItemIds = group.items.map(i => i.id);
+                          const currentSelected = state.monitoring.selectedIndicators || [];
+                          const selectedCount = group.items.filter(i => currentSelected.includes(i.id)).length;
+                          const isAllGroupSelected = group.items.length > 0 && selectedCount === group.items.length;
+
+                          return (
+                            <div 
+                              key={group.id} 
+                              className={`bg-white rounded-xl border p-4 shadow-3xs flex flex-col justify-between transition-all ${
+                                selectedCount > 0 ? group.theme.border : 'border-slate-200/80'
+                              }`}
+                            >
+                              <div>
+                                {/* Group Card Header */}
+                                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 mb-3">
+                                  <div className="flex items-center gap-1.5">
+                                    {group.id === 'anthropometry' && <Scale className="w-4 h-4 text-emerald-600" />}
+                                    {group.id === 'glycemia' && <Droplet className="w-4 h-4 text-amber-500" />}
+                                    {group.id === 'lipids' && <HeartPulse className="w-4 h-4 text-rose-500" />}
+                                    {group.id === 'bloodPressure' && <Activity className="w-4 h-4 text-purple-600" />}
+                                    {group.id === 'renal' && <Activity className="w-4 h-4 text-blue-600" />}
+                                    <span className="text-xs font-bold text-slate-800">{group.categoryTitle}</span>
+                                    <span className="text-[10px] text-slate-400 font-medium">({group.subTitle})</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleGroupIndicators(group.id)}
+                                    className="text-[11px] text-purple-600 hover:text-purple-800 font-semibold cursor-pointer hover:underline"
+                                  >
+                                    {isAllGroupSelected ? '反選' : '全選'}
+                                  </button>
+                                </div>
+
+                                {/* Items Grid */}
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                  {group.items.map(item => {
+                                    const isSelected = currentSelected.includes(item.id);
+                                    return (
+                                      <button
+                                        key={item.id}
+                                        type="button"
+                                        onClick={() => toggleMonitoringIndicator(item.id)}
+                                        title={item.fullName || item.label}
+                                        className={`px-2.5 py-2 rounded-lg border text-left text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                                          isSelected
+                                            ? `${group.theme.activeBg} font-bold border-transparent`
+                                            : 'bg-slate-50/70 hover:bg-slate-100/80 text-slate-700 border-slate-200/80 hover:border-slate-300'
+                                        }`}
+                                      >
+                                        {isSelected ? (
+                                          <CheckSquare className="w-3.5 h-3.5 shrink-0 text-white" />
+                                        ) : (
+                                          <Square className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+                                        )}
+                                        <span className="truncate">{item.label}</span>
+                                        {item.unit && !isSelected && (
+                                          <span className="text-[10px] text-slate-400 ml-auto hidden sm:inline">{item.unit}</span>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Group Footer Count */}
+                              <div className="pt-2.5 mt-2.5 border-t border-slate-100/60 flex items-center justify-between text-[11px]">
+                                <span className="text-slate-400">群組項目: {group.items.length} 項</span>
+                                <span className={`font-semibold ${selectedCount > 0 ? group.theme.activeText : 'text-slate-400'}`}>
+                                  已選 {selectedCount} 項
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Selected Items Summary Bar & Action Button */}
+                      <div className="bg-white p-4 rounded-xl border border-purple-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-3xs">
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <span className="text-xs font-bold text-slate-600 block">目前勾選之監測指標清單:</span>
+                          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                            {(state.monitoring.selectedIndicators || []).length === 0 ? (
+                              <span className="text-xs text-slate-400 italic">尚未勾選任何監測項目，點擊上方按鈕即可快速選取</span>
+                            ) : (
+                              (state.monitoring.selectedIndicators || []).map(id => (
+                                <span 
+                                  key={id}
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-purple-100/80 text-purple-800 border border-purple-200"
+                                >
+                                  {id}
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleMonitoringIndicator(id)}
+                                    className="hover:text-red-600 transition-colors cursor-pointer"
+                                    title={`移除 ${id}`}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={insertSelectedIndicatorsToPlan}
+                            disabled={(state.monitoring.selectedIndicators || []).length === 0}
+                            className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shadow-xs ${
+                              (state.monitoring.selectedIndicators || []).length > 0
+                                ? 'bg-purple-600 hover:bg-purple-700 text-white cursor-pointer hover:shadow'
+                                : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                            }`}
+                          >
+                            <FileText className="w-4 h-4" />
+                            帶入下方追蹤計畫
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Part 1: Weight History Panel */}
                   {(monitoringSubView === 'all' || monitoringSubView === 'weight') && (
                     <motion.div 
@@ -6858,7 +7174,7 @@ export default function App() {
                     >
                       <div className="flex items-center gap-2 text-emerald-800 font-bold border-b border-emerald-100 pb-2.5">
                         <Scale className="w-5 h-5" />
-                        <span className="text-base font-bold">① 體重歷史紀錄與變化趨勢 (Weight Monitoring)</span>
+                        <span className="text-base font-bold">② 體重歷史紀錄與變化趨勢 (Weight Monitoring)</span>
                       </div>
 
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -7016,7 +7332,7 @@ export default function App() {
                     >
                       <div className="flex items-center gap-2 text-blue-800 font-bold border-b border-blue-100 pb-2.5">
                         <Activity className="w-5 h-5 text-blue-600" />
-                        <span className="text-base font-bold">② 生化與指標臨床追蹤 (Biochemical History)</span>
+                        <span className="text-base font-bold">③ 生化與指標臨床追蹤 (Biochemical History)</span>
                       </div>
 
                       {/* Biochem Input Form */}
@@ -8941,6 +9257,9 @@ export default function App() {
                   ))}
                 </tbody>
               </table>
+            )}
+            {state.monitoring.selectedIndicators && state.monitoring.selectedIndicators.length > 0 && (
+              <p><span className="font-bold">預計追蹤監測項目:</span> {state.monitoring.selectedIndicators.join('、')}</p>
             )}
             <p><span className="font-bold">下次追蹤日期:</span> {state.monitoring.nextDate || '--'}</p>
             <p><span className="font-bold">監測計畫:</span> {state.monitoring.plan || '--'}</p>
