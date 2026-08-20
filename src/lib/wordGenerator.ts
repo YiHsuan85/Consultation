@@ -677,6 +677,9 @@ export const generateWordDoc = async (state: AppState) => {
           heading: HeadingLevel.HEADING_2,
           spacing: { before: 400, after: 200 },
         }),
+        ...(state.monitoring.selectedIndicators && state.monitoring.selectedIndicators.length > 0 ? [
+          new Paragraph({ text: `追蹤監測項目: ${state.monitoring.selectedIndicators.join("、")}` })
+        ] : []),
         new Paragraph({ text: `下次追蹤日期: ${state.monitoring.nextDate || "未定"}` }),
         new Paragraph({ text: `監測計畫: ${state.monitoring.plan || "無"}` }),
         
