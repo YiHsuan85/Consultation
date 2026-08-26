@@ -368,6 +368,13 @@ export const generateWordDoc = async (state: AppState) => {
         new Paragraph({ text: `飲水量: ${state.diet.currentWater || "0"} ml/d${state.diet.currentWaterNotes ? ` (${state.diet.currentWaterNotes})` : ""}` }),
         new Paragraph({ text: `過敏: ${state.diet.allergies.join(", ") || (state.diet.allergiesOther ? "" : "無")}${state.diet.allergiesOther ? (state.diet.allergies.length > 0 ? "、" : "") + state.diet.allergiesOther : ""}` }),
         new Paragraph({ text: `保健品: ${state.diet.supplements || "無"}` }),
+        
+        // 目前攝取估計 (熱量、碳水化合物、蛋白質、脂肪)
+        new Paragraph({ 
+          text: "目前飲食攝取估計 (Current Dietary Intake Estimate)", 
+          heading: HeadingLevel.HEADING_4, 
+          spacing: { before: 150, after: 100 } 
+        }),
         (() => {
           const totals = state.diet.logs.reduce((acc, item) => {
             const qty = item.qty || 0;
@@ -375,22 +382,81 @@ export const generateWordDoc = async (state: AppState) => {
             if (item.category) {
               newCategories[item.category] = (newCategories[item.category] || 0) + qty;
             }
+            const carbs = (item.carbs || 0) * qty;
+            const protein = (item.protein || 0) * qty;
+            const fat = (item.fat || 0) * qty;
+            const kcal = ((item.carbs || 0) * 4 + (item.protein || 0) * 4 + (item.fat || 0) * 9) * qty;
             return {
-              kcal: acc.kcal + ((item.carbs * 4 + item.protein * 4 + item.fat * 9) * qty),
+              carbs: acc.carbs + carbs,
+              protein: acc.protein + protein,
+              fat: acc.fat + fat,
+              kcal: acc.kcal + kcal,
               categories: newCategories
             };
-          }, { kcal: 0, categories: {} as Record<string, number> });
+          }, { carbs: 0, protein: 0, fat: 0, kcal: 0, categories: {} as Record<string, number> });
+
+          const totalKcal = Math.round(totals.kcal);
+          const totalCarbs = parseFloat(totals.carbs.toFixed(1));
+          const totalProtein = parseFloat(totals.protein.toFixed(1));
+          const totalFat = parseFloat(totals.fat.toFixed(1));
+
+          const carbsPct = totalKcal > 0 ? Math.round(((totalCarbs * 4) / totalKcal) * 100) : 0;
+          const proteinPct = totalKcal > 0 ? Math.round(((totalProtein * 4) / totalKcal) * 100) : 0;
+          const fatPct = totalKcal > 0 ? Math.round(((totalFat * 9) / totalKcal) * 100) : 0;
 
           const categoryItems = Object.entries(totals.categories)
             .filter(([_, count]) => count > 0)
             .map(([cat, count]) => `${cat}: ${count.toFixed(1)} 份`);
 
-          return new Paragraph({
-            children: [
-              new TextRun({ text: "目前攝取估計: ", bold: true }),
-              new TextRun({ text: `${Math.round(totals.kcal)} kcal / ${categoryItems.join("、") || "無食物紀錄"}` }),
-            ],
-            spacing: { before: 100 }
+          return new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  createHeaderCell("項目", "E0F2FE"),
+                  createHeaderCell("目前估計攝取量", "E0F2FE"),
+                  createHeaderCell("佔總熱量比例 / 熱量換算", "E0F2FE"),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("總熱量 (Total Calories)"),
+                  createValueCell(`${totalKcal} kcal`),
+                  createValueCell(totalKcal > 0 ? "依飲食詳細登錄估算" : "尚未登錄食物記錄"),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("碳水化合物 / 醣類 (Carbohydrates)"),
+                  createValueCell(`${totalCarbs} g`),
+                  createValueCell(`${carbsPct} % (${Math.round(totalCarbs * 4)} kcal)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("蛋白質 (Protein)"),
+                  createValueCell(`${totalProtein} g`),
+                  createValueCell(`${proteinPct} % (${Math.round(totalProtein * 4)} kcal)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("脂肪 (Fat / Lipids)"),
+                  createValueCell(`${totalFat} g`),
+                  createValueCell(`${fatPct} % (${Math.round(totalFat * 9)} kcal)`),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  createHeaderCell("六大類食物份數估計"),
+                  new TableCell({
+                    columnSpan: 2,
+                    children: [new Paragraph({ text: categoryItems.length > 0 ? categoryItems.join("、 ") : "無詳細食物份數紀錄" })],
+                    verticalAlign: VerticalAlign.CENTER,
+                  }),
+                ]
+              }),
+            ]
           });
         })(),
         state.diet.notes ? new Paragraph({
@@ -475,9 +541,41 @@ export const generateWordDoc = async (state: AppState) => {
           ]
         }),
 
-        new Paragraph({ text: "5. 臨床狀況 (Clinical Status)", heading: HeadingLevel.HEADING_3, spacing: { before: 200 } }),
-        new Paragraph({ text: `腸胃狀況: ${state.clinical.giStatus.join(", ") || "無"}${state.clinical.giStatusOther ? ` (${state.clinical.giStatusOther})` : ""}${state.clinical.stoolStatus ? ` (排便狀況: ${state.clinical.stoolStatus})` : ""}` }),
-        new Paragraph({ text: `目前服用藥物: ${state.clinical.medications || "無"}` }),
+        new Paragraph({ text: "5. 臨床狀況 (Clinical)", heading: HeadingLevel.HEADING_3, spacing: { before: 200, after: 100 } }),
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          rows: [
+            new TableRow({
+              children: [
+                createHeaderCell("既往病史 (Medical Hx)"),
+                createValueCell((() => {
+                  const hx = state.clinical.medicalHx
+                    .map(h => (h === '腎臟病' && state.clinical.kidneyStage ? `腎臟病 (${state.clinical.kidneyStage})` : h));
+                  if (state.clinical.medicalHxOther) {
+                    hx.push(state.clinical.medicalHxOther);
+                  }
+                  return hx.length > 0 ? hx.join("、") : "無特定紀錄";
+                })()),
+                createHeaderCell("腸胃狀況 (GI Status)"),
+                createValueCell((() => {
+                  const gi = [...state.clinical.giStatus];
+                  if (state.clinical.giStatusOther) {
+                    gi.push(state.clinical.giStatusOther);
+                  }
+                  return gi.length > 0 ? gi.join("、") : "正常 / 無特殊不適";
+                })()),
+              ]
+            }),
+            new TableRow({
+              children: [
+                createHeaderCell("排便狀況 (Stool Status)"),
+                createValueCell(state.clinical.stoolStatus || "正常 / 未填寫"),
+                createHeaderCell("目前服用藥物 (Medications)"),
+                createValueCell(state.clinical.medications || "無使用特殊藥物 / 未填寫"),
+              ]
+            }),
+          ]
+        }),
 
         // 2. Diagnosis
         new Paragraph({
@@ -798,6 +896,29 @@ export const generateReminderWordDoc = async (state: AppState) => {
                 })
               ],
             }),
+            new TableRow({
+              children: [
+                createHeaderCell("既往病史"), 
+                createValueCell(
+                  state.clinical.medicalHx
+                    .map(h => (h === '腎臟病' && state.clinical.kidneyStage ? `腎臟病 (${state.clinical.kidneyStage})` : h))
+                    .concat(state.clinical.medicalHxOther ? [state.clinical.medicalHxOther] : [])
+                    .join("、") || "無特定紀錄"
+                ),
+                createHeaderCell("腸胃狀況"), 
+                createValueCell(
+                  state.clinical.giStatus
+                    .concat(state.clinical.giStatusOther ? [state.clinical.giStatusOther] : [])
+                    .join("、") || "正常"
+                ),
+              ],
+            }),
+            new TableRow({
+              children: [
+                createHeaderCell("排便狀況"), createValueCell(state.clinical.stoolStatus || "正常 / 未填寫"),
+                createHeaderCell("目前用藥"), createValueCell(state.clinical.medications || "無使用特殊藥物 / 未填寫"),
+              ],
+            }),
           ],
         }),
 
@@ -828,7 +949,7 @@ export const generateReminderWordDoc = async (state: AppState) => {
           spacing: { before: 200 }
         }) : new Paragraph({ text: "" }),
 
-        // 營養控制目標
+        // 營養控制目標與目前攝取比較
         new Paragraph({ text: "三、營養控制目標 (Nutrition Control Targets)", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
         new Paragraph({
           text: "1. 建議熱量需求與三大營養素比例 (Recommended Caloric & Macronutrients Targets)",
@@ -842,61 +963,96 @@ export const generateReminderWordDoc = async (state: AppState) => {
             const hb = getRecommendedHBKcal(state);
             const macros = getMacroDistribution(state);
             const targetKcalStr = state.diet.targetKcal ? `${state.diet.targetKcal} kcal/d` : (recommendedKcalStr ? `${recommendedKcalStr} kcal/d` : "未填寫");
+            
+            // 目前飲食攝取計算
+            const currentDiet = state.diet.logs.reduce((acc, item) => {
+              const qty = item.qty || 0;
+              const carbs = (item.carbs || 0) * qty;
+              const protein = (item.protein || 0) * qty;
+              const fat = (item.fat || 0) * qty;
+              const kcal = ((item.carbs || 0) * 4 + (item.protein || 0) * 4 + (item.fat || 0) * 9) * qty;
+              return {
+                carbs: acc.carbs + carbs,
+                protein: acc.protein + protein,
+                fat: acc.fat + fat,
+                kcal: acc.kcal + kcal,
+              };
+            }, { carbs: 0, protein: 0, fat: 0, kcal: 0 });
+            
+            const currKcal = Math.round(currentDiet.kcal);
+            const currCarbs = parseFloat(currentDiet.carbs.toFixed(1));
+            const currProtein = parseFloat(currentDiet.protein.toFixed(1));
+            const currFat = parseFloat(currentDiet.fat.toFixed(1));
+            const currCarbsPct = currKcal > 0 ? Math.round(((currCarbs * 4) / currKcal) * 100) : 0;
+            const currProteinPct = currKcal > 0 ? Math.round(((currProtein * 4) / currKcal) * 100) : 0;
+            const currFatPct = currKcal > 0 ? Math.round(((currFat * 9) / currKcal) * 100) : 0;
+
             return [
               new TableRow({
                 children: [
                   createHeaderCell("項目"),
                   createHeaderCell("建議與設定目標"),
+                  createHeaderCell("目前估計攝取量 (基線)"),
                 ]
               }),
               new TableRow({
                 children: [
                   createHeaderCell("建議熱量需求 (僅供參考)"),
                   createValueCell(recommendedKcalStr ? `${recommendedKcalStr} kcal/d` : "未定"),
+                  createValueCell(currKcal > 0 ? `${currKcal} kcal/d` : "無食物記錄"),
                 ]
               }),
               new TableRow({
                 children: [
                   createHeaderCell("建議熱量需求 (Harris Benedict)"),
                   createValueCell(hb.err ? "資料不足" : `BEE: ${hb.bee} kcal / 總計: ${hb.total} kcal/d`),
+                  createValueCell(currKcal > 0 ? `${currKcal} kcal/d` : "--"),
                 ]
               }),
               new TableRow({
                 children: [
                   createHeaderCell("設定介入熱量目標"),
                   createValueCell(targetKcalStr),
+                  createValueCell(currKcal > 0 ? `${currKcal} kcal/d` : "--"),
                 ]
               }),
               new TableRow({
                 children: [
                   createHeaderCell("醣類 (Carbohydrates)"),
                   createValueCell(`${macros.carbsG} g (${macros.carbsPer}%)`),
+                  createValueCell(currKcal > 0 ? `${currCarbs} g (${currCarbsPct}%)` : "--"),
                 ]
               }),
               new TableRow({
                 children: [
                   createHeaderCell("蛋白質 (Protein)"),
                   createValueCell(`${macros.proteinG} g (${macros.proteinPer}%)`),
+                  createValueCell(currKcal > 0 ? `${currProtein} g (${currProteinPct}%)` : "--"),
                 ]
               }),
               new TableRow({
                 children: [
                   createHeaderCell("脂肪 (Fat / Lipids)"),
                   createValueCell(`${macros.fatG} g (${macros.fatPer}%)`),
+                  createValueCell(currKcal > 0 ? `${currFat} g (${currFatPct}%)` : "--"),
                 ]
               }),
               ...(state.guidelineSelections.target_kcal || state.guidelineSelections.target_protein || state.guidelineSelections.target_carbs || state.guidelineSelections.target_fat ? [
                 new TableRow({
                   children: [
                     createHeaderCell("自訂亮點目標 (勾選)"),
-                    createValueCell(
-                      [
-                        state.guidelineSelections.target_kcal ? `熱量: ${state.guidelineSelections.target_kcal}` : '',
-                        state.guidelineSelections.target_protein ? `蛋白: ${state.guidelineSelections.target_protein}` : '',
-                        state.guidelineSelections.target_carbs ? `醣類: ${state.guidelineSelections.target_carbs}` : '',
-                        state.guidelineSelections.target_fat ? `脂肪: ${state.guidelineSelections.target_fat}` : '',
-                      ].filter(Boolean).join("、 ")
-                    ),
+                    new TableCell({
+                      columnSpan: 2,
+                      children: [new Paragraph({
+                        text: [
+                          state.guidelineSelections.target_kcal ? `熱量: ${state.guidelineSelections.target_kcal}` : '',
+                          state.guidelineSelections.target_protein ? `蛋白: ${state.guidelineSelections.target_protein}` : '',
+                          state.guidelineSelections.target_carbs ? `醣類: ${state.guidelineSelections.target_carbs}` : '',
+                          state.guidelineSelections.target_fat ? `脂肪: ${state.guidelineSelections.target_fat}` : '',
+                        ].filter(Boolean).join("、 ")
+                      })],
+                      verticalAlign: VerticalAlign.CENTER,
+                    }),
                   ]
                 })
               ] : [])
