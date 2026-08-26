@@ -211,6 +211,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '花生醬9g(1湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '美乃滋10g(2/3湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '芝麻醬(1/2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
+  { name: 'Kewpie胡麻醬 5g', category: '油脂與堅果類', carbs: 0.8, protein: 0.1, fat: 2.2, kcal: 23, fiber: 0, saturatedFat: 0.3, transFat: 0, cholesterol: 0, na: 61, k: '', p: '' },
   { name: '沙茶醬(1/2湯匙)', category: '油脂與堅果類', carbs: 0, protein: 0, fat: 5, kcal: 45, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
  
  
