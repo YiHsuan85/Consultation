@@ -1049,7 +1049,7 @@ const getRowCategory = (itemCat: string): string => {
   const norm = itemCat || '';
   if (norm.includes('全脂乳品') || norm.includes('全脂奶')) return '全脂乳品類';
   if (norm.includes('低脂乳品') || norm.includes('低脂奶')) return '低脂乳品類';
-  if (norm.includes('全榖') || norm.includes('雜糧')) return '全榖雜糧類';
+  if (norm.includes('全穀') || norm.includes('全榖') || norm.includes('全谷') || norm.includes('根莖') || norm.includes('雜糧') || norm.includes('主食') || norm.includes('澱粉')) return '全穀雜糧類';
   if (norm.includes('低脂豆魚') || norm.includes('低脂肉')) return '低脂豆魚蛋肉類';
   if (norm.includes('中脂豆魚') || norm.includes('中脂肉')) return '中脂豆魚蛋肉類';
   if (norm.includes('高脂豆魚') || norm.includes('高脂肉')) return '高脂豆魚蛋肉類';
