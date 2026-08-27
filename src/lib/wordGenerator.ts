@@ -169,7 +169,7 @@ const getMacroDistribution = (state: AppState) => {
 const PORT_VALS: Record<string, { p: number, c: number, f: number, k: number }> = {
   '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
   '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
-  '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
+  '全榖雜糧': { p: 2, c: 15, f: 0, k: 70 },
   '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
   '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
   '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
@@ -678,7 +678,7 @@ export const generateWordDoc = async (state: AppState) => {
           const rows = [
             '低脂乳品',
             '全脂乳品',
-            '全榖根莖',
+            '全榖雜糧',
             '低脂豆魚蛋肉',
             '中脂豆魚蛋肉',
             '蔬菜',
@@ -1071,7 +1071,7 @@ export const generateReminderWordDoc = async (state: AppState) => {
           const rows = [
             '低脂乳品',
             '全脂乳品',
-            '全榖根莖',
+            '全榖雜糧',
             '低脂豆魚蛋肉',
             '中脂豆魚蛋肉',
             '蔬菜',
