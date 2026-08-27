@@ -490,7 +490,7 @@ const INITIAL_STATE: AppState = {
     portions: {
       '低脂乳品': 0,
       '全脂乳品': 0,
-      '全榖根莖': 0,
+      '全榖雜糧': 0,
       '低脂豆魚蛋肉': 0,
       '中脂豆魚蛋肉': 0,
       '蔬菜': 0,
@@ -1021,7 +1021,7 @@ const Dashboard = ({
 const PORT_VALS: Record<string, { p: number, c: number, f: number, k: number }> = {
   '低脂乳品': { p: 8, c: 12, f: 4, k: 120 },
   '全脂乳品': { p: 8, c: 12, f: 8, k: 150 },
-  '全榖根莖': { p: 2, c: 15, f: 0, k: 70 },
+  '全榖雜糧': { p: 2, c: 15, f: 0, k: 70 },
   '低脂豆魚蛋肉': { p: 7, c: 0, f: 3, k: 55 },
   '中脂豆魚蛋肉': { p: 7, c: 0, f: 5, k: 75 },
   '蔬菜': { p: 1, c: 5, f: 0, k: 25 },
@@ -6545,7 +6545,7 @@ export default function App() {
                               {[
                                 { key: '低脂乳品', p: 8, c: 12, f: 4, k: 120 },
                                 { key: '全脂乳品', p: 8, c: 12, f: 8, k: 150 },
-                                { key: '全榖根莖', p: 2, c: 15, f: 0, k: 70 },
+                                { key: '全榖雜糧', p: 2, c: 15, f: 0, k: 70 },
                                 { key: '低脂豆魚蛋肉', p: 7, c: 0, f: 3, k: 55 },
                                 { key: '中脂豆魚蛋肉', p: 7, c: 0, f: 5, k: 75 },
                                 { key: '蔬菜', p: 1, c: 5, f: 0, k: 25 },
@@ -6633,7 +6633,7 @@ export default function App() {
                                         portions: {
                                           '低脂乳品': 0,
                                           '全脂乳品': 0,
-                                          '全榖根莖': 0,
+                                          '全榖雜糧': 0,
                                           '低脂豆魚蛋肉': 0,
                                           '中脂豆魚蛋肉': 0,
                                           '蔬菜': 0,
@@ -6668,13 +6668,13 @@ export default function App() {
                                   <div className="space-y-3">
                                     <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
                                       <div className="flex justify-between items-center mb-1">
-                                        <span className="text-[10px] font-bold text-blue-600">全榖根莖 (剩餘)</span>
+                                        <span className="text-[10px] font-bold text-blue-600">全榖雜糧 (剩餘)</span>
                                         <span className="text-sm font-black text-blue-700">{wgSug.toFixed(1)} 份</span>
                                       </div>
                                       <button 
                                         onClick={() => {
-                                          const cur = state.intervention.portions?.['全榖根莖'] || 0;
-                                          setState({ ...state, intervention: { ...state.intervention, portions: { ...state.intervention.portions, '全榖根莖': parseFloat((cur + wgSug).toFixed(1)) } } });
+                                          const cur = state.intervention.portions?.['全榖雜糧'] || 0;
+                                          setState({ ...state, intervention: { ...state.intervention, portions: { ...state.intervention.portions, '全榖雜糧': parseFloat((cur + wgSug).toFixed(1)) } } });
                                         }}
                                         className="w-full py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-md shadow-sm"
                                       >
