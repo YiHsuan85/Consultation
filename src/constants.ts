@@ -32,7 +32,6 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '鮮乳坊 真優格-豐樂牧場鮮乳優格 450g', category: '低脂乳品類', carbs: 19.8, protein: 15.9, fat: 17.1, kcal: 296.1, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 170, k:'', p: ''},
   { name: '鮮乳坊 真優格-每日爽快 300g', category: '低脂乳品類', carbs: 27.7, protein: 9.3, fat: 11.4, kcal: 226.8, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 120, k:'', p: ''},
 
-
  
   // 低脂豆魚蛋肉類
   { name: '一般魚類 30g', category: '低脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 3, kcal: 55, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
