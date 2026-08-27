@@ -565,7 +565,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '蛋塔(葡式)', category: '外食類', carbs: 31.9, protein: 3.7, fat: 25.8, kcal: 375, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 119.2, k: 96.2, p: 174.4 },
   { name: '鬆餅', category: '外食類', carbs: 55.1, protein: 3.2, fat: 2.6, kcal: 257, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 227.9, k: 142.2, p: 211.9 },
   { name: '原味 雞蛋糕(40g/顆)', category: '外食類', carbs: 13.6, protein: 2.3, fat: 3, kcal: 90.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
-  { name: '原味 雞蛋糕(40g/顆)', category: '外食類', carbs: 13.6, protein: 2.3, fat: 5, kcal: 108.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
+  { name: '起司 雞蛋糕(40g/顆)', category: '外食類', carbs: 13.6, protein: 2.3, fat: 5, kcal: 108.6, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '卡士達 雞蛋糕(40g/顆)', category: '外食類', carbs: 14, protein: 2.3, fat: 7, kcal: 128.2, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '乳酪蛋糕', category: '外食類', carbs: 19.1, protein: 7, fat: 21.3, kcal: 296, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 153, k: 133.1, p: 138.8 },
   { name: '傳統豆花(未加糖)', category: '外食類', carbs: 2.1, protein: 3.2, fat: 1.9, kcal: 38, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 22, k: 123, p: 39 },
