@@ -589,7 +589,7 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '水煎包', category: '外食類', carbs: 25.2, protein: 4.3, fat: 5.4, kcal: 167, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 310, k: 129, p: 48 },
   { name: '鮮奶起司爆漿包1個110g', category: '外食類', carbs: 51.5, protein: 12, fat: 8.6, kcal: 332.9, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 458, k: '', p: '' },
   { name: '蚵仔煎', category: '外食類', carbs: 19.7, protein: 4.9, fat: 10.4, kcal: 192, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 479, k: 91, p: 91 },
-  { name: '油條 100g', category: '外食類', carbs: 37.3, protein: 10.1, fat: 40.2, kcal: 551, fiber: 1.6, saturatedFat: 7.1, transFat: 0, cholesterol: 0, na: 341, k: 96, p: 93 },
+  { name: '油條 45g/根', category: '外食類', carbs: 16.8, protein: 4.5, fat: 18.1, kcal: 248, fiber: 0.7, saturatedFat: 3.2, transFat: 0, cholesterol: 0, na: 153.5, k: 43.2, p: 41.9 },
   { name: '肉羹', category: '外食類', carbs: 18.9, protein: 9.7, fat: 14.7, kcal: 247, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 512, k: 102, p: 198 },
   { name: '烤黑輪（沾醬5g）50g/隻', category: '外食類', carbs: 10.9, protein: 5.6, fat: 2.1, kcal: 84, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
   { name: '蚵捲2個 55g', category: '外食類', carbs: 6.3, protein: 8.7, fat: 9.8, kcal: 147, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 0, k: 0, p: 0 },
