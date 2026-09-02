@@ -90,6 +90,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '素火腿片 55g (4薄片）', category: '高脂豆魚蛋肉類', carbs: 4, protein: 7, fat: 8.5, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '素火腿丁 55g (4湯匙）', category: '高脂豆魚蛋肉類', carbs: 4, protein: 7, fat: 8.5, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '百頁豆腐 70g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
+  { name: '義美 純豬肉鬆 20g (3湯匙）', category: '高脂豆魚蛋肉類', carbs: 6.7, protein: 6.7, fat: 5, kcal: 98.5, fiber: 0, saturatedFat: 1.3, transFat: 0, cholesterol: 0, na: 237, k: '', p: '' },
+  { name: '新東陽 豬肉鬆 20g (3湯匙）', category: '高脂豆魚蛋肉類', carbs: 8.9, protein: 6.7, fat: 3.5, kcal: 94, fiber: 0, saturatedFat: 1.4, transFat: 0, cholesterol: 0, na: 195.2, k: '', p: '' },
   { name: '秋刀魚 35g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '香腸、臘肉 40g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
   { name: '熱狗、五花肉 50g', category: '高脂豆魚蛋肉類', carbs: 0, protein: 7, fat: 10, kcal: 120, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k: '', p: '' },
