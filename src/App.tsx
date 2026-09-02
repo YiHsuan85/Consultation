@@ -1033,7 +1033,7 @@ const PORT_VALS: Record<string, { p: number, c: number, f: number, k: number }> 
 const DIET_MATRIX_ROW_CATEGORIES = [
   '全脂乳品類',
   '低脂乳品類',
-  '全榖雜糧類',
+  '全穀雜糧類',
   '低脂豆魚蛋肉類',
   '中脂豆魚蛋肉類',
   '高脂豆魚蛋肉類',
