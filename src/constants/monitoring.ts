@@ -3,11 +3,11 @@ export interface MonitoringIndicatorItem {
   label: string;
   fullName?: string;
   unit?: string;
-  category: 'anthropometry' | 'glycemia' | 'lipids' | 'bloodPressure' | 'renal';
+  category: 'anthropometry' | 'glycemia' | 'lipids' | 'bloodPressure' | 'renal' | 'lifestyle';
 }
 
 export interface MonitoringGroup {
-  id: 'anthropometry' | 'glycemia' | 'lipids' | 'bloodPressure' | 'renal';
+  id: 'anthropometry' | 'glycemia' | 'lipids' | 'bloodPressure' | 'renal' | 'lifestyle';
   categoryTitle: string;
   subTitle: string;
   theme: {
@@ -125,6 +125,27 @@ export const MONITORING_GROUPS: MonitoringGroup[] = [
       { id: 'eGFR', label: 'eGFR', fullName: '腎絲球過濾率 (Estimated GFR)', category: 'renal' },
       { id: 'BUN', label: 'BUN', fullName: '血尿素氮 (Blood Urea Nitrogen)', category: 'renal' }
     ]
+  },
+  {
+    id: 'lifestyle',
+    categoryTitle: '生活/飲食',
+    subTitle: 'Lifestyle & Diet',
+    theme: {
+      badge: 'bg-teal-100 text-teal-800 border-teal-200',
+      border: 'border-teal-200',
+      bg: 'bg-teal-50/50',
+      text: 'text-teal-800',
+      activeBg: 'bg-teal-600 text-white shadow-sm shadow-teal-200',
+      activeBorder: 'border-teal-600',
+      activeText: 'text-teal-700',
+      checkboxActive: 'bg-teal-600 border-teal-600 text-white'
+    },
+    items: [
+      { id: '飲水量', label: '飲水量', fullName: '飲水量 (Water Intake)', unit: 'mL/天', category: 'lifestyle' },
+      { id: '排便頻率', label: '排便頻率', fullName: '排便頻率 (Bowel Movement Frequency)', category: 'lifestyle' },
+      { id: '點心頻率', label: '點心頻率', fullName: '點心頻率 (Snack Frequency)', category: 'lifestyle' },
+      { id: '三餐醣類', label: '三餐醣類', fullName: '三餐醣類 (Meal Carbohydrate Distribution)', category: 'lifestyle' }
+    ]
   }
 ];
 
@@ -134,12 +155,12 @@ export const MONITORING_PRESETS = [
   {
     id: 'dm',
     name: '糖尿病重點',
-    items: ['體重', 'BMI', 'AC', 'HbA1c', 'CGM', 'BP', 'eGFR', 'UPCR']
+    items: ['體重', 'BMI', 'AC', 'HbA1c', 'CGM', 'BP', 'eGFR', 'UPCR', '三餐醣類']
   },
   {
     id: 'ckd',
     name: '慢性腎臟病 (CKD)',
-    items: ['體重', 'BP', 'UPCR', 'Cr', 'eGFR', 'BUN']
+    items: ['體重', 'BP', 'UPCR', 'Cr', 'eGFR', 'BUN', '飲水量']
   },
   {
     id: 'cvd_lipid',
@@ -149,6 +170,11 @@ export const MONITORING_PRESETS = [
   {
     id: 'weight_loss',
     name: '體重管理 / 減脂',
-    items: ['體重', 'BMI', '體脂率', 'InBody', '腰圍', 'AC', 'HbA1c', 'TG', 'HDL']
+    items: ['體重', 'BMI', '體脂率', 'InBody', '腰圍', 'AC', 'HbA1c', 'TG', 'HDL', '飲水量', '點心頻率']
+  },
+  {
+    id: 'lifestyle_diet',
+    name: '生活飲食追蹤',
+    items: ['體重', '飲水量', '排便頻率', '點心頻率', '三餐醣類']
   }
 ];
