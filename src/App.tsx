@@ -7066,6 +7066,7 @@ export default function App() {
                                     {group.id === 'lipids' && <HeartPulse className="w-4 h-4 text-rose-500" />}
                                     {group.id === 'bloodPressure' && <Activity className="w-4 h-4 text-purple-600" />}
                                     {group.id === 'renal' && <Activity className="w-4 h-4 text-blue-600" />}
+                                    {group.id === 'lifestyle' && <Utensils className="w-4 h-4 text-teal-600" />}
                                     <span className="text-xs font-bold text-slate-800">{group.categoryTitle}</span>
                                     <span className="text-[10px] text-slate-400 font-medium">({group.subTitle})</span>
                                   </div>
