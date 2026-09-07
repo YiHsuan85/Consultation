@@ -1132,8 +1132,135 @@ export const generateReminderWordDoc = async (state: AppState) => {
           });
         })(),
 
+        // 減重營養方針與個人化追蹤卡 (若選擇減重營養方針)
+        ...(() => {
+          if (state.counselingType === '減重營養方針') {
+            const g = state.guidelineSelections || {};
+            const elements = [
+              new Paragraph({ text: "四、減重營養方針與個人化追蹤卡", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
+              new Paragraph({
+                text: "【減重核心方針】",
+                heading: HeadingLevel.HEADING_3,
+                spacing: { before: 100, after: 100 }
+              }),
+              new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: [
+                  new TableRow({
+                    children: [
+                      createHeaderCell("類別", "F1F5F9"),
+                      createHeaderCell("重點行動原則", "F1F5F9"),
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("① 醣類"),
+                      createValueCell([
+                        g['weight_guide_fixed_carbs'] ? "• 每餐固定主食份量，避免忽多忽少" : "",
+                        g['weight_guide_less_sugar'] ? "• 減少精製糖及精製澱粉" : "",
+                        g['weight_guide_whole_grain'] ? "• 主食優先選擇：糙米、五穀飯、全穀、地瓜" : "",
+                        g['weight_guide_less_bakery'] ? "• 減少：甜麵包、蛋糕、餅乾、精緻麵食" : "",
+                        g['weight_guide_no_thickening'] ? "• 避免額外勾芡、糖醋、濃稠醬汁" : "",
+                      ].filter(Boolean).join("\n") || "• 每餐固定主食份量\n• 減少精製糖及精製澱粉\n• 主食優先選擇：糙米、五穀飯、全穀、地瓜\n• 避免額外勾芡、糖醋、濃稠醬汁")
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("② 纖維"),
+                      createValueCell([
+                        g['weight_guide_veg_half_bowl'] ? "• 每餐至少半碗蔬菜" : "",
+                        g['weight_guide_veg_colors'] ? "• 優先選擇多種類、不同顏色蔬菜" : "",
+                        g['weight_guide_eat_order'] ? "• 建議進食順序：先吃菜 → 蛋白質 → 最後吃主食" : "",
+                        g['weight_guide_fruit_mod'] ? "• 水果適量，不以果汁取代水果" : "",
+                      ].filter(Boolean).join("\n") || "• 每餐至少半碗蔬菜\n• 建議進食順序：先吃菜 → 蛋白質 → 最後吃主食\n• 水果適量，不以果汁取代水果")
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("③ 蛋白質"),
+                      createValueCell([
+                        g['weight_guide_protein_match'] ? "• 每餐搭配一份蛋白質" : "",
+                        g['weight_guide_protein_priority'] ? "• 優先選擇：魚、雞肉、蛋、豆腐、豆製品" : "",
+                        g['weight_guide_no_only_starch'] ? "• 避免只吃澱粉類（麵包+飲料、稀飯+醬菜、麵+飲料）" : "",
+                        g['weight_guide_keep_muscle'] ? "• 減重期間注意蛋白質攝取，以維持肌肉量" : "",
+                      ].filter(Boolean).join("\n") || "• 每餐搭配一份蛋白質\n• 優先選擇：魚、雞肉、蛋、豆腐、豆製品\n• 避免只吃澱粉類；維持肌肉量")
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("④ 含糖飲料"),
+                      createValueCell([
+                        g['weight_guide_no_sugar_drinks'] ? "• 完全避免含糖飲料（手搖飲、汽水、果汁、甜咖啡、運動飲料）" : "",
+                        g['weight_guide_tea_water'] ? "• 改成：水／無糖茶／無糖咖啡" : "",
+                      ].filter(Boolean).join("\n") || "• 以完全避免含糖飲料為目標\n• 改成：水／無糖茶／無糖咖啡")
+                    ]
+                  }),
+                ]
+              }),
+              new Paragraph({
+                text: "【追蹤指標＋營養計畫（這週只做 1–2 個改變）】",
+                heading: HeadingLevel.HEADING_3,
+                spacing: { before: 200, after: 100 }
+              }),
+              new Table({
+                width: { size: 100, type: WidthType.PERCENTAGE },
+                rows: [
+                  new TableRow({
+                    children: [
+                      createHeaderCell("體重追蹤"),
+                      createValueCell(`本次：${state.anthropometry.weight || '--'} kg   ➔   下次目標：${g['weight_goal_target_kg'] || g['weight_track_target'] || '______'} kg`),
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("飲食狀況"),
+                      createValueCell(`每日飲食紀錄：[${g['weight_track_diet_log'] || '未填'}]   |   本週最需要改善：${g['weight_track_diet_improve'] || '______'}`),
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("飽足感與飲食行為"),
+                      createValueCell(`飯後是否容易太飽：[${g['weight_track_fullness'] || '未填'}]   |   容易嘴饞/額外點心：[${g['weight_track_cravings'] || '未填'}]   |   含糖飲料：${g['weight_track_sugar_drinks_freq'] || '______'} 次/週`),
+                    ]
+                  }),
+                  ...(g['weight_track_ppg_enabled'] ? [
+                    new TableRow({
+                      children: [
+                        createHeaderCell("飯後血糖變化"),
+                        createValueCell(`飯後2小時：${g['weight_track_ppg_val'] || '___'} mg/dL   |   明顯升高：[${g['weight_track_ppg_high'] || '未填'}]\n(觀察重點：挑選 1–2 餐觀察「吃了什麼 → 吃多少 → 飯後血糖／身體反應」)`),
+                      ]
+                    })
+                  ] : []),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("本次營養計畫 (目標)"),
+                      createValueCell([
+                        g['weight_plan_veg'] ? "☑ 每餐至少半碗蔬菜" : "",
+                        g['weight_plan_fixed_carbs'] ? "☑ 每餐固定主食份量" : "",
+                        g['weight_plan_add_protein'] ? "☑ 每餐增加一份蛋白質" : "",
+                        g['weight_plan_sugar_free'] ? "☑ 含糖飲料改為無糖" : "",
+                        g['weight_plan_walk'] ? "☑ 飯後走路 10–15 分鐘" : "",
+                        g['weight_plan_log_meals'] ? "☑ 記錄 1–2 餐飲食" : "",
+                        g['weight_plan_other'] ? `☑ ${g['weight_plan_other']}` : "",
+                      ].filter(Boolean).join("\n") || "□ 每餐至少半碗蔬菜\n□ 每餐固定主食份量\n□ 每餐增加一份蛋白質\n□ 含糖飲料改為無糖\n□ 飯後走路 10–15 分鐘"),
+                    ]
+                  }),
+                  new TableRow({
+                    children: [
+                      createHeaderCell("下次追蹤安排"),
+                      createValueCell(`📅 日期：${g['weight_plan_next_date'] || state.monitoring.nextDate || '____________'}\n下次主要討論：\n① ${g['weight_plan_discuss_1'] || '____________________'}\n② ${g['weight_plan_discuss_2'] || '____________________'}`),
+                    ]
+                  }),
+                ]
+              }),
+            ];
+            return elements;
+          }
+          return [];
+        })(),
+
         // 備註與注意事項
-        new Paragraph({ text: "四、備註與注意事項", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
+        new Paragraph({ text: state.counselingType === '減重營養方針' ? "五、備註與注意事項" : "四、備註與注意事項", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
         new Paragraph({ text: state.reminderNotes || "無" }),
 
         // 衛教資訊
