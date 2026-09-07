@@ -8948,7 +8948,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         </div>
                       )}
 
-                      {state.counselingType === '糖尿病營養方針' || state.counselingType === '高血脂營養方針' || state.counselingType === '痛風（高尿酸）營養方針') && (
+                      {(state.counselingType === '糖尿病營養方針' || state.counselingType === '高血脂營養方針' || state.counselingType === '痛風（高尿酸）營養方針') && (
                     <div className="space-y-4">
                       <h3 className="text-md font-bold text-blue-700 border-b pb-2">追蹤指標+營養計畫</h3>
                       {state.counselingType === '糖尿病營養方針' && (
