@@ -39,7 +39,8 @@ import {
   HeartPulse,
   Droplet,
   Sparkles,
-  RotateCcw
+  RotateCcw,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppState, FoodItem, PES, MonitoringRecord, Patient } from './types';
@@ -2440,7 +2441,104 @@ export default function App() {
   // Removed inner Dashboard definition
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [copySuccessMsg, setCopySuccessMsg] = useState<string | null>(null);
 
+  const applyDefaultWeightNotes = () => {
+    const defaultNotes = `* 減重以穩定、可持續為原則，不建議極端節食或跳過正餐。
+* 體重會受到水分、排便、飲食及生理週期影響，短期波動不代表減重失敗。
+* 若出現持續明顯飢餓、頭暈、虛弱或飲食難以維持，請與營養師討論調整。
+* 若有糖尿病、腎臟疾病、心血管疾病或正在使用藥物，飲食與減重策略應依個人疾病及治療狀況調整。
+* 不用一次做到全部，先完成本週設定的 1–2 個目標。`;
+    setState(prev => ({ ...prev, reminderNotes: defaultNotes }));
+  };
+
+  const handleCopyWeightCard = () => {
+    const s = state;
+    const g = s.guidelineSelections || {};
+    const name = s.clientHx.name || '個案';
+    const date = s.consultDate || new Date().toISOString().split('T')[0];
+    const weight = s.anthropometry.weight || '--';
+    const targetWeight = g['weight_goal_target_kg'] || g['weight_track_target'] || '______';
+    const waterGoal = g['weight_goal_water'] || (s.anthropometry.weight ? `${Math.round(parseFloat(s.anthropometry.weight) * 30)}~${Math.round(parseFloat(s.anthropometry.weight) * 35)}` : '2000');
+
+    // 營養方針重點
+    const carbsPoints: string[] = [];
+    if (g['weight_guide_fixed_carbs']) carbsPoints.push('每餐固定主食份量，避免忽多忽少');
+    if (g['weight_guide_less_sugar']) carbsPoints.push('減少精製糖及精製澱粉');
+    if (g['weight_guide_whole_grain']) carbsPoints.push('主食優先選擇：糙米、五穀飯、全穀、地瓜');
+    if (g['weight_guide_less_bakery']) carbsPoints.push('減少：甜麵包、蛋糕、餅乾、精緻麵食');
+    if (g['weight_guide_no_thickening']) carbsPoints.push('避免額外勾芡、糖醋、濃稠醬汁');
+
+    const fiberPoints: string[] = [];
+    if (g['weight_guide_veg_half_bowl']) fiberPoints.push('每餐至少半碗蔬菜');
+    if (g['weight_guide_veg_colors']) fiberPoints.push('優先選擇多種類、不同顏色蔬菜');
+    if (g['weight_guide_eat_order']) fiberPoints.push('建議進食順序：先吃菜 → 蛋白質 → 最後吃主食');
+    if (g['weight_guide_fruit_mod']) fiberPoints.push('水果適量，不以果汁取代水果');
+
+    const proPoints: string[] = [];
+    if (g['weight_guide_protein_match']) proPoints.push('每餐搭配一份蛋白質');
+    if (g['weight_guide_protein_priority']) proPoints.push('優先選擇：魚、雞肉、蛋、豆腐、豆製品');
+    if (g['weight_guide_no_only_starch']) proPoints.push('避免只吃澱粉類（麵包+飲料、稀飯+醬菜、麵+飲料）');
+    if (g['weight_guide_keep_muscle']) proPoints.push('減重期間注意蛋白質攝取，以維持肌肉量');
+
+    const drinkPoints: string[] = [];
+    if (g['weight_guide_no_sugar_drinks']) drinkPoints.push('完全避免含糖飲料（手搖飲、汽水、果汁、甜咖啡、運動飲料）');
+    if (g['weight_guide_tea_water']) drinkPoints.push('飲料改成：水／無糖茶／無糖咖啡');
+
+    // 追蹤指標
+    const dietLog = g['weight_track_diet_log'] ? `[${g['weight_track_diet_log']}]` : '未勾選';
+    const dietImprove = g['weight_track_diet_improve'] || '______';
+    const fullness = g['weight_track_fullness'] || '未填寫';
+    const cravings = g['weight_track_cravings'] || '未填寫';
+    const sugarDrinksFreq = g['weight_track_sugar_drinks_freq'] ? `${g['weight_track_sugar_drinks_freq']} 次/週` : '______ 次/週';
+
+    // 本次目標 (這週只做 1-2 個改變)
+    const goals: string[] = [];
+    if (g['weight_plan_veg']) goals.push('☑ 每餐至少半碗蔬菜');
+    if (g['weight_plan_fixed_carbs']) goals.push('☑ 每餐固定主食份量');
+    if (g['weight_plan_add_protein']) goals.push('☑ 每餐增加一份蛋白質');
+    if (g['weight_plan_sugar_free']) goals.push('☑ 含糖飲料改為無糖');
+    if (g['weight_plan_walk']) goals.push('☑ 飯後走路 10–15 分鐘');
+    if (g['weight_plan_log_meals']) goals.push('☑ 記錄 1–2 餐飲食');
+    if (g['weight_plan_other']) goals.push(`☑ ${g['weight_plan_other']}`);
+
+    const text = `📋 【減重個人化追蹤卡】
+個案姓名：${name}
+諮詢日期：${date}
+營養師：${s.dietitian || '營養師'}
+
+🎯 營養控制目標
+• 熱量目標：${s.diet.targetKcal ? `${s.diet.targetKcal} kcal/天` : '依個別評估'}
+• 建議飲水：${waterGoal} mL/天
+• 體重基準：本次 ${weight} kg ➔ 下次目標：${targetWeight} kg
+
+🥗 減重營養方針重點
+${carbsPoints.length > 0 ? `① 醣類：\n  • ${carbsPoints.join('\n  • ')}\n` : '① 醣類：每餐固定主食份量，減少精製糖澱粉，優先選未精緻全穀，避免勾芡糖醋\n'}${fiberPoints.length > 0 ? `② 纖維：\n  • ${fiberPoints.join('\n  • ')}\n` : '② 纖維：每餐至少半碗蔬菜，先吃菜→蛋白質→最後吃主食，水果適量\n'}${proPoints.length > 0 ? `③ 蛋白質：\n  • ${proPoints.join('\n  • ')}\n` : '③ 蛋白質：每餐搭配一份蛋白質（魚雞蛋豆腐），避免單吃澱粉，維持肌肉量\n'}${drinkPoints.length > 0 ? `④ 含糖飲料：\n  • ${drinkPoints.join('\n  • ')}\n` : '④ 含糖飲料：以完全避免為目標，改喝水／無糖茶／無糖咖啡\n'}
+📊 追蹤指標（飲食與身體反應）
+• 體重追蹤：本次 ${weight} kg ➔ 目標 ${targetWeight} kg
+• 每日飲食紀錄：${dietLog}（有／部分／無）
+• 本週最需改善：${dietImprove}
+• 飲食行為：飯後易太飽 [${fullness}] ｜ 容易嘴饞 [${cravings}] ｜ 含糖飲料 [${sugarDrinksFreq}]
+${g['weight_track_ppg_enabled'] ? `• 飯後血糖：飯後2小時 ${g['weight_track_ppg_val'] || '___'} mg/dL (明顯升高: ${g['weight_track_ppg_high'] || '無'})\n  (觀察重點：挑選 1–2 餐記錄「吃了什麼 → 吃多少 → 飯後血糖／身體反應」)\n` : ''}
+📌 本次營養計畫（這週只做 1–2 個改變）
+${goals.length > 0 ? goals.join('\n') : '□ 每餐至少半碗蔬菜\n□ 每餐固定主食份量\n□ 每餐增加一份蛋白質\n□ 含糖飲料改為無糖'}
+
+📅 下次追蹤日期：${g['weight_plan_next_date'] || s.monitoring.nextDate || '____________'}
+下次主要討論：
+① ${g['weight_plan_discuss_1'] || '____________________'}
+② ${g['weight_plan_discuss_2'] || '____________________'}
+
+💡 備註與注意事項：
+${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節食。短期波動不代表減重失敗，先完成本週設定的 1–2 個目標！'}`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      setCopySuccessMsg('已複製個人化追蹤卡！可直接貼入 LINE / Notion');
+      setTimeout(() => setCopySuccessMsg(null), 3000);
+    }).catch(() => {
+      alert('複製失敗，請手動複製。');
+    });
+  };
+  
   const handleDownloadWord = () => {
     generateReminderWordDoc(state);
   };
@@ -7697,18 +7795,36 @@ export default function App() {
               className="space-y-8"
             >
               <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
                   <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <Bell className="w-5 h-5 text-blue-600" />
                     營養諮詢小提醒
                   </h2>
-                  <button 
+                  <div className="flex items-center gap-2">
+                    {copySuccessMsg && (
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full animate-fade-in flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5" />
+                        {copySuccessMsg}
+                      </span>
+                    )}
+                    {state.counselingType === '減重營養方針' && (
+                      <button 
+                        onClick={handleCopyWeightCard}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+                        title="將減重個人化追蹤卡格式複製到剪貼簿，可直接貼入 LINE、Notion 或病歷系統"
+                      >
+                        <Copy className="w-4 h-4" />
+                        複製追蹤卡 (LINE/Notion)
+                      </button>
+                    )}
+                    <button 
                     onClick={handleDownloadWord}
                     className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm"
                   >
                     <FileDown className="w-4 h-4" />
                     下載 WORD
                   </button>
+                 </div>
                 </div>
                 <div id="counseling-reminder-content" className="p-6 space-y-8 bg-white">
                   {/* (2) 諮詢細節 */}
@@ -7730,10 +7846,22 @@ export default function App() {
                         <label className="text-xs font-medium text-slate-500">諮詢類型</label>
                         <select 
                           value={state.counselingType || ''} 
-                          onChange={e => setState({...state, counselingType: e.target.value})}
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm"
+                          onChange={e => {
+                            const newType = e.target.value;
+                            const updates: any = { counselingType: newType };
+                            if (newType === '減重營養方針' && !state.reminderNotes) {
+                              updates.reminderNotes = `* 減重以穩定、可持續為原則，不建議極端節食或跳過正餐。
+* 體重會受到水分、排便、飲食及生理週期影響，短期波動不代表減重失敗。
+* 若出現持續明顯飢餓、頭暈、虛弱或飲食難以維持，請與營養師討論調整。
+* 若有糖尿病、腎臟疾病、心血管疾病或正在使用藥物，飲食與減重策略應依個人疾病及治療狀況調整。
+* 不用一次做到全部，先完成本週設定的 1–2 個目標。`;
+                            }
+                            setState({ ...state, ...updates });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium"
                         >
                           <option>糖尿病營養方針</option>
+                          <option>減重營養方針</option>
                           <option>腎臟病營養方針</option>
                           <option>高血脂營養方針</option>
                           <option>糖尿病 x 腎臟病 營養方針</option>
@@ -7741,6 +7869,17 @@ export default function App() {
                           <option>糖尿病 x 腎臟病 x 高血脂 營養方針</option>
                         </select>
                       </div>
+                      {state.counselingType === '減重營養方針' && (
+                        <div className="space-y-1 md:col-span-2">
+                          <label className="text-xs font-medium text-slate-500">減重核心目標 / 階段</label>
+                          <div className="flex flex-wrap gap-3 h-[38px] items-center">
+                            <GuidelineCheckbox label="減脂增肌" id="weight_diag_fat_loss" state={state} setState={setState} />
+                            <GuidelineCheckbox label="體重控制" id="weight_diag_obese" state={state} setState={setState} />
+                            <GuidelineCheckbox label="維持肌肉量" id="weight_diag_keep_muscle" state={state} setState={setState} />
+                            <GuidelineCheckbox label="作息與飲食行為調整" id="weight_diag_lifestyle" state={state} setState={setState} />
+                          </div>
+                        </div>
+                      )}
                       {state.counselingType === '糖尿病營養方針' && (
                         <div className="space-y-1">
                           <label className="text-xs font-medium text-slate-500">類型</label>
@@ -7911,6 +8050,30 @@ export default function App() {
                   </div>
 
                   {/* (3.5) 飲食風險評估 */}
+                  {state.counselingType === '減重營養方針' && (
+                    <div className="space-y-4">
+                      <h3 className="text-md font-bold text-blue-700 border-b pb-2">飲食與生活習慣風險評估</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        <GuidelineCheckbox label="常喝含糖飲料（手搖飲/果汁/汽水）" id="weight_risk_sugar_drinks" state={state} setState={setState} />
+                        <GuidelineCheckbox label="主食吃太多（甜麵包/蛋糕/餅乾/精緻麵食）" id="weight_risk_too_much_carbs" state={state} setState={setState} />
+                        <GuidelineCheckbox label="常吃甜點/零食/宵夜" id="weight_risk_sweets" state={state} setState={setState} />
+                        <GuidelineCheckbox label="外食頻率高／常吃油炸或濃稠勾芡醬汁" id="weight_risk_eating_out" state={state} setState={setState} />
+                        <GuidelineCheckbox label="蔬菜攝取不足（每餐少於半碗）" id="weight_risk_no_veg" state={state} setState={setState} />
+                        <GuidelineCheckbox label="常單吃澱粉類（麵包配飲料、稀飯配醬菜）" id="weight_risk_only_starch" state={state} setState={setState} />
+                        <GuidelineCheckbox label="容易嘴饞／額外吃點心" id="weight_risk_cravings" state={state} setState={setState} />
+                        <GuidelineCheckbox label="進食速度太快／容易過飽" id="weight_risk_fast_eating" state={state} setState={setState} />
+                        <GuidelineCheckbox label="用餐時間不固定／常跳過正餐" id="weight_risk_irregular_meals" state={state} setState={setState} />
+                        <GuidelineCheckbox label="缺乏日常身體活動或運動習慣" id="weight_risk_sedentary" state={state} setState={setState} />
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="其他飲食/生活風險..." 
+                        value={state.guidelineSelections['weight_risk_other'] || ''}
+                        onChange={e => setSelection('weight_risk_other', e.target.value)}
+                        className="w-full px-3 py-2 rounded border border-slate-200 text-sm"
+                      />
+                    </div>
+                  )}
                   {state.counselingType === '糖尿病營養方針' && (
                     <div className="space-y-4">
                       <h3 className="text-md font-bold text-blue-700 border-b pb-2">飲食風險評估</h3>
@@ -8072,6 +8235,38 @@ export default function App() {
                       </div>
 
                       {/* Merged Guideline Specific Goals */}
+                      {state.counselingType === '減重營養方針' && (
+                        <>
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-center">
+                            <div className="text-xs text-slate-500 font-bold uppercase mb-1">下次目標體重</div>
+                            <div className="flex items-center gap-1">
+                              <input 
+                                type="text" 
+                                value={state.guidelineSelections['weight_goal_target_kg'] || ''} 
+                                onChange={e => setSelection('weight_goal_target_kg', e.target.value)} 
+                                placeholder="例如 65"
+                                className="w-20 border-b border-slate-300 text-center outline-none bg-transparent font-bold text-lg text-slate-800" 
+                              />
+                              <span className="text-slate-500 font-medium">kg</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 mt-0.5">基準體重: {state.anthropometry.weight || '--'} kg</span>
+                          </div>
+                          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-center">
+                            <div className="text-xs text-slate-500 font-bold uppercase mb-1">建議飲水量</div>
+                            <div className="flex items-center gap-1">
+                              <input 
+                                type="text" 
+                                value={state.guidelineSelections['weight_goal_water'] || ''} 
+                                onChange={e => setSelection('weight_goal_water', e.target.value)} 
+                                placeholder={state.anthropometry.weight ? `${Math.round(parseFloat(state.anthropometry.weight) * 30)}~${Math.round(parseFloat(state.anthropometry.weight) * 35)}` : '2000'}
+                                className="w-24 border-b border-slate-300 text-center outline-none bg-transparent font-bold text-lg text-slate-800" 
+                              />
+                              <span className="text-slate-500 font-medium">mL/天</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 mt-0.5">以體重 × 30~35 mL 估算</span>
+                          </div>
+                        </>
+                      )}
                       {state.counselingType === '糖尿病營養方針' && (
                         <>
                           <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-center">
@@ -8173,6 +8368,66 @@ export default function App() {
                   </div>
 
                   {/* (4.5) 營養方針 */}
+                  {state.counselingType === '減重營養方針' && (
+                    <div className="space-y-4">
+                      <h3 className="text-md font-bold text-blue-700 border-b pb-2 flex items-center justify-between">
+                        <span>減重營養方針重點</span>
+                        <span className="text-xs text-slate-500 font-normal">可勾選本次諮詢重點，將自動同步至追蹤卡與匯出</span>
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-2 p-3 bg-slate-50/70 rounded-xl border border-slate-100">
+                          <h4 className="text-sm font-bold text-blue-700 flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-800 text-xs flex items-center justify-center font-bold">1</span>
+                            ① 醣類
+                          </h4>
+                          <div className="space-y-1.5 pl-1">
+                            <GuidelineCheckbox label="每餐固定主食份量，避免忽多忽少" id="weight_guide_fixed_carbs" state={state} setState={setState} />
+                            <GuidelineCheckbox label="減少精製糖及精製澱粉" id="weight_guide_less_sugar" state={state} setState={setState} />
+                            <GuidelineCheckbox label="主食優先選擇：糙米、五穀飯、全穀、地瓜" id="weight_guide_whole_grain" state={state} setState={setState} />
+                            <GuidelineCheckbox label="減少：甜麵包、蛋糕、餅乾、精緻麵食" id="weight_guide_less_bakery" state={state} setState={setState} />
+                            <GuidelineCheckbox label="避免額外勾芡、糖醋、濃稠醬汁" id="weight_guide_no_thickening" state={state} setState={setState} />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 p-3 bg-slate-50/70 rounded-xl border border-slate-100">
+                          <h4 className="text-sm font-bold text-emerald-700 flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center font-bold">2</span>
+                            ② 纖維
+                          </h4>
+                          <div className="space-y-1.5 pl-1">
+                            <GuidelineCheckbox label="每餐至少半碗蔬菜" id="weight_guide_veg_half_bowl" state={state} setState={setState} />
+                            <GuidelineCheckbox label="優先選擇多種類、不同顏色蔬菜" id="weight_guide_veg_colors" state={state} setState={setState} />
+                            <GuidelineCheckbox label="建議進食順序：先吃菜 → 蛋白質 → 最後吃主食" id="weight_guide_eat_order" state={state} setState={setState} />
+                            <GuidelineCheckbox label="水果適量，不以果汁取代水果" id="weight_guide_fruit_mod" state={state} setState={setState} />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 p-3 bg-slate-50/70 rounded-xl border border-slate-100">
+                          <h4 className="text-sm font-bold text-amber-700 flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-amber-100 text-amber-800 text-xs flex items-center justify-center font-bold">3</span>
+                            ③ 蛋白質
+                          </h4>
+                          <div className="space-y-1.5 pl-1">
+                            <GuidelineCheckbox label="每餐搭配一份蛋白質" id="weight_guide_protein_match" state={state} setState={setState} />
+                            <GuidelineCheckbox label="優先選擇：魚、雞肉、蛋、豆腐、豆製品" id="weight_guide_protein_priority" state={state} setState={setState} />
+                            <GuidelineCheckbox label="避免只吃澱粉類（麵包+飲料、稀飯+醬菜、麵+飲料）" id="weight_guide_no_only_starch" state={state} setState={setState} />
+                            <GuidelineCheckbox label="減重期間注意蛋白質攝取，以維持肌肉量" id="weight_guide_keep_muscle" state={state} setState={setState} />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 p-3 bg-slate-50/70 rounded-xl border border-slate-100">
+                          <h4 className="text-sm font-bold text-purple-700 flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-800 text-xs flex items-center justify-center font-bold">4</span>
+                            ④ 含糖飲料
+                          </h4>
+                          <div className="space-y-1.5 pl-1">
+                            <GuidelineCheckbox label="完全避免含糖飲料（手搖飲、汽水、果汁、甜咖啡、運動飲料）" id="weight_guide_no_sugar_drinks" state={state} setState={setState} />
+                            <GuidelineCheckbox label="飲料改成：水／無糖茶／無糖咖啡" id="weight_guide_tea_water" state={state} setState={setState} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {state.counselingType === '糖尿病營養方針' && (
                     <div className="space-y-4">
                       <h3 className="text-md font-bold text-blue-700 border-b pb-2">糖尿病營養方針</h3>
@@ -8415,7 +8670,285 @@ export default function App() {
                   )}
 
                   {/* (4.6) 追蹤指標+營養計畫 */}
-                  {(state.counselingType === '糖尿病營養方針' || state.counselingType === '高血脂營養方針' || state.counselingType === '痛風（高尿酸）營養方針') && (
+                  {(state.counselingType === '減重營養方針' || state.counselingType === '糖尿病營養方針' || state.counselingType === '高血脂營養方針' || state.counselingType === '痛風（高尿酸）營養方針') && (
+                    <div className="space-y-6">
+                      <h3 className="text-md font-bold text-blue-700 border-b pb-2 flex items-center justify-between">
+                        <span>追蹤指標與個人化營養計畫</span>
+                        {state.counselingType === '減重營養方針' && (
+                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-medium">
+                            每次營養諮詢個人化追蹤卡
+                          </span>
+                        )}
+                      </h3>
+
+                      {state.counselingType === '減重營養方針' && (
+                        <div className="space-y-6">
+                          {/* ① 追蹤指標（飲食與身體反應） */}
+                          <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <span className="w-2 h-4 bg-blue-600 rounded-sm inline-block"></span>
+                                📊 追蹤指標（飲食與身體反應）
+                              </h4>
+                              <span className="text-xs text-slate-500">每次追蹤 1–2 項即可，著重可持續性</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* 體重進度 */}
+                              <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
+                                <label className="text-xs font-bold text-slate-600">⚖️ 體重追蹤</label>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="text-slate-500">本次：</span>
+                                  <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">{state.anthropometry.weight || '--'} kg</span>
+                                  <span className="text-slate-400">➔</span>
+                                  <span className="text-slate-500">目標：</span>
+                                  <input 
+                                    type="text" 
+                                    placeholder="填寫目標 kg"
+                                    value={state.guidelineSelections['weight_track_target'] || state.guidelineSelections['weight_goal_target_kg'] || ''}
+                                    onChange={e => {
+                                      setSelection('weight_track_target', e.target.value);
+                                      setSelection('weight_goal_target_kg', e.target.value);
+                                    }}
+                                    className="w-24 px-2 py-1 border rounded border-slate-300 text-sm font-bold text-blue-600 text-center"
+                                  />
+                                  <span className="text-slate-500">kg</span>
+                                </div>
+                              </div>
+
+                              {/* 每日飲食紀錄 */}
+                              <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-2">
+                                <label className="text-xs font-bold text-slate-600">📝 每日飲食紀錄</label>
+                                <div className="flex items-center gap-4 text-sm h-8">
+                                  {['有', '部分', '無'].map(opt => (
+                                    <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-slate-700">
+                                      <input 
+                                        type="radio" 
+                                        name="weight_track_diet_log"
+                                        checked={state.guidelineSelections['weight_track_diet_log'] === opt}
+                                        onChange={() => setSelection('weight_track_diet_log', opt)}
+                                        className="text-blue-600 focus:ring-blue-500"
+                                      />
+                                      <span>[{opt}]</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 本週最需改善 */}
+                            <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-1.5">
+                              <label className="text-xs font-bold text-slate-600">🎯 本週最需要改善的飲食環節</label>
+                              <input 
+                                type="text" 
+                                placeholder="例如：晚餐澱粉份量固定為半碗、戒除下午手搖飲、增加蛋白質..."
+                                value={state.guidelineSelections['weight_track_diet_improve'] || ''}
+                                onChange={e => setSelection('weight_track_diet_improve', e.target.value)}
+                                className="w-full px-3 py-1.5 border rounded-lg border-slate-300 text-sm"
+                              />
+                            </div>
+
+                            {/* 飽足感與飲食行為 */}
+                            <div className="bg-white p-3 rounded-lg border border-slate-200 space-y-3">
+                              <label className="text-xs font-bold text-slate-600">🧠 飽足感與飲食行為自我檢核</label>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <div className="space-y-1">
+                                  <span className="text-slate-500 block">飯後是否容易太飽：</span>
+                                  <div className="flex gap-3">
+                                    {['是', '否'].map(val => (
+                                      <label key={val} className="flex items-center gap-1 cursor-pointer">
+                                        <input 
+                                          type="radio" 
+                                          name="weight_track_fullness"
+                                          checked={state.guidelineSelections['weight_track_fullness'] === val}
+                                          onChange={() => setSelection('weight_track_fullness', val)}
+                                          className="text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span>[{val}]</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                  <span className="text-slate-500 block">容易嘴饞／額外吃點心：</span>
+                                  <div className="flex gap-3">
+                                    {['是', '否'].map(val => (
+                                      <label key={val} className="flex items-center gap-1 cursor-pointer">
+                                        <input 
+                                          type="radio" 
+                                          name="weight_track_cravings"
+                                          checked={state.guidelineSelections['weight_track_cravings'] === val}
+                                          onChange={() => setSelection('weight_track_cravings', val)}
+                                          className="text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span>[{val}]</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                  <span className="text-slate-500 block">含糖飲料頻率：</span>
+                                  <div className="flex items-center gap-1">
+                                    <input 
+                                      type="number" 
+                                      min="0"
+                                      placeholder="0"
+                                      value={state.guidelineSelections['weight_track_sugar_drinks_freq'] || ''}
+                                      onChange={e => setSelection('weight_track_sugar_drinks_freq', e.target.value)}
+                                      className="w-16 px-2 py-0.5 border rounded border-slate-300 text-center font-bold text-sm"
+                                    />
+                                    <span>次／週</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 飯後血糖反應監測（選填） */}
+                            <div className="p-3 bg-slate-100/70 rounded-lg border border-slate-200/90 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
+                                  <input 
+                                    type="checkbox" 
+                                    checked={!!state.guidelineSelections['weight_track_ppg_enabled']}
+                                    onChange={e => setSelection('weight_track_ppg_enabled', e.target.checked)}
+                                    className="rounded text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <span>若個案有血糖監測（可選）</span>
+                                </label>
+                                <span className="text-[11px] text-slate-500">觀察餐食與血糖波動連動關係</span>
+                              </div>
+                              {state.guidelineSelections['weight_track_ppg_enabled'] && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs border-t border-slate-200">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-slate-600">飯後 2 小時：</span>
+                                    <input 
+                                      type="text" 
+                                      placeholder="例如 135" 
+                                      value={state.guidelineSelections['weight_track_ppg_val'] || ''}
+                                      onChange={e => setSelection('weight_track_ppg_val', e.target.value)}
+                                      className="w-20 px-2 py-1 border rounded border-slate-300 text-center font-bold"
+                                    />
+                                    <span>mg/dL</span>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-slate-600">是否明顯升高：</span>
+                                    {['是', '否'].map(val => (
+                                      <label key={val} className="flex items-center gap-1 cursor-pointer">
+                                        <input 
+                                          type="radio" 
+                                          name="weight_track_ppg_high"
+                                          checked={state.guidelineSelections['weight_track_ppg_high'] === val}
+                                          onChange={() => setSelection('weight_track_ppg_high', val)}
+                                          className="text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span>[{val}]</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                  <div className="sm:col-span-2 text-[11px] text-blue-700 bg-blue-50 p-2 rounded">
+                                    💡 <strong>觀察重點：</strong>挑選 1–2 餐記錄「吃了什麼 → 吃多少 → 飯後血糖／身體反應」
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* ② 本次營養計畫（這週只做 1–2 個改變） */}
+                          <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200/80 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-bold text-emerald-900 flex items-center gap-2">
+                                <span className="w-2 h-4 bg-emerald-600 rounded-sm inline-block"></span>
+                                📌 本次營養計畫（這週只做 1–2 個改變）
+                              </h4>
+                              <span className="text-xs text-emerald-700 font-medium">從小處著手，建立成功回饋</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <GuidelineCheckbox label="每餐至少半碗蔬菜" id="weight_plan_veg" state={state} setState={setState} />
+                              <GuidelineCheckbox label="每餐固定主食份量" id="weight_plan_fixed_carbs" state={state} setState={setState} />
+                              <GuidelineCheckbox label="每餐增加一份蛋白質" id="weight_plan_add_protein" state={state} setState={setState} />
+                              <GuidelineCheckbox label="含糖飲料改為無糖" id="weight_plan_sugar_free" state={state} setState={setState} />
+                              <GuidelineCheckbox label="飯後走路 10–15 分鐘" id="weight_plan_walk" state={state} setState={setState} />
+                              <GuidelineCheckbox label="記錄 1–2 餐飲食" id="weight_plan_log_meals" state={state} setState={setState} />
+                            </div>
+
+                            <div className="pt-2">
+                              <label className="text-xs font-bold text-slate-600 block mb-1">其他自訂計畫：</label>
+                              <input 
+                                type="text" 
+                                placeholder="例如：晚上 9 點後不吃宵夜、點心由餅乾換成無調味堅果..."
+                                value={state.guidelineSelections['weight_plan_other'] || ''}
+                                onChange={e => setSelection('weight_plan_other', e.target.value)}
+                                className="w-full px-3 py-1.5 border rounded-lg border-slate-300 text-sm bg-white"
+                              />
+                            </div>
+
+                            {/* 下次追蹤安排 */}
+                            <div className="bg-white p-3.5 rounded-lg border border-emerald-200 space-y-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <label className="text-xs font-bold text-emerald-900">📅 下次追蹤日期與討論安排</label>
+                                <div className="flex items-center gap-2">
+                                  <input 
+                                    type="date"
+                                    value={state.guidelineSelections['weight_plan_next_date'] || state.monitoring.nextDate || ''}
+                                    onChange={e => {
+                                      setSelection('weight_plan_next_date', e.target.value);
+                                      setState(prev => ({ ...prev, monitoring: { ...prev.monitoring, nextDate: e.target.value } }));
+                                    }}
+                                    className="px-2 py-1 border rounded border-slate-300 text-xs font-medium"
+                                  />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div className="space-y-1">
+                                  <span className="text-slate-600 font-medium">下次主要討論 ①：</span>
+                                  <input 
+                                    type="text" 
+                                    placeholder="例如：本週蔬菜執行狀況、外食主食份量..."
+                                    value={state.guidelineSelections['weight_plan_discuss_1'] || ''}
+                                    onChange={e => setSelection('weight_plan_discuss_1', e.target.value)}
+                                    className="w-full px-2.5 py-1.5 border rounded border-slate-300 text-xs"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <span className="text-slate-600 font-medium">下次主要討論 ②：</span>
+                                  <input 
+                                    type="text" 
+                                    placeholder="例如：無糖飲品替代策略、飢餓感與作息..."
+                                    value={state.guidelineSelections['weight_plan_discuss_2'] || ''}
+                                    onChange={e => setSelection('weight_plan_discuss_2', e.target.value)}
+                                    className="w-full px-2.5 py-1.5 border rounded border-slate-300 text-xs"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 追蹤卡快捷列 */}
+                            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+                              <div className="flex items-center gap-2">
+                                <button 
+                                  type="button"
+                                  onClick={handleCopyWeightCard}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                  複製個人化追蹤卡 (LINE / Notion)
+                                </button>
+                                {copySuccessMsg && (
+                                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded">
+                                    {copySuccessMsg}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-xs text-slate-400">支援一鍵貼入通訊軟體或醫療病歷</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {state.counselingType === '糖尿病營養方針' || state.counselingType === '高血脂營養方針' || state.counselingType === '痛風（高尿酸）營養方針') && (
                     <div className="space-y-4">
                       <h3 className="text-md font-bold text-blue-700 border-b pb-2">追蹤指標+營養計畫</h3>
                       {state.counselingType === '糖尿病營養方針' && (
@@ -8458,13 +8991,25 @@ export default function App() {
 
                   {/* (5) 備註與注意事項 */}
                   <div className="space-y-4">
-                    <h3 className="text-md font-bold text-blue-700 border-b pb-2">備註與注意事項</h3>
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <h3 className="text-md font-bold text-blue-700">備註與注意事項</h3>
+                      {state.counselingType === '減重營養方針' && (
+                        <button 
+                          type="button" 
+                          onClick={applyDefaultWeightNotes}
+                          className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 font-medium bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          帶入減重注意事項建議
+                        </button>
+                      )}
+                    </div>
                     <textarea 
                       rows={4}
                       value={state.reminderNotes || ''}
                       onChange={e => setState({...state, reminderNotes: e.target.value})}
                       placeholder="輸入備註或注意事項..."
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm leading-relaxed"
                     ></textarea>
                   </div>
 
