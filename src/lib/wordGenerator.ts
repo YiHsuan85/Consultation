@@ -1264,7 +1264,7 @@ export const generateReminderWordDoc = async (state: AppState) => {
         new Paragraph({ text: state.reminderNotes || "無" }),
 
         // 衛教資訊
-        new Paragraph({ text: "五、衛教資訊與附件", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
+        new Paragraph({ text: state.counselingType === '減重營養方針' ? "六、衛教資訊與附件" : "五、衛教資訊與附件", heading: HeadingLevel.HEADING_2, spacing: { before: 400, after: 200 } }),
         new Paragraph({ text: state.intervention.educationTopics.join(", ") || "無" }),
         ...(state.intervention.educationNotes ? [
           new Paragraph({ text: `自訂衛教備註: ${state.intervention.educationNotes}` })
