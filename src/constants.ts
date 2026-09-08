@@ -711,6 +711,8 @@ export const FOOD_DATABASE: FoodItem[] = [
   { name: '711極饗-沙茶豬肉燴飯 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k:'', p: ''},  
   { name: '711黑金松露嫩雞胸 207g', category: '外食類', carbs: 0, protein: 0, fat: 0, kcal: 354, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: '', k:'', p: ''},
   { name: '711糖心蛋紐奧良風味烤雞 三明治 117g', category: '外食類', carbs: 20.7, protein: 15.3, fat: 10.1, kcal: 235, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 668, k:'', p: ''},
+  { name: '711青醬蛤蠣義大利麵 370g', category: '外食類', carbs: 77.3, protein: 20.7, fat: 21.8, kcal: 589, fiber: 0, saturatedFat: 7, transFat: 0, cholesterol: 0, na: 1336, k:'', p: ''},
+  { name: '711沙茶豬肉燴飯 457g', category: '外食類', carbs: 93.7, protein: 23.6, fat: 23.8, kcal: 664, fiber: 0, saturatedFat: 6.4, transFat: 0, cholesterol: 0, na: 1421, k:'', p: ''},
   { name: '711香檸優多 椰果晶凍 400g', category: '外食類', carbs: 52, protein: 0.4, fat: 0, kcal: 210, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 176, k:'', p: ''},
   { name: '711比菲多（寡糖配方）471ml', category: '外食類', carbs: 60.3, protein: 6.2, fat: 0, kcal: 198, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 89, k:'', p: ''},
   { name: '711比菲多（減醣30%）471ml', category: '外食類', carbs: 67.8, protein: 5.2, fat: 0, kcal: 278, fiber: 0, saturatedFat: 0, transFat: 0, cholesterol: 0, na: 52, k:'', p: ''},
