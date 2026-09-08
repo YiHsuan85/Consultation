@@ -7851,10 +7851,10 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                             const updates: any = { counselingType: newType };
                             if (newType === '減重營養方針' && !state.reminderNotes) {
                               updates.reminderNotes = `* 減重以穩定、可持續為原則，不建議極端節食或跳過正餐。
-* 體重會受到水分、排便、飲食及生理週期影響，短期波動不代表減重失敗。
-* 若出現持續明顯飢餓、頭暈、虛弱或飲食難以維持，請與營養師討論調整。
-* 若有糖尿病、腎臟疾病、心血管疾病或正在使用藥物，飲食與減重策略應依個人疾病及治療狀況調整。
-* 不用一次做到全部，先完成本週設定的 1–2 個目標。`;
+                                                        * 體重會受到水分、排便、飲食及生理週期影響，短期波動不代表減重失敗。
+                                                        * 若出現持續明顯飢餓、頭暈、虛弱或飲食難以維持，請與營養師討論調整。
+                                                        * 若有糖尿病、腎臟疾病、心血管疾病或正在使用藥物，飲食與減重策略應依個人疾病及治療狀況調整。
+                                                        * 不用一次做到全部，先完成本週設定的 1–2 個目標。`;
                             }
                             setState({ ...state, ...updates });
                           }}
@@ -8948,9 +8948,6 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         </div>
                       )}
 
-                      {(state.counselingType === '糖尿病營養方針' || state.counselingType === '高血脂營養方針' || state.counselingType === '痛風（高尿酸）營養方針') && (
-                    <div className="space-y-4">
-                      <h3 className="text-md font-bold text-blue-700 border-b pb-2">追蹤指標+營養計畫</h3>
                       {state.counselingType === '糖尿病營養方針' && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <GuidelineCheckbox label="飯後血糖變化" id="dm_track_ppg" state={state} setState={setState} />
