@@ -1351,12 +1351,7 @@ export default function App() {
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'checklist' | 'weight' | 'biochem'>('all');
-  const [anthroQuickRec, setAnthroQuickRec] = useState({
-    date: new Date().toISOString().split('T')[0],
-    weight: '',
-    waist: '',
-    bodyFat: ''
-  });
+  
   
   const toggleMonitoringIndicator = useCallback((id: string) => {
     setState(prev => {
@@ -3651,12 +3646,12 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       onClick={() => {
-                        if (!state.anthropometry.weight) {
-                          alert('請輸入體重後再進行同步');
+                        if (!state.anthropometry.weight && !state.anthropometry.waist && !state.anthropometry.bodyFat) {
+                          alert('請輸入體重、腰圍或體脂後再進行同步');
                           return;
                         }
                         const targetWeightDate = state.anthropometry.weightDate || new Date().toISOString().split('T')[0];
-                        const currentWeight = state.anthropometry.weight;
+                        const currentWeight = state.anthropometry.weight || '';
                         const currentWaist = state.anthropometry.waist || '';
                         const currentBodyFat = state.anthropometry.bodyFat || '';
 
@@ -3683,7 +3678,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                             waist: currentWaist,
                             bodyFat: currentBodyFat,
                             ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
-                            other: '從體重表單同步'
+                            other: '從體位表單同步'
                           });
                         }
 
@@ -3715,6 +3710,10 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
 
                         setState({
                           ...state,
+                          anthropometry: {
+                            ...state.anthropometry,
+                            weightDate: targetWeightDate
+                          },
                           monitoring: {
                             ...state.monitoring,
                             history: latestHistory,
@@ -3722,7 +3721,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                           }
                         });
                         setClickedWeightHistoryDate(null); // Reset click tracking after sync
-                        alert('數據已同步至體重與體位監測紀錄');
+                        alert('體位數據已同步至監測紀錄');
                       }}
                       className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm cursor-pointer font-medium"
                     >
@@ -3824,7 +3823,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                       <div className="flex items-center gap-2">
                         <Scale className="w-4 h-4 text-emerald-600" />
                         <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-                          體重變化
+                          體位變化
                         </h3>
                       </div>
                       <div className="flex items-center gap-2">
@@ -3855,150 +3854,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                           </span>
                         </div>
 
-                        {/* Quick Entry Bar for Anthropometry Records */}
-                        <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 space-y-2">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                              <span>➕ 快速記錄體位（體重、腰圍、體脂率）</span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setAnthroQuickRec({
-                                  date: state.anthropometry.weightDate || new Date().toISOString().split('T')[0],
-                                  weight: state.anthropometry.weight || '',
-                                  waist: state.anthropometry.waist || '',
-                                  bodyFat: state.anthropometry.bodyFat || ''
-                                });
-                              }}
-                              className="text-[11px] text-blue-600 hover:text-blue-800 flex items-center gap-0.5 hover:underline cursor-pointer"
-                            >
-                              帶入上方輸入值 ↗
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                            <div>
-                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">測量日期</label>
-                              <input
-                                type="date"
-                                value={anthroQuickRec.date}
-                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, date: e.target.value })}
-                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs font-medium"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">體重 (kg) *</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                placeholder="例如: 65.5"
-                                value={anthroQuickRec.weight}
-                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, weight: e.target.value })}
-                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs font-bold text-slate-800"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">腰圍 (cm)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                placeholder="例如: 82.0"
-                                value={anthroQuickRec.waist}
-                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, waist: e.target.value })}
-                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">體脂率 (%)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                placeholder="例如: 24.5"
-                                value={anthroQuickRec.bodyFat}
-                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, bodyFat: e.target.value })}
-                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs"
-                              />
-                            </div>
-                            <div className="col-span-2 sm:col-span-1 flex items-end">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (!anthroQuickRec.date || !anthroQuickRec.weight) {
-                                    alert('請至少輸入測量日期與體重');
-                                    return;
-                                  }
-                                  const recDate = anthroQuickRec.date;
-                                  const recW = anthroQuickRec.weight;
-                                  const recWaist = anthroQuickRec.waist;
-                                  const recFat = anthroQuickRec.bodyFat;
-
-                                  // Sync to modern weightHistory
-                                  let updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
-                                  const existIdx = updatedWeightHistory.findIndex(h => h.date === recDate);
-                                  if (existIdx > -1) {
-                                    updatedWeightHistory[existIdx] = {
-                                      ...updatedWeightHistory[existIdx],
-                                      weight: recW,
-                                      waist: recWaist,
-                                      bodyFat: recFat
-                                    };
-                                  } else {
-                                    updatedWeightHistory.push({
-                                      id: Date.now().toString() + '-w',
-                                      date: recDate,
-                                      weight: recW,
-                                      waist: recWaist,
-                                      bodyFat: recFat
-                                    });
-                                  }
-
-                                  // Sync to legacy history
-                                  let latestHistory = [...state.monitoring.history];
-                                  const legacyIdx = latestHistory.findIndex(h => h.date === recDate);
-                                  if (legacyIdx > -1) {
-                                    latestHistory[legacyIdx] = {
-                                      ...latestHistory[legacyIdx],
-                                      weight: recW,
-                                      waist: recWaist,
-                                      bodyFat: recFat
-                                    };
-                                  } else {
-                                    latestHistory.push({
-                                      date: recDate,
-                                      weight: recW,
-                                      waist: recWaist,
-                                      bodyFat: recFat,
-                                      ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
-                                      other: '體重/體位紀錄'
-                                    });
-                                  }
-
-                                  setState(prev => ({
-                                    ...prev,
-                                    anthropometry: {
-                                      ...prev.anthropometry,
-                                      weight: recW,
-                                      weightDate: recDate,
-                                      waist: recWaist !== '' ? recWaist : prev.anthropometry.waist,
-                                      bodyFat: recFat !== '' ? recFat : prev.anthropometry.bodyFat
-                                    },
-                                    monitoring: {
-                                      ...prev.monitoring,
-                                      weightHistory: updatedWeightHistory,
-                                      history: latestHistory
-                                    }
-                                  }));
-                                  alert('體位紀錄已儲存');
-                                }}
-                                className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
-                              >
-                                <Save className="w-3.5 h-3.5" />
-                                儲存此筆
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
+                        
                         <div className="overflow-x-auto rounded-lg border border-slate-100">
                           <table className="w-full text-left border-collapse text-xs">
                             <thead>
@@ -4016,7 +3872,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                               {sortedWeightHistory.length === 0 ? (
                                 <tr>
                                   <td colSpan={7} className="px-3 py-6 text-center text-slate-450 italic">
-                                    尚無體位歷史紀錄。在上方輸入體重、腰圍、體脂率並點擊「同步至監測紀錄」或在上方快速輸入後即可在此顯示。
+                                    尚無體位歷史紀錄。在上方輸入相關數據並按下「同步至監測紀錄」即可在此顯示。
                                   </td>
                                 </tr>
                               ) : (
@@ -4090,12 +3946,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                                 bodyFat: record.bodyFat !== undefined && record.bodyFat !== '' ? String(record.bodyFat) : state.anthropometry.bodyFat
                                               }
                                             });
-                                            setAnthroQuickRec({
-                                              date: record.date,
-                                              weight: record.weight ? String(record.weight) : '',
-                                              waist: record.waist !== undefined ? String(record.waist) : '',
-                                              bodyFat: record.bodyFat !== undefined ? String(record.bodyFat) : ''
-                                            });
+                                            
                                           }}
                                           title="帶入上方輸入框"
                                           className="text-blue-600 hover:underline cursor-pointer focus:outline-none flex items-center gap-1 font-semibold"
