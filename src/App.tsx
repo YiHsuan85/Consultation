@@ -1351,6 +1351,12 @@ export default function App() {
   const [clickedWeightHistoryDate, setClickedWeightHistoryDate] = useState<string | null>(null);
   const [clickedBiochemHistoryDate, setClickedBiochemHistoryDate] = useState<string | null>(null);
   const [monitoringSubView, setMonitoringSubView] = useState<'all' | 'checklist' | 'weight' | 'biochem'>('all');
+  const [anthroQuickRec, setAnthroQuickRec] = useState({
+    date: new Date().toISOString().split('T')[0],
+    weight: '',
+    waist: '',
+    bodyFat: ''
+  });
   
   const toggleMonitoringIndicator = useCallback((id: string) => {
     setState(prev => {
@@ -1470,7 +1476,9 @@ export default function App() {
   });
   const [currentWeightRec, setCurrentWeightRec] = useState({
     date: new Date().toISOString().split('T')[0],
-    weight: ''
+    weight: '',
+    waist: '',
+    bodyFat: ''
   });
   const [currentBiochemRec, setCurrentBiochemRec] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -2016,18 +2024,24 @@ export default function App() {
       if (state.anthropometry.weight) {
         const targetWeightDate = state.anthropometry.weightDate || state.consultDate || new Date().toISOString().split('T')[0];
         const currentWeight = state.anthropometry.weight;
+        const currentWaist = state.anthropometry.waist || '';
+        const currentBodyFat = state.anthropometry.bodyFat || '';
         
         // 1) Legacy backup sync
         const existingIdx = latestHistory.findIndex(h => h.date === targetWeightDate);
         if (existingIdx > -1) {
           latestHistory[existingIdx] = {
             ...latestHistory[existingIdx],
-            weight: currentWeight
+            weight: currentWeight,
+            waist: currentWaist,
+            bodyFat: currentBodyFat
           };
         } else {
           latestHistory.push({
             date: targetWeightDate,
             weight: currentWeight,
+            waist: currentWaist,
+            bodyFat: currentBodyFat,
             ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
             other: '從體重表單同步'
           });
@@ -2038,13 +2052,17 @@ export default function App() {
         if (existingWIdx > -1) {
           updatedWeightHistory[existingWIdx] = {
             ...updatedWeightHistory[existingWIdx],
-            weight: currentWeight
+             weight: currentWeight,
+            waist: currentWaist,
+            bodyFat: currentBodyFat
           };
         } else {
           updatedWeightHistory.push({
             id: Date.now().toString() + '-save-w',
             date: targetWeightDate,
-            weight: currentWeight
+            weight: currentWeight,
+            waist: currentWaist,
+            bodyFat: currentBodyFat
           });
         }
       }
@@ -3639,6 +3657,8 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         }
                         const targetWeightDate = state.anthropometry.weightDate || new Date().toISOString().split('T')[0];
                         const currentWeight = state.anthropometry.weight;
+                        const currentWaist = state.anthropometry.waist || '';
+                        const currentBodyFat = state.anthropometry.bodyFat || '';
 
                         // 1) Legacy backup sync
                         let latestHistory = [...state.monitoring.history];
@@ -3652,12 +3672,16 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         if (existingIdx > -1) {
                           latestHistory[existingIdx] = {
                             ...latestHistory[existingIdx],
-                            weight: currentWeight
+                            weight: currentWeight,
+                            waist: currentWaist,
+                            bodyFat: currentBodyFat
                           };
                         } else {
                           latestHistory.push({
                             date: targetWeightDate,
                             weight: currentWeight,
+                            waist: currentWaist,
+                            bodyFat: currentBodyFat,
                             ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
                             other: '從體重表單同步'
                           });
@@ -3675,13 +3699,17 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         if (existingWIdx > -1) {
                           updatedWeightHistory[existingWIdx] = {
                             ...updatedWeightHistory[existingWIdx],
-                            weight: currentWeight
+                            weight: currentWeight,
+                            waist: currentWaist,
+                            bodyFat: currentBodyFat
                           };
                         } else {
                           updatedWeightHistory.push({
                             id: Date.now().toString() + '-sync-w',
                             date: targetWeightDate,
-                            weight: currentWeight
+                            weight: currentWeight,
+                            waist: currentWaist,
+                            bodyFat: currentBodyFat
                           });
                         }
 
@@ -3694,7 +3722,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                           }
                         });
                         setClickedWeightHistoryDate(null); // Reset click tracking after sync
-                        alert('數據已同步至體重監測紀錄');
+                        alert('數據已同步至體重與體位監測紀錄');
                       }}
                       className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-150 rounded-lg hover:bg-blue-100 text-sm transition-colors shadow-sm cursor-pointer font-medium"
                     >
@@ -3816,11 +3844,160 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         className="space-y-4 pt-2 border-t border-slate-200/50"
                       >
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Left: Historical record format table */}
+                     {/* Left: Historical record format table */}
                       <div className="lg:col-span-2 space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
-                          📋 體重紀錄
-                        </span>
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-dashed border-slate-100 pb-1.5">
+                          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block">
+                            📋 體位歷史紀錄 (體重 / 腰圍 / 體脂率)
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            點擊日期 📥 可帶入上方體位測量表單
+                          </span>
+                        </div>
+
+                        {/* Quick Entry Bar for Anthropometry Records */}
+                        <div className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
+                              <span>➕ 快速記錄體位（體重、腰圍、體脂率）</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAnthroQuickRec({
+                                  date: state.anthropometry.weightDate || new Date().toISOString().split('T')[0],
+                                  weight: state.anthropometry.weight || '',
+                                  waist: state.anthropometry.waist || '',
+                                  bodyFat: state.anthropometry.bodyFat || ''
+                                });
+                              }}
+                              className="text-[11px] text-blue-600 hover:text-blue-800 flex items-center gap-0.5 hover:underline cursor-pointer"
+                            >
+                              帶入上方輸入值 ↗
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                            <div>
+                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">測量日期</label>
+                              <input
+                                type="date"
+                                value={anthroQuickRec.date}
+                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, date: e.target.value })}
+                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs font-medium"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">體重 (kg) *</label>
+                              <input
+                                type="number"
+                                step="0.1"
+                                placeholder="例如: 65.5"
+                                value={anthroQuickRec.weight}
+                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, weight: e.target.value })}
+                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs font-bold text-slate-800"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">腰圍 (cm)</label>
+                              <input
+                                type="number"
+                                step="0.1"
+                                placeholder="例如: 82.0"
+                                value={anthroQuickRec.waist}
+                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, waist: e.target.value })}
+                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] font-medium text-slate-500 block mb-0.5">體脂率 (%)</label>
+                              <input
+                                type="number"
+                                step="0.1"
+                                placeholder="例如: 24.5"
+                                value={anthroQuickRec.bodyFat}
+                                onChange={e => setAnthroQuickRec({ ...anthroQuickRec, bodyFat: e.target.value })}
+                                className="w-full px-2 py-1.5 border rounded-lg border-slate-300 bg-white text-xs"
+                              />
+                            </div>
+                            <div className="col-span-2 sm:col-span-1 flex items-end">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!anthroQuickRec.date || !anthroQuickRec.weight) {
+                                    alert('請至少輸入測量日期與體重');
+                                    return;
+                                  }
+                                  const recDate = anthroQuickRec.date;
+                                  const recW = anthroQuickRec.weight;
+                                  const recWaist = anthroQuickRec.waist;
+                                  const recFat = anthroQuickRec.bodyFat;
+
+                                  // Sync to modern weightHistory
+                                  let updatedWeightHistory = [...(state.monitoring.weightHistory || [])];
+                                  const existIdx = updatedWeightHistory.findIndex(h => h.date === recDate);
+                                  if (existIdx > -1) {
+                                    updatedWeightHistory[existIdx] = {
+                                      ...updatedWeightHistory[existIdx],
+                                      weight: recW,
+                                      waist: recWaist,
+                                      bodyFat: recFat
+                                    };
+                                  } else {
+                                    updatedWeightHistory.push({
+                                      id: Date.now().toString() + '-w',
+                                      date: recDate,
+                                      weight: recW,
+                                      waist: recWaist,
+                                      bodyFat: recFat
+                                    });
+                                  }
+
+                                  // Sync to legacy history
+                                  let latestHistory = [...state.monitoring.history];
+                                  const legacyIdx = latestHistory.findIndex(h => h.date === recDate);
+                                  if (legacyIdx > -1) {
+                                    latestHistory[legacyIdx] = {
+                                      ...latestHistory[legacyIdx],
+                                      weight: recW,
+                                      waist: recWaist,
+                                      bodyFat: recFat
+                                    };
+                                  } else {
+                                    latestHistory.push({
+                                      date: recDate,
+                                      weight: recW,
+                                      waist: recWaist,
+                                      bodyFat: recFat,
+                                      ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '',
+                                      other: '體重/體位紀錄'
+                                    });
+                                  }
+
+                                  setState(prev => ({
+                                    ...prev,
+                                    anthropometry: {
+                                      ...prev.anthropometry,
+                                      weight: recW,
+                                      weightDate: recDate,
+                                      waist: recWaist !== '' ? recWaist : prev.anthropometry.waist,
+                                      bodyFat: recFat !== '' ? recFat : prev.anthropometry.bodyFat
+                                    },
+                                    monitoring: {
+                                      ...prev.monitoring,
+                                      weightHistory: updatedWeightHistory,
+                                      history: latestHistory
+                                    }
+                                  }));
+                                  alert('體位紀錄已儲存');
+                                }}
+                                className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
+                              >
+                                <Save className="w-3.5 h-3.5" />
+                                儲存此筆
+                              </button>
+                            </div>
+                          </div>
+                        </div>
 
                         <div className="overflow-x-auto rounded-lg border border-slate-100">
                           <table className="w-full text-left border-collapse text-xs">
@@ -3828,6 +4005,8 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                               <tr className="bg-slate-50 text-slate-500 border-b border-slate-100">
                                 <th className="px-3 py-2 font-semibold">測量日期</th>
                                 <th className="px-3 py-2 font-semibold">體重 (kg)</th>
+                                <th className="px-3 py-2 font-semibold">腰圍 (cm)</th>
+                                <th className="px-3 py-2 font-semibold">體脂率 (%)</th>
                                 <th className="px-3 py-2 font-semibold">體重變動率 (%)</th>
                                 <th className="px-3 py-2 font-semibold">狀態評估 (Status)</th>
                                 <th className="px-3 py-2 font-semibold text-center">操作</th>
@@ -3836,8 +4015,8 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                             <tbody className="divide-y divide-slate-50 text-slate-700">
                               {sortedWeightHistory.length === 0 ? (
                                 <tr>
-                                  <td colSpan={5} className="px-3 py-6 text-center text-slate-450 italic">
-                                    尚無體重歷史紀錄。在上方輸入體重與日期並點擊「儲存紀錄」後即可在此顯示。
+                                  <td colSpan={7} className="px-3 py-6 text-center text-slate-450 italic">
+                                    尚無體位歷史紀錄。在上方輸入體重、腰圍、體脂率並點擊「同步至監測紀錄」或在上方快速輸入後即可在此顯示。
                                   </td>
                                 </tr>
                               ) : (
@@ -3851,31 +4030,52 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                     const currW = parseFloat(String(record.weight));
                                     if (!isNaN(prevW) && !isNaN(currW) && prevW > 0) {
                                       // 體重變動率 = (此次 - 上次) / 上次 * 100%
-                                      // 當變動率 < 0 顯示體重減輕 %; 當變動率 > 0 顯示體重增加
                                       const rate = ((currW - prevW) / prevW) * 100;
                                       rateStr = `${rate > 0 ? '+' : ''}${rate.toFixed(1)}%`;
                                       
                                       if (rate < 0) {
                                         statusEl = (
-                                          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold block text-center">
+                                          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 font-bold block text-center whitespace-nowrap">
                                             體重減輕 {Math.abs(rate).toFixed(1)}%
                                           </span>
                                         );
                                       } else if (rate > 0) {
                                         statusEl = (
-                                          <span className="text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 font-bold block text-center">
+                                          <span className="text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-100 font-bold block text-center whitespace-nowrap">
                                             體重增加
                                           </span>
                                         );
                                       } else {
-                                        statusEl = <span className="text-slate-500 font-medium block text-center">無變動</span>;
+                                        statusEl = <span className="text-slate-500 font-medium block text-center whitespace-nowrap">無變動</span>;
                                       }
+                                    }
+                                  }
+
+                                  // 腰圍前後變動差
+                                  const currWaistNum = record.waist ? parseFloat(String(record.waist)) : NaN;
+                                  const prevWaistNum = prev && prev.waist ? parseFloat(String(prev.waist)) : NaN;
+                                  let waistDiffStr = '';
+                                  if (!isNaN(currWaistNum) && !isNaN(prevWaistNum)) {
+                                    const diff = currWaistNum - prevWaistNum;
+                                    if (diff !== 0) {
+                                      waistDiffStr = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}`;
+                                    }
+                                  }
+
+                                  // 體脂率前後變動差
+                                  const currFatNum = record.bodyFat ? parseFloat(String(record.bodyFat)) : NaN;
+                                  const prevFatNum = prev && prev.bodyFat ? parseFloat(String(prev.bodyFat)) : NaN;
+                                  let fatDiffStr = '';
+                                  if (!isNaN(currFatNum) && !isNaN(prevFatNum)) {
+                                    const diff = currFatNum - prevFatNum;
+                                    if (diff !== 0) {
+                                      fatDiffStr = `${diff > 0 ? '+' : ''}${diff.toFixed(1)}%`;
                                     }
                                   }
 
                                   return (
                                     <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                                      <td className="px-3 py-2.5 font-mono font-medium">
+                                      <td className="px-3 py-2.5 font-mono font-medium whitespace-nowrap">
                                         <button
                                           type="button"
                                           onClick={() => {
@@ -3884,19 +4084,55 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                               ...state,
                                               anthropometry: {
                                                 ...state.anthropometry,
-                                                weight: record.weight,
-                                                weightDate: record.date
+                                                weight: record.weight ? String(record.weight) : state.anthropometry.weight,
+                                                weightDate: record.date,
+                                                waist: record.waist !== undefined && record.waist !== '' ? String(record.waist) : state.anthropometry.waist,
+                                                bodyFat: record.bodyFat !== undefined && record.bodyFat !== '' ? String(record.bodyFat) : state.anthropometry.bodyFat
                                               }
+                                            });
+                                            setAnthroQuickRec({
+                                              date: record.date,
+                                              weight: record.weight ? String(record.weight) : '',
+                                              waist: record.waist !== undefined ? String(record.waist) : '',
+                                              bodyFat: record.bodyFat !== undefined ? String(record.bodyFat) : ''
                                             });
                                           }}
                                           title="帶入上方輸入框"
-                                          className="text-blue-600 hover:underline cursor-pointer focus:outline-none"
+                                          className="text-blue-600 hover:underline cursor-pointer focus:outline-none flex items-center gap-1 font-semibold"
                                         >
                                           {record.date} 📥
                                         </button>
                                       </td>
-                                      <td className="px-3 py-2.5 font-bold text-slate-800">{record.weight} kg</td>
-                                      <td className={`px-3 py-2.5 font-mono font-bold ${rateStr.startsWith('-') ? 'text-emerald-600' : rateStr.startsWith('+') ? 'text-red-650' : 'text-slate-500'}`}>
+                                      <td className="px-3 py-2.5 font-bold text-slate-800 whitespace-nowrap">{record.weight || '--'} kg</td>
+                                      <td className="px-3 py-2.5 font-medium text-slate-700 whitespace-nowrap">
+                                        {record.waist ? (
+                                          <div className="flex items-center gap-1">
+                                            <span>{record.waist} cm</span>
+                                            {waistDiffStr && (
+                                              <span className={`text-[10px] font-mono font-bold ${waistDiffStr.startsWith('-') ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                ({waistDiffStr})
+                                              </span>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <span className="text-slate-350">--</span>
+                                        )}
+                                      </td>
+                                      <td className="px-3 py-2.5 font-medium text-slate-700 whitespace-nowrap">
+                                        {record.bodyFat ? (
+                                          <div className="flex items-center gap-1">
+                                            <span>{record.bodyFat}%</span>
+                                            {fatDiffStr && (
+                                              <span className={`text-[10px] font-mono font-bold ${fatDiffStr.startsWith('-') ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                ({fatDiffStr})
+                                              </span>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <span className="text-slate-350">--</span>
+                                        )}
+                                      </td>
+                                      <td className={`px-3 py-2.5 font-mono font-bold whitespace-nowrap ${rateStr.startsWith('-') ? 'text-emerald-600' : rateStr.startsWith('+') ? 'text-red-650' : 'text-slate-500'}`}>
                                         {rateStr}
                                       </td>
                                       <td className="px-3 py-2.5">{statusEl}</td>
@@ -3917,8 +4153,8 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                                 weightHistory: newWeightHistory
                                               }
                                             });
-                                          }}
-                                          className="text-slate-300 hover:text-red-500 transition-colors"
+                                         }}
+                                          className="text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
                                           title="刪除此筆紀錄"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
@@ -3936,7 +4172,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                       {/* Right: NCP Alert reference and notifications */}
                       <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-100 shadow-xs">
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block border-b border-dashed border-slate-100 pb-1.5">
-                          ⚠️ NCP 臨床體重流失警示
+                          ⚠️ NCP 臨床體位與流失警示
                         </span>
 
                         <div className="text-xs text-slate-600 leading-relaxed space-y-1.5 p-3 bg-slate-50/55 border border-slate-100 rounded-xl">
@@ -3946,8 +4182,13 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                             <li><strong>1 個月</strong> 下降 <span className="text-red-600 font-bold">5%</span> 原體重</li>
                             <li><strong>6 個月</strong> 下降 <span className="text-red-600 font-bold">10%</span> 原體重</li>
                           </ul>
+                          <div className="pt-2 border-t border-slate-200/60 mt-2 space-y-1">
+                            <p className="font-bold text-slate-700">腰圍與體脂率指引標準：</p>
+                            <p className="text-[11px] text-slate-600">• <strong>腰圍警戒</strong>：男 ≧ 90 cm、女 ≧ 80 cm（代謝症候群指標）</p>
+                            <p className="text-[11px] text-slate-600">• <strong>體脂率標準</strong>：男 14~24%（&gt;25% 偏高）；女 17~27%（&gt;30% 偏高）</p>
+                          </div>
                           <p className="text-[10px] text-slate-400 mt-1 italic">
-                            ※ 系統將自動比對歷史紀錄，偵測是否達成上述警告門檻。
+                            ※ 系統自動記錄每次腰圍與體脂率，並比對前後差值變化。
                           </p>
                         </div>
 
@@ -4225,13 +4466,17 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                           if (existingWIdx > -1) {
                             updatedWeightHistory[existingWIdx] = {
                               ...updatedWeightHistory[existingWIdx],
-                              weight: state.anthropometry.weight
+                              weight: state.anthropometry.weight,
+                              waist: state.anthropometry.waist || '',
+                              bodyFat: state.anthropometry.bodyFat || ''
                             };
                           } else {
                             updatedWeightHistory.push({
                               id: Date.now().toString() + '-sync-bw',
                               date: weightDate,
-                              weight: state.anthropometry.weight
+                              weight: state.anthropometry.weight,
+                              waist: state.anthropometry.waist || '',
+                              bodyFat: state.anthropometry.bodyFat || ''
                             });
                           }
                         }
@@ -7285,8 +7530,8 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                         {/* Add Weight Form and Table */}
                         <div className="lg:col-span-2 space-y-4">
                           <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-3xs space-y-4">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">新增體重紀錄</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">新增體重與體位紀錄</h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 items-end">
                               <div className="space-y-1">
                                 <label className="text-xs font-medium text-slate-500">日期</label>
                                 <input 
@@ -7297,7 +7542,7 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                 />
                               </div>
                               <div className="space-y-1">
-                                <label className="text-xs font-medium text-slate-500">體重 (kg)</label>
+                                <label className="text-xs font-medium text-slate-500">體重 (kg) *</label>
                                 <input 
                                   type="number" 
                                   step="0.1"
@@ -7307,20 +7552,47 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                   className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white font-medium"
                                 />
                               </div>
-                              <button 
-                                type="button"
-                                onClick={() => {
-                                  if (currentWeightRec.date && currentWeightRec.weight) {
-                                    const newRec = {
-                                      id: Date.now().toString() + '-w',
-                                      date: currentWeightRec.date,
-                                      weight: currentWeightRec.weight
-                                    };
-                                    // sync to legacy as backup
-                                    const newLegacyRec = {
-                                      date: currentWeightRec.date,
-                                      weight: currentWeightRec.weight,
-                                      ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '', other: '體重端填寫'
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-slate-500">腰圍 (cm)</label>
+                                <input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="例如: 82.0"
+                                  value={currentWeightRec.waist}
+                                  onChange={e => setCurrentWeightRec({ ...currentWeightRec, waist: e.target.value })}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-slate-500">體脂率 (%)</label>
+                                <input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="例如: 24.5"
+                                  value={currentWeightRec.bodyFat}
+                                  onChange={e => setCurrentWeightRec({ ...currentWeightRec, bodyFat: e.target.value })}
+                                  className="w-full px-3 py-1.5 text-sm rounded-lg border border-slate-200 bg-white"
+                                />
+                              </div>
+                              <div className="col-span-2 sm:col-span-1">
+                                <button 
+                                  type="button"
+                                  onClick={() => {
+                                    if (currentWeightRec.date && currentWeightRec.weight) {
+                                      const newRec = {
+                                        id: Date.now().toString() + '-w',
+                                        date: currentWeightRec.date,
+                                        weight: currentWeightRec.weight,
+                                        waist: currentWeightRec.waist,
+                                        bodyFat: currentWeightRec.bodyFat
+                                      };
+                                      // sync to legacy as backup
+                                      const newLegacyRec = {
+                                        date: currentWeightRec.date,
+                                        weight: currentWeightRec.weight,
+                                        waist: currentWeightRec.waist,
+                                        bodyFat: currentWeightRec.bodyFat,
+                                        ac: '', hba1c: '', egfr: '', tg: '', ldl: '', tc: '', uricAcid: '', hdl: '', ast: '', alt: '', bp: '', other: '體重端填寫'
                                     };
                                     setState({
                                       ...state,
@@ -7332,23 +7604,26 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                     });
                                     setCurrentWeightRec({
                                       date: new Date().toISOString().split('T')[0],
-                                      weight: ''
+                                        weight: '',
+                                        waist: '',
+                                        bodyFat: ''
                                     });
                                   } else {
                                     alert('請輸入完整的日期與體重');
-                                  }
-                                }}
-                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
-                              >
-                                新增體重
-                              </button>
+                                    }
+                                  }}
+                                  className="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                                >
+                                  新增紀錄
+                                </button>
+                              </div>
                             </div>
                           </div>
 
                           {/* Weight History Table */}
                           <div className="bg-white rounded-xl border border-slate-200/80 shadow-3xs overflow-hidden">
                             <div className="px-4 py-3 bg-slate-50/60 border-b border-slate-100 flex items-center justify-between">
-                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">體重紀錄列表</span>
+                              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">體位紀錄列表 (體重 / 腰圍 / 體脂率)</span>
                             </div>
                             <div className="overflow-x-auto">
                               <table className="w-full text-sm text-left">
@@ -7356,19 +7631,23 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                                   <tr>
                                     <th className="px-4 py-2">日期</th>
                                     <th className="px-4 py-2">體重 (kg)</th>
+                                    <th className="px-4 py-2">腰圍 (cm)</th>
+                                    <th className="px-4 py-2">體脂率 (%)</th>
                                     <th className="px-4 py-2 text-center">操作</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                   {sortedWeightHistory.length === 0 ? (
                                     <tr>
-                                      <td colSpan={3} className="px-4 py-6 text-center text-slate-400 italic">尚無體重歷史紀錄</td>
+                                      <td colSpan={5} className="px-4 py-6 text-center text-slate-400 italic">尚無體位歷史紀錄</td>
                                     </tr>
                                   ) : (
                                     sortedWeightHistory.map((record, idx) => (
                                       <tr key={record.id || idx} className="hover:bg-slate-50/40 transition-colors">
                                         <td className="px-4 py-2.5 font-medium">{record.date}</td>
-                                        <td className="px-4 py-2.5 font-bold text-slate-700">{record.weight} kg</td>
+                                        <td className="px-4 py-2.5 font-bold text-slate-700">{record.weight ? `${record.weight} kg` : '--'}</td>
+                                        <td className="px-4 py-2.5 text-slate-700">{record.waist ? `${record.waist} cm` : '--'}</td>
+                                        <td className="px-4 py-2.5 text-slate-700">{record.bodyFat ? `${record.bodyFat}%` : '--'}</td>
                                         <td className="px-4 py-2.5 text-center">
                                           <button 
                                             type="button"
