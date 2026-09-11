@@ -55,6 +55,8 @@ export interface WeightRecord {
   id: string;
   date: string;
   weight: string | number;
+  waist?: string | number;
+  bodyFat?: string | number;
 }
 
 export interface BiochemRecord {
@@ -86,6 +88,8 @@ export interface BiochemRecord {
 export interface MonitoringRecord {
   date: string;
   weight: string | number;
+  waist?: string | number;
+  bodyFat?: string | number;
   ac?: string | number;
   pc?: string | number;
   hba1c?: string | number;
