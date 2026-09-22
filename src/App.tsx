@@ -4834,18 +4834,34 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                   <div className="space-y-4">
                     <label className="text-sm font-medium text-slate-700">既往病史 (Medical Hx / Surgical Hx)</label>
                     <div className="flex flex-wrap gap-4">
-                      {['DM', '腎臟病', '心血管', 'HTN', 'Gout', '腎結石', 'GORD', '高血脂'].map(item => (
-                        <div key={item} className="flex items-center gap-4">
-                          <label className="flex items-center gap-2 cursor-pointer group">
-                            <input 
-                              type="checkbox" 
-                              checked={state.clinical.medicalHx.includes(item)}
-                              onChange={e => {
-                                const newHx = e.target.checked 
-                                  ? [...state.clinical.medicalHx, item]
-                                  : state.clinical.medicalHx.filter(h => h !== item);
-                                const updatedClinical = { ...state.clinical, medicalHx: newHx };
-                                if (item === '腎臟病' && !e.target.checked) {
+                      {['DM', '腎臟病', '心血管', 'HTN', 'Gout', 'hyperuricemia', 'Kidney stones', 'GERD', '高血脂', 'Cancer'].map(item => {
+                        const isChecked = state.clinical.medicalHx.includes(item) ||
+                          (item === 'GERD' && state.clinical.medicalHx.includes('GORD')) ||
+                          (item === 'Kidney stones' && state.clinical.medicalHx.includes('腎結石'));
+
+                        return (
+                          <div key={item} className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 cursor-pointer group">
+                              <input 
+                                type="checkbox" 
+                                checked={isChecked}
+                                onChange={e => {
+                                  let newHx: string[];
+                                  if (e.target.checked) {
+                                    newHx = [...state.clinical.medicalHx.filter(h => {
+                                      if (item === 'GERD' && h === 'GORD') return false;
+                                      if (item === 'Kidney stones' && h === '腎結石') return false;
+                                      return h !== item;
+                                    }), item];
+                                  } else {
+                                    newHx = state.clinical.medicalHx.filter(h => {
+                                      if (item === 'GERD' && (h === 'GERD' || h === 'GORD')) return false;
+                                      if (item === 'Kidney stones' && (h === 'Kidney stones' || h === '腎結石')) return false;
+                                      return h !== item;
+                                    });
+                                  }
+                                  const updatedClinical = { ...state.clinical, medicalHx: newHx };
+                                  if (item === '腎臟病' && !e.target.checked) {
                                   updatedClinical.kidneyStage = '';
                                 }
                                 setState({...state, clinical: updatedClinical});
@@ -5431,6 +5447,18 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                           <span className="text-[11px] font-bold text-amber-700 uppercase">八方招牌鍋貼 (10顆)</span>
                           <span className="text-[11.5px] text-amber-950 font-medium tracking-tight leading-relaxed">
                             160g白飯 + 50ml油 + 1/3片雞胸肉 + 2g鹽巴
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100 shadow-3xs">
+                          <span className="text-[11px] font-bold text-amber-700 uppercase">梁社漢排骨</span>
+                          <span className="text-xs text-amber-900 font-semibold tracking-tight">
+                            130g
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1 p-2 bg-white/55 rounded-lg border border-amber-100 shadow-3xs">
+                          <span className="text-[11px] font-bold text-amber-700 uppercase">梁社漢炸雞排</span>
+                          <span className="text-xs text-amber-900 font-semibold tracking-tight">
+                            230g
                           </span>
                         </div>
                       </motion.div>
