@@ -160,21 +160,38 @@ export function NutritionAssessment({ assessment, onChange }: Props) {
               <div className="col-span-full space-y-2">
                 <Label>Medical Hx / Surgical Hx</Label>
                 <div className="flex flex-wrap gap-4">
-                  {['DM', '腎臟病', '心血管', '痛風', '腎結石', '高血脂'].map((item) => (
-                    <div key={item} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={item}
-                        checked={clientHx.medicalHistory.includes(item)}
-                        onCheckedChange={(checked) => {
-                          const newHx = checked
-                            ? [...clientHx.medicalHistory, item]
-                            : clientHx.medicalHistory.filter((i: string) => i !== item);
-                          onChange('assessment.clientHx.medicalHistory', newHx);
-                        }}
-                      />
-                      <Label htmlFor={item}>{item}</Label>
-                    </div>
-                  ))}
+                  {['DM', '腎臟病', '心血管', 'HTN', 'Gout', 'hyperuricemia', 'Kidney stones', 'GERD', '高血脂', 'Cancer'].map((item) => {
+                    const isChecked = clientHx.medicalHistory.includes(item) ||
+                      (item === 'GERD' && clientHx.medicalHistory.includes('GORD')) ||
+                      (item === 'Kidney stones' && clientHx.medicalHistory.includes('腎結石'));
+
+                    return (
+                      <div key={item} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={item}
+                          checked={isChecked}
+                          onCheckedChange={(checked) => {
+                            let newHx: string[];
+                            if (checked) {
+                              newHx = [...clientHx.medicalHistory.filter((i: string) => {
+                                if (item === 'GERD' && i === 'GORD') return false;
+                                if (item === 'Kidney stones' && i === '腎結石') return false;
+                                return i !== item;
+                              }), item];
+                            } else {
+                              newHx = clientHx.medicalHistory.filter((i: string) => {
+                                if (item === 'GERD' && (i === 'GERD' || i === 'GORD')) return false;
+                                if (item === 'Kidney stones' && (i === 'Kidney stones' || i === '腎結石')) return false;
+                                return i !== item;
+                              });
+                            }
+                            onChange('assessment.clientHx.medicalHistory', newHx);
+                          }}
+                        />
+                        <Label htmlFor={item}>{item}</Label>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
               {clientHx.medicalHistory.includes('腎臟病') && (
