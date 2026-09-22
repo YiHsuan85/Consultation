@@ -4893,9 +4893,6 @@ ${s.reminderNotes || '減重以穩定、可持續為原則，不建議極端節�
                       );        // 👈 補上 map 內 return 的閉合括號與分號
                     })}
                   </div>
-                </div>         {/* 👈 補上：對應 <div className="space-y-4"> 的結束標籤 */}
-              </div>           {/* 👈 補上：對應 <div className="p-6 space-y-6"> 的結束標籤 */}
-            </section>         {/* 👈 補上：對應最外層 <section> 的結束標籤 */}
 
                     <div className="space-y-1.5 pt-1">
                       <label className="text-xs font-semibold text-slate-500">其他 (Other Medical Hx):</label>
